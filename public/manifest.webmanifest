@@ -1,0 +1,11 @@
+{
+  "name": "جولة اللياقة",
+  "short_name": "جولة اللياقة",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#161312",
+  "theme_color": "#161312",
+  "icons": [{ "src": "/icon.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }]
+}

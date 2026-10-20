@@ -1,0 +1,25 @@
+{
+  "appId": "sa.roundfitness.app",
+  "appName": "جولة اللياقة",
+  "webDir": "www",
+  "server": {
+    "url": "https://round-gym-production.up.railway.app/app",
+    "androidScheme": "https",
+    "errorPath": "offline.html"
+  },
+  "android": {
+    "backgroundColor": "#161312",
+    "allowMixedContent": false
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 1200,
+      "launchAutoHide": true,
+      "backgroundColor": "#161312",
+      "showSpinner": false
+    },
+    "LocalNotifications": {
+      "iconColor": "#BE2F28"
+    }
+  }
+}

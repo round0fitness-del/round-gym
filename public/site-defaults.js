@@ -1,6 +1,6 @@
 /* Default website content. The manager edits it from «الموقع» in the system; saved values replace these. */
 window.SITE_DEFAULTS = {
-  show: { hero: true, values: true, offers: true, programs: true, pricing: true, schedule: true, trainers: true, gallery: true, reviews: true, app: true, join: true, contact: true },
+  show: { hero: true, values: true, offers: true, programs: true, pricing: true, schedule: true, trainers: true, gallery: true, reviews: true, app: true, blog: true, join: true, contact: true },
   metaTitle: 'جولة اللياقة | نادي لياقة وفنون قتالية',
   metaDesc: 'نادي جولة اللياقة: صالة لياقة متكاملة، حصص جماعية، تدريب شخصي، وفنون قتالية للكبار والأطفال. احجز زيارتك التجريبية الآن.',
   tagline: 'لياقة بخطة واضحة، ومدرب يتابع تقدّمك.',

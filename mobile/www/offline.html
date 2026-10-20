@@ -1,0 +1,9 @@
+<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>لا يوجد اتصال</title>
+<style>body{margin:0;background:#161312;color:#fff;font-family:Tahoma,sans-serif;min-height:100vh;display:grid;place-items:center;text-align:center;padding:24px}
+.box{max-width:340px;display:grid;gap:14px;justify-items:center}.ic{width:72px;height:72px;border-radius:20px;background:#BE2F28;display:grid;place-items:center}
+h1{font-size:22px;margin:0}p{color:#cfc8c4;margin:0;line-height:1.8}button{background:#BE2F28;color:#fff;border:0;border-radius:999px;padding:14px 28px;font:600 16px Tahoma,sans-serif}
+.card{background:#fff;color:#161312;border-radius:18px;padding:16px;display:grid;gap:8px;justify-items:center;width:100%}.card img{width:200px;height:200px}</style></head>
+<body><div class="box"><div class="ic"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M2 8.8a15 15 0 0 1 20 0M5 12.5a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0M12 20h.01"/></svg></div>
+<h1>لا يوجد اتصال بالإنترنت</h1><p>تأكدي من الاتصال ثم أعيدي المحاولة.</p><div id="card"></div><button onclick="location.href='https://round-gym-production.up.railway.app/app'">إعادة المحاولة</button></div>
+<script>function show(c){if(c&&c.qr){document.getElementById('card').innerHTML='<div class="card"><b>'+c.name.replace(/[<>&]/g,'')+'</b><img alt="بطاقة الدخول" src="'+c.qr+'"><small>'+c.code.replace(/[<>&]/g,'')+'</small><small>بطاقة الدخول تعمل بدون إنترنت</small></div>'}}
+try{var P=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.Preferences;if(P)P.get({key:'rf.card'}).then(function(r){try{show(JSON.parse(r.value||'null'))}catch(e){}})}catch(e){}</script></body></html>

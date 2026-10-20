@@ -13,6 +13,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const Push = require('./push.js');
 
 const PORT = +process.env.PORT || 3000;
 const DATA = process.env.DATA_DIR || process.env.RAILWAY_VOLUME_MOUNT_PATH || path.join(__dirname, 'data');
@@ -22,7 +23,7 @@ if (NO_DISK) console.warn('\n!!! No persistent volume is attached. Data will be 
 const PUB = path.join(__dirname, 'public');
 const DBF = path.join(DATA, 'db.json');
 const BAK = path.join(DATA, 'backups');
-const COLS = ['members', 'subs', 'pay', 'exp', 'att', 'classes', 'book', 'freezeReq', 'pt', 'campaigns', 'daily', 'leads', 'cash', 'plans', 'trainers', 'shifts', 'ptPlans', 'ptPacks', 'ptSess', 'treq', 'ptTpl', 'comms', 'jrnl', 'periods', 'budget', 'coa', 'fsruns', 'fb'];
+const COLS = ['members', 'subs', 'pay', 'exp', 'att', 'classes', 'book', 'freezeReq', 'pt', 'campaigns', 'daily', 'leads', 'cash', 'plans', 'trainers', 'shifts', 'ptPlans', 'ptPacks', 'ptSess', 'treq', 'ptTpl', 'comms', 'jrnl', 'periods', 'budget', 'coa', 'fsruns', 'fb', 'posts'];
 const STAFF = ['manager', 'reception'];
 const OFFICE = ['manager', 'reception', 'accountant'];
 const META_KEYS = ['nextCode', 'nextInv', 'nextCn'];
@@ -51,6 +52,9 @@ function loadDb() {
   d.creds = d.creds || {};
   d.secret = d.secret || crypto.randomBytes(32).toString('hex');
   d.audit = d.audit || [];
+  d.vapid = d.vapid || Push.newVapid();
+  d.push = d.push || [];
+  d.pushSent = d.pushSent || {};
   return d;
 }
 function writeNow() {
@@ -234,6 +238,7 @@ function auditOp(p, c, op, old, v) {
   if (c === 'periods') return v ? audit(p, v.status === 'closed' ? 'إقفال فترة مالية' : 'إعادة فتح فترة مالية', v.id + (v.note ? ' · ' + v.note : ''), c, v.id) : null;
   if (c === 'comms') return v ? audit(p, v.status === 'paid' ? 'صرف عمولة مدربة' : 'اعتماد عمولة مدربة', mTr(v.trainerId) + ' · ' + v.ym + ' · ' + fmtMoney(v.amount), c, v.id) : null;
   if (c === 'fb') { if (!old && v) return audit(p, v.type === 'complaint' ? 'شكوى جديدة' : 'اقتراح جديد', (v.name || '') + ' · ' + (v.cat || ''), c, v.id); if (old && v && (old.status !== v.status || old.reply !== v.reply)) return audit(p, 'متابعة شكوى أو اقتراح', (v.name || '') + ' · ' + ({ new: 'جديدة', progress: 'قيد المعالجة', closed: 'مغلقة' })[v.status], c, v.id); return; }
+  if (c === 'posts') { if (del) return old && audit(p, 'حذف مقال', old.title, c, old.id); if (!old || old.status !== v.status) return audit(p, v.status === 'published' ? 'نشر مقال' : 'حفظ مسودة مقال', v.title, c, v.id); return audit(p, 'تعديل مقال', v.title, c, v.id); }
   if (c === 'fsruns') return v ? audit(p, 'اعتماد القوائم المالية', v.no + ' · ' + v.from + ' ← ' + v.to, c, v.id) : null;
   if (c === 'coa') return v ? audit(p, old ? 'تعديل حساب' : 'إضافة حساب', v.id + ' · ' + v.name, c, v.id) : null;
   if (c === 'budget') return v ? audit(p, 'تعديل الموازنة', v.id + ' · ' + fmtMoney(v.monthly), c, v.id) : null;
@@ -282,7 +287,8 @@ function viewFor(p) {
       treq: (s.treq || []).filter(x => x.trainerId === me),
       ptTpl: (s.ptTpl || []).filter(x => !x.by || x.by === me || x.shared),
       comms: (s.comms || []).filter(x => x.trainerId === me),
-      trainerSelf: pick((s.trainers || []).find(t => t.id === me) || {}, ['id', 'name', 'spec', 'avail', 'leaves'])
+      trainerSelf: pick((s.trainers || []).find(t => t.id === me) || {}, ['id', 'name', 'spec', 'avail', 'leaves']),
+      posts: appPosts(s)
     };
   }
   // trainee: only their own records
@@ -292,8 +298,47 @@ function viewFor(p) {
     members: (s.members || []).filter(m => m.id === me),
     subs: own(s.subs), pay: own(s.pay), att: own(s.att), pt: own(s.pt), freezeReq: own(s.freezeReq),
     ptPacks: own(s.ptPacks), ptSess: own(s.ptSess), ptPlans: s.ptPlans || [], fb: own(s.fb).map(x => { const o = Object.assign({}, x); delete o.note; return o; }),
-    book: (s.book || []).map(b => b.memberId === me ? b : { id: b.id, classId: b.classId, date: b.date })
+    book: (s.book || []).map(b => b.memberId === me ? b : { id: b.id, classId: b.classId, date: b.date }),
+    posts: appPosts(s)
   };
+}
+
+/* ---------------- blog ---------------- */
+const POST_PUB = ['id', 'title', 'cat', 'excerpt', 'cover', 'pubAt', 'author', 'pin', 'read'];
+const livePosts = (s, where) => (s.posts || []).filter(x => x.status === 'published' && x[where] !== false && (!x.pubAt || x.pubAt <= new Date().toISOString()))
+  .sort((a, b) => (b.pin ? 1 : 0) - (a.pin ? 1 : 0) || String(b.pubAt || '').localeCompare(String(a.pubAt || '')));
+const appPosts = s => livePosts(s, 'app').slice(0, 40).map(x => pick(x, POST_PUB.concat(['blocks', 'status'])));
+const safeImg = u => /^\/uploads\/[A-Za-z0-9._-]+$/.test(String(u || '')) || /^https:\/\/[^\s"'<>]+$/.test(String(u || '')) ? String(u) : '';
+function cleanPost(v) {
+  const t = (x, n) => String(x == null ? '' : x).replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, '').slice(0, n);
+  v.title = t(v.title, 140).trim(); v.cat = t(v.cat, 40).trim(); v.excerpt = t(v.excerpt, 300).trim(); v.author = t(v.author, 60).trim();
+  v.cover = safeImg(v.cover); v.status = v.status === 'published' ? 'published' : 'draft';
+  v.site = v.site !== false; v.app = v.app !== false; v.pin = !!v.pin; v.notify = !!v.notify;
+  if (v.pubAt && !/^\d{4}-\d\d-\d\dT[\d:.]+Z$/.test(String(v.pubAt))) v.pubAt = '';
+  const B = Array.isArray(v.blocks) ? v.blocks.slice(0, 120) : [];
+  v.blocks = B.map(b => {
+    const k = ['p', 'h', 'img', 'quote', 'list', 'btn'].indexOf(b && b.t) >= 0 ? b.t : 'p';
+    if (k === 'img') return { t: k, url: safeImg(b.url), cap: t(b.cap, 200) };
+    if (k === 'btn') return { t: k, v: t(b.v, 60), url: /^(https:\/\/|\/|#|tel:|https:\/\/wa\.me\/)[^\s"'<>]*$/.test(String(b.url || '')) ? String(b.url).slice(0, 500) : '' };
+    return { t: k, v: t(b.v, k === 'h' ? 160 : 6000) };
+  }).filter(b => b.t === 'img' ? b.url : (b.v || '').trim());
+  const words = v.blocks.reduce((a, b) => a + String(b.v || '').split(/\s+/).filter(Boolean).length, 0);
+  v.read = Math.max(1, Math.round(words / 180));
+  if (v.status === 'published' && !v.title) throw httpErr(400, 'اكتب عنوان المقال قبل النشر');
+  if (v.status === 'published' && !v.blocks.length) throw httpErr(400, 'أضف محتوى للمقال قبل النشر');
+}
+function blogMeta(html, req, post) {
+  const e = x => String(x || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const gym = (st().settings || {}).gym || 'جولة اللياقة', host = String(req.headers['x-forwarded-host'] || req.headers.host || '').replace(/[^A-Za-z0-9.:-]/g, '');
+  const title = post ? post.title + ' | ' + gym : 'المدونة | ' + gym;
+  const desc = post ? (post.excerpt || String((post.blocks.find(b => b.t === 'p') || {}).v || '').slice(0, 160)) : 'مقالات ونصائح في اللياقة والتغذية والفنون القتالية من فريق ' + gym;
+  const img = post && post.cover ? (/^https:/.test(post.cover) ? post.cover : 'https://' + host + post.cover) : 'https://' + host + '/icon.png';
+  return html.replace(/<title>[^<]*<\/title>/, '<title>' + e(title) + '</title>')
+    .replace(/(<meta name="description" content=")[^"]*/, '$1' + e(desc))
+    .replace(/(<meta property="og:type" content=")[^"]*/, '$1' + (post ? 'article' : 'website'))
+    .replace(/(<meta property="og:title" content=")[^"]*/, '$1' + e(post ? post.title : title))
+    .replace(/(<meta property="og:description" content=")[^"]*/, '$1' + e(desc))
+    .replace(/(<meta property="og:image" content=")[^"]*/, '$1' + e(img));
 }
 
 /* ---------------- sync ---------------- */
@@ -301,7 +346,7 @@ function canWrite(p, c, oldV, newV) {
   const r = p.role;
   if (r === 'manager') return true;
   if (r === 'reception') {
-    if (['exp', 'cash', 'plans', 'trainers', 'pt', 'ptPlans', 'jrnl', 'periods', 'budget', 'comms', 'ptTpl', 'treq', 'coa', 'fsruns', 'fb'].indexOf(c) >= 0) return false;
+    if (['exp', 'cash', 'plans', 'trainers', 'pt', 'ptPlans', 'jrnl', 'periods', 'budget', 'comms', 'ptTpl', 'treq', 'coa', 'fsruns', 'fb', 'posts'].indexOf(c) >= 0) return false;
     if (c === 'pay') return !oldV && !!newV && +newV.amount > 0;   // collecting only: no refunds, edits or deletions
     if (c === 'shifts') return !oldV && !!newV;
     return true;
@@ -359,7 +404,7 @@ function numFrom(code) { return parseInt(String(code || '').replace(/\D/g, ''), 
 
 function applySync(p, ops) {
   if (!Array.isArray(ops) || ops.length > 20000) throw httpErr(400, 'طلب غير صالح');
-  const s = st(), remap = { members: {}, subs: {} }, logged = [];
+  const s = st(), remap = { members: {}, subs: {} }, logged = [], hooks = [];
   const maps = {};
   const mapOf = c => maps[c] || (maps[c] = new Map((s[c] = s[c] || []).map((x, i) => [x.id, i])));
   // validate everything first so a refused batch changes nothing
@@ -379,6 +424,7 @@ function applySync(p, ops) {
     if (op.c === 'comms' && p.role !== 'manager') throw httpErr(403, 'اعتماد العمولات للمدير فقط');
     if (op.c === 'jrnl' && op.op === 'put') { const L = op.v.lines || []; const d = L.reduce((a, x) => a + (+x.dr || 0), 0), cr = L.reduce((a, x) => a + (+x.cr || 0), 0); if (op.v.status === 'posted' && (Math.abs(d - cr) > 0.005 || d <= 0)) throw httpErr(400, 'القيد غير متوازن: مجموع المدين يجب أن يساوي مجموع الدائن'); }
     lockCheck(s, op, old);
+    if (op.c === 'posts' && op.op === 'put') { cleanPost(op.v); if (op.v.status === 'published' && (!old || old.status !== 'published' || !old.pubAt) && !op.v.pubAt) op.v.pubAt = new Date().toISOString(); }
     if (op.op === 'put' && op.c === 'book' && !old) {
       const v = op.v, cls = (s.classes || []).find(x => x.id === v.classId), taken = (s.book || []).filter(b => b.classId === v.classId && b.date === v.date);
       if (taken.some(b => b.memberId === v.memberId)) throw httpErr(409, 'محجوز مسبقاً في هذه الحصة');
@@ -445,6 +491,7 @@ function applySync(p, ops) {
         v.text = String(v.text || '').trim().slice(0, 2000); v.cat = String(v.cat || '').slice(0, 40);
       }
       auditOp(p, op.c, 'put', old, v);
+      hooks.push([op.c, old, v]);
       if (i === undefined) {
         if (op.c === 'members' && arr.some(x => x.code === v.code)) {
           s.nextCode = Math.max(s.nextCode || 1001, ...arr.map(x => numFrom(x.code) + 1));
@@ -464,7 +511,7 @@ function applySync(p, ops) {
       if (i !== undefined) { arr.splice(i, 1); maps[op.c] = null; logged.push({ c: op.c, op: 'del', id: op.id }); }
       if (op.c === 'book' && gone && !gone.wait) {
         const w = arr.filter(b => b.wait && b.classId === gone.classId && b.date === gone.date).sort((a, b) => String(a.at || a.id).localeCompare(String(b.at || b.id)))[0];
-        if (w) { w.wait = false; w.promotedAt = new Date().toISOString(); logged.push({ c: 'book', op: 'put', v: w }); audit(null, 'ترقية من قائمة الانتظار', mName(w.memberId) + ' · ' + w.date, 'book', w.id); }
+        if (w) { w.wait = false; w.promotedAt = new Date().toISOString(); logged.push({ c: 'book', op: 'put', v: w }); hooks.push(['promote', null, w]); audit(null, 'ترقية من قائمة الانتظار', mName(w.memberId) + ' · ' + w.date, 'book', w.id); }
       }
       if (op.c === 'members') delete db.creds['m:' + op.id];
       if (op.c === 'trainers') delete db.creds['t:' + op.id];
@@ -476,6 +523,7 @@ function applySync(p, ops) {
     if (changeLog.length > LOG_MAX) changeLog = changeLog.slice(-LOG_MAX);
     persist();
   }
+  try { pushHooks(p, hooks); } catch (e) { console.error('push hook', e.message); }
   return { rev: db.rev, remap };
 }
 
@@ -514,9 +562,18 @@ function serveStatic(req, res) {
   else if (rel === '/' || !path.extname(rel)) rel = '/site.html';
   const f = path.normalize(path.join(base, rel));
   if (!f.startsWith(base + path.sep)) { res.writeHead(403); return res.end(); }
+  const bm = /^\/blog(?:\/([A-Za-z0-9_-]{1,80}))?\/?$/.exec(decodeURIComponent(new URL(req.url, 'http://x').pathname));
+  if (bm && rel === '/site.html') {
+    const post = bm[1] ? livePosts(st(), 'site').find(x => x.id === bm[1]) : null;
+    return fs.readFile(f, 'utf8', (err, html) => {
+      if (err) { res.writeHead(404); return res.end(); }
+      res.writeHead(200, { 'Content-Type': MIME['.html'], 'Cache-Control': 'no-cache', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'same-origin' });
+      res.end(blogMeta(html, req, post));
+    });
+  }
   fs.readFile(f, (err, buf) => {
     if (err) { res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' }); return res.end('Not found'); }
-    res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream', 'Cache-Control': /\.html$/.test(rel) ? 'no-cache' : base === UPL ? 'public, max-age=31536000, immutable' : 'public, max-age=86400', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'same-origin' });
+    res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream', 'Cache-Control': /\.html$|sw\.js$/.test(rel) ? 'no-cache' : base === UPL ? 'public, max-age=31536000, immutable' : 'public, max-age=86400', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'same-origin' });
     res.end(buf);
   });
 }
@@ -561,8 +618,20 @@ async function api(req, res, route) {
       plans: (s.plans || []).filter(x => !x.archived && !x.hidden).map(x => pick(x, ['id', 'name', 'days', 'price'])),
       ptPlans: (s.ptPlans || []).filter(x => !x.archived).map(x => pick(x, ['id', 'name', 'sessions', 'validDays', 'price', 'service', 'fmt'])),
       classes: (s.classes || []).map(x => ({ id: x.id, name: x.name, days: x.days || [], time: x.time, dur: x.dur, trainer: tn(x.trainerId) })),
-      trainers: (s.trainers || []).filter(x => !x.hidden).map(x => pick(x, ['id', 'name', 'spec']))
+      trainers: (s.trainers || []).filter(x => !x.hidden).map(x => pick(x, ['id', 'name', 'spec'])),
+      posts: livePosts(s, 'site').slice(0, 3).map(x => pick(x, POST_PUB))
     }, { 'Cache-Control': 'public, max-age=60' });
+  }
+  if (route === 'posts' && method === 'GET') {
+    return send(res, 200, { posts: livePosts(st(), 'site').map(x => pick(x, POST_PUB)) }, { 'Cache-Control': 'public, max-age=60' });
+  }
+  if (route === 'post' && method === 'GET') {
+    const id = new URL(req.url, 'http://x').searchParams.get('id') || '';
+    const x = (st().posts || []).find(y => y.id === id);
+    const ok = x && (x.status === 'published' && x.site !== false || (p && p.role === 'manager'));
+    if (!ok) throw httpErr(404, 'المقال غير موجود');
+    const more = livePosts(st(), 'site').filter(y => y.id !== id).slice(0, 3).map(y => pick(y, POST_PUB));
+    return send(res, 200, { post: pick(x, POST_PUB.concat(['blocks', 'status'])), more }, { 'Cache-Control': x.status === 'published' ? 'public, max-age=60' : 'no-store' });
   }
   if (route === 'lead' && method === 'POST') {
     if (limited('lead:' + clientIp(req), 6, 3600e3)) throw httpErr(429, 'أرسلت طلبات كثيرة. حاول لاحقاً أو تواصل معنا على واتساب');
@@ -600,6 +669,17 @@ async function api(req, res, route) {
     audit(p, 'رفع صورة للموقع', name, 'site'); persist();
     return send(res, 200, { url: '/uploads/' + name });
   }
+  if (route === 'push/key') { need(); return send(res, 200, { key: db.vapid.pub }); }
+  if (route === 'push/sub' && method === 'POST') {
+    need(); const b = await readBody(req, 4096), sub = b.sub || {};
+    if (!/^https:\/\//.test(String(sub.endpoint || '')) || !sub.keys || !sub.keys.p256dh || !sub.keys.auth) throw httpErr(400, 'اشتراك إشعارات غير صالح');
+    db.push = db.push.filter(x => x.sub.endpoint !== sub.endpoint);
+    db.push.push({ pk: p.key, sub: { endpoint: sub.endpoint, keys: { p256dh: String(sub.keys.p256dh), auth: String(sub.keys.auth) } }, at: new Date().toISOString(), ua: String(req.headers['user-agent'] || '').slice(0, 120) });
+    const mine = db.push.filter(x => x.pk === p.key); if (mine.length > 5) db.push = db.push.filter(x => x.pk !== p.key || mine.slice(-5).indexOf(x) >= 0);
+    persist(); return send(res, 200, { ok: true });
+  }
+  if (route === 'push/unsub' && method === 'POST') { need(); const b = await readBody(req, 4096); db.push = db.push.filter(x => !(x.pk === p.key && x.sub.endpoint === b.endpoint)); persist(); return send(res, 200, { ok: true }); }
+  if (route === 'push/test' && method === 'POST') { need(); if (limited('pt:' + p.key, 5, 3600e3)) throw httpErr(429, 'حاول لاحقاً'); await notify([p.key], { title: 'الإشعارات تعمل ✓', body: 'ستصلك تذكيرات المواعيد والردود من ' + ((st().settings || {}).gym || 'النادي'), url: '/app', tag: 'test' }); return send(res, 200, { ok: true, n: db.push.filter(x => x.pk === p.key).length }); }
   if (route === 'logout' && method === 'POST') return send(res, 200, { ok: true }, { 'Set-Cookie': sessCookie(req, '', 0) });
   if (route === 'me') { need(); return send(res, 200, { role: p.role, ref: p.ref, name: p.name, key: p.key, rev: db.rev }); }
   if (route === 'rev') { need(); return send(res, 200, { rev: db.rev }); }
@@ -716,4 +796,42 @@ const server = http.createServer(async (req, res) => {
   if (req.method !== 'GET' && req.method !== 'HEAD') { res.writeHead(405); return res.end(); }
   serveStatic(req, res);
 });
+/* ---------------- push notifications ---------------- */
+const PUSH_SUB = process.env.RAILWAY_PUBLIC_DOMAIN ? 'https://' + process.env.RAILWAY_PUBLIC_DOMAIN : 'mailto:admin@roundfitness.app';
+async function notify(keys, data) {
+  keys = [...new Set(keys.filter(Boolean))];
+  const subs = db.push.filter(x => keys.indexOf(x.pk) >= 0);
+  let gone = false;
+  await Promise.all(subs.map(async x => { const code = await Push.send(x.sub, data, db.vapid, PUSH_SUB); if (code === 404 || code === 410) { x.dead = true; gone = true; } }));
+  if (gone) { db.push = db.push.filter(x => !x.dead); persist(); }
+}
+const managerKeys = () => db.users.filter(u => u.role === 'manager').map(u => 'u:' + u.id);
+const fmtT = t => { const a = String(t || '0:0').split(':').map(Number); return ((a[0] % 12) || 12) + ':' + String(a[1]).padStart(2, '0') + (a[0] < 12 ? ' ص' : ' م'); };
+function pushHooks(p, hooks) {
+  hooks.forEach(([c, old, v]) => {
+    if (!v) return;
+    if (c === 'posts' && v.status === 'published' && v.notify && v.app !== false && (!old || old.status !== 'published') && !db.pushSent['post' + v.id] && (!v.pubAt || v.pubAt <= new Date().toISOString())) { db.pushSent['post' + v.id] = Date.now() + 365 * 864e5; persist(); notify([...new Set(db.push.map(x => x.pk).filter(k => /^[mt]:/.test(k)))], { title: 'مقال جديد في المدونة', body: v.title, url: '/app#news', tag: 'post-' + v.id }); }
+    if (c === 'fb' && !old) notify(managerKeys(), { title: v.type === 'complaint' ? 'شكوى جديدة' : 'اقتراح جديد', body: (v.name || '') + ' · ' + (v.cat || ''), url: '/app#feedback', tag: 'fb' });
+    if (c === 'fb' && old && v.reply && v.reply !== old.reply) notify(['m:' + v.memberId], { title: 'تم الرد على ' + (v.type === 'complaint' ? 'شكواك' : 'اقتراحك'), body: String(v.reply).slice(0, 140), url: '/app#home', tag: 'fb-' + v.id });
+    if (c === 'treq' && !old) notify(managerKeys(), { title: 'طلب جديد من مدربة', body: mTr(v.trainerId) + ' · ' + ({ leave: 'إجازة', avail: 'تعديل أوقات العمل', fix: 'تصحيح رصيد' })[v.type], url: '/app#coach', tag: 'treq' });
+    if (c === 'treq' && old && old.status !== v.status) notify(['t:' + v.trainerId], { title: v.status === 'approved' ? 'اعتُمد طلبك' : 'رُفض طلبك', body: ({ leave: 'طلب الإجازة', avail: 'تعديل أوقات العمل', fix: 'تصحيح الرصيد' })[v.type] + (v.reply ? ' · ' + v.reply : ''), url: '/app#coach', tag: 'treq-' + v.id });
+    if (c === 'promote') { const cl = (st().classes || []).find(x => x.id === v.classId); notify(['m:' + v.memberId], { title: 'توفر لك مقعد', body: 'انتقلتِ من قائمة الانتظار إلى ' + (cl ? cl.name : 'الحصة') + ' · ' + v.date, url: '/app#home', tag: 'bk-' + v.id }); }
+    if (c === 'ptSess' && old && old.status === 'booked') {
+      if (v.status === 'club_cancel') notify(['m:' + v.memberId], { title: 'أُلغيت جلستك من النادي', body: v.date + ' · ' + fmtT(v.time) + ' · أُعيدت الجلسة لرصيدك', url: '/app#home', tag: 'ps-' + v.id });
+      if (v.status === 'booked' && (old.date !== v.date || old.time !== v.time)) { const to = p.role === 'trainee' ? [] : ['m:' + v.memberId]; if (p.role !== 'trainer') to.push('t:' + v.trainerId); notify(to, { title: 'تغيّر موعد الجلسة', body: v.date + ' · ' + fmtT(v.time), url: '/app', tag: 'ps-' + v.id }); }
+    }
+  });
+}
+function reminderTick() {
+  const s = st(), now = Date.now(), off = (s.settings || {}).tzOffset || '+03:00', due = [];
+  const win = at => at - now > 45 * 60e3 && at - now <= 75 * 60e3;
+  (s.book || []).forEach(b => { if (b.wait) return; const c = (s.classes || []).find(x => x.id === b.classId); if (!c) return; const at = Date.parse(b.date + 'T' + c.time + ':00' + off); if (win(at)) due.push({ id: 'b' + b.id + b.date, keys: ['m:' + b.memberId], title: 'حصتك بعد ساعة', body: c.name + ' · ' + fmtT(c.time) }); });
+  (s.ptSess || []).forEach(x => { if (x.status !== 'booked' || x.kind === 'class') return; const at = Date.parse(x.date + 'T' + x.time + ':00' + off); if (win(at)) { due.push({ id: 'p' + x.id + x.date + x.time, keys: ['m:' + x.memberId], title: 'جلستك بعد ساعة', body: 'تدريب شخصي · ' + fmtT(x.time) + ' · ' + mTr(x.trainerId) }); due.push({ id: 'pt' + x.id + x.date + x.time, keys: ['t:' + x.trainerId], title: 'جلسة بعد ساعة', body: mName(x.memberId) + ' · ' + fmtT(x.time) }); } });
+  let changed = false;
+  due.forEach(d => { if (db.pushSent[d.id]) return; db.pushSent[d.id] = now; changed = true; notify(d.keys, { title: d.title, body: d.body, url: '/app#home', tag: d.id }); });
+  Object.keys(db.pushSent).forEach(k => { if (now - db.pushSent[k] > 2 * 864e5) { delete db.pushSent[k]; changed = true; } });
+  if (changed) persist();
+}
+setInterval(() => { try { reminderTick(); } catch (e) { console.error('reminders', e.message); } }, +process.env.REMINDER_MS || 5 * 60e3).unref();
+
 server.listen(PORT, () => console.log('نظام جولة اللياقة يعمل على المنفذ ' + PORT + ' · البيانات في ' + DATA));

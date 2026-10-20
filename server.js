@@ -22,14 +22,14 @@ if (NO_DISK) console.warn('\n!!! No persistent volume is attached. Data will be 
 const PUB = path.join(__dirname, 'public');
 const DBF = path.join(DATA, 'db.json');
 const BAK = path.join(DATA, 'backups');
-const COLS = ['members', 'subs', 'pay', 'exp', 'att', 'classes', 'book', 'freezeReq', 'pt', 'campaigns', 'daily', 'leads', 'cash', 'plans', 'trainers', 'shifts', 'ptPlans', 'ptPacks', 'ptSess'];
+const COLS = ['members', 'subs', 'pay', 'exp', 'att', 'classes', 'book', 'freezeReq', 'pt', 'campaigns', 'daily', 'leads', 'cash', 'plans', 'trainers', 'shifts', 'ptPlans', 'ptPacks', 'ptSess', 'treq', 'ptTpl', 'comms', 'jrnl', 'periods', 'budget', 'coa', 'fsruns'];
 const STAFF = ['manager', 'reception'];
 const OFFICE = ['manager', 'reception', 'accountant'];
 const META_KEYS = ['nextCode', 'nextInv', 'nextCn'];
-const STAMP = ['pay', 'exp', 'cash', 'daily', 'shifts', 'subs', 'ptPacks', 'ptSess'];
+const STAMP = ['pay', 'exp', 'cash', 'daily', 'shifts', 'subs', 'ptPacks', 'ptSess', 'treq', 'jrnl', 'comms'];
 const PT_PRIVATE = ['note', 'exercises', 'perf'];
 const AUDIT_MAX = 20000;
-const HIDDEN = { reception: ['exp', 'cash', 'pt'], accountant: ['pt', 'ptSess'] };
+const HIDDEN = { reception: ['exp', 'cash', 'pt', 'jrnl', 'budget', 'comms', 'ptTpl', 'treq', 'coa', 'fsruns'], accountant: ['pt', 'ptTpl', 'treq'] };
 const LOG_MAX = 3000;
 
 fs.mkdirSync(BAK, { recursive: true });
@@ -140,6 +140,7 @@ setInterval(() => { const now = Date.now(); for (const [k, v] of hits) if (!v.so
 
 /* ---------------- audit log ---------------- */
 const fmtMoney = n => (Math.round((+n || 0) * 100) / 100).toLocaleString('en-US') + ' ر.س';
+const mTr = id => { const t = (st().trainers || []).find(x => x.id === id); return t ? t.name : 'مدربة'; };
 const mName = id => { const m = findMember(id); return m ? m.name : 'عضو محذوف'; };
 function audit(p, act, detail, c, ref) {
   db.audit.push({ t: new Date().toISOString(), by: p ? p.name : 'النظام', role: p ? p.role : '', act, detail: detail || '', c: c || '', ref: ref || '' });
@@ -211,15 +212,32 @@ function auditOp(p, c, op, old, v) {
     const oa = old.adj || [], na = v.adj || [];
     if (na.length > oa.length) na.slice(oa.length).forEach(a => audit(p, 'تعديل يدوي لرصيد الجلسات', mName(v.memberId) + ' · ' + (a.n > 0 ? 'خصم ' + a.n : 'إضافة ' + (-a.n)) + ' جلسة · ' + (a.reason || ''), c, v.id));
     if (old.status !== 'cancelled' && v.status === 'cancelled') audit(p, 'إلغاء باقة تدريب', mName(v.memberId) + ' · ' + v.name, c, v.id);
+    const ot = old.topups || [], nt = v.topups || [];
+    if (nt.length > ot.length) nt.slice(ot.length).forEach(t => audit(p, t.subId ? 'إضافة رصيد جلسات (بفاتورة)' : 'إضافة رصيد جلسات يدوياً', mName(v.memberId) + ' · ' + v.name + ' · +' + t.n + ' جلسة' + (t.reason ? ' · ' + t.reason : ''), c, v.id));
     if (old.expires !== v.expires) audit(p, 'تمديد صلاحية باقة تدريب', mName(v.memberId) + ' · ' + old.expires + ' ← ' + v.expires, c, v.id);
     return;
   }
   if (c === 'ptSess') {
     if (del) return old && audit(p, 'حذف جلسة تدريب', mName(old.memberId) + ' · ' + old.date + ' ' + old.time, c, old.id);
-    if (!old || old.status === v.status && !!old.charged === !!v.charged) return;
-    const lbl = { done: 'توثيق حضور جلسة', noshow: 'غياب عن جلسة', late_cancel: 'إلغاء متأخر لجلسة', cancelled: 'إلغاء جلسة', booked: 'إعادة حجز جلسة' }[v.status] || 'تحديث جلسة';
-    return audit(p, old.status === v.status ? 'تعديل يدوي لخصم جلسة' : lbl, mName(v.memberId) + ' · ' + v.date + ' ' + v.time + (v.charged ? ' · خُصمت من الرصيد' : ' · بدون خصم') + (v.adjReason ? ' · ' + v.adjReason : ''), c, v.id);
+    if (old && v.status === 'booked' && old.status === 'booked' && (old.date !== v.date || old.time !== v.time || old.trainerId !== v.trainerId)) return audit(p, 'إعادة جدولة جلسة', mName(v.memberId) + ' · ' + old.date + ' ' + old.time + ' ← ' + v.date + ' ' + v.time, c, v.id);
+    if (!old || old.status === v.status && !!old.charged === !!v.charged && (+old.units || 1) === (+v.units || 1)) return;
+    const lbl = { done: 'توثيق حضور جلسة', noshow: 'غياب عن جلسة', late_cancel: 'إلغاء متأخر لجلسة', cancelled: 'إلغاء جلسة ضمن المهلة', club_cancel: 'إلغاء جلسة من النادي أو المدربة', booked: 'إعادة حجز جلسة' }[v.status] || 'تحديث جلسة';
+    return audit(p, old.status === v.status ? 'تعديل يدوي لخصم جلسة' : lbl, mName(v.memberId) + ' · ' + v.date + ' ' + v.time + (v.charged ? ' · خُصمت ' + ((+v.units || 1) === 0.5 ? 'نصف جلسة' : 'جلسة') + ' من الرصيد' : ' · بدون خصم') + (v.adjReason ? ' · ' + v.adjReason : ''), c, v.id);
   }
+  if (c === 'jrnl') {
+    if (del) return old && audit(p, 'حذف قيد يومية', (old.no || '') + ' · ' + (old.memo || ''), c, old.id);
+    const tot = (v.lines || []).reduce((a, x) => a + (+x.dr || 0), 0);
+    if (!old) return audit(p, v.status === 'posted' ? 'ترحيل قيد يومية' : 'إنشاء مسودة قيد', (v.no || '') + ' · ' + (v.memo || '') + ' · ' + fmtMoney(tot), c, v.id);
+    if (old.status !== v.status) return audit(p, v.status === 'posted' ? 'ترحيل قيد يومية' : 'إلغاء ترحيل قيد', (v.no || '') + ' · ' + fmtMoney(tot), c, v.id);
+    return audit(p, 'تعديل قيد يومية', (v.no || '') + ' · ' + fmtMoney(tot), c, v.id);
+  }
+  if (c === 'periods') return v ? audit(p, v.status === 'closed' ? 'إقفال فترة مالية' : 'إعادة فتح فترة مالية', v.id + (v.note ? ' · ' + v.note : ''), c, v.id) : null;
+  if (c === 'comms') return v ? audit(p, v.status === 'paid' ? 'صرف عمولة مدربة' : 'اعتماد عمولة مدربة', mTr(v.trainerId) + ' · ' + v.ym + ' · ' + fmtMoney(v.amount), c, v.id) : null;
+  if (c === 'fsruns') return v ? audit(p, 'اعتماد القوائم المالية', v.no + ' · ' + v.from + ' ← ' + v.to, c, v.id) : null;
+  if (c === 'coa') return v ? audit(p, old ? 'تعديل حساب' : 'إضافة حساب', v.id + ' · ' + v.name, c, v.id) : null;
+  if (c === 'budget') return v ? audit(p, 'تعديل الموازنة', v.id + ' · ' + fmtMoney(v.monthly), c, v.id) : null;
+  if (c === 'treq' && v && old && old.status !== v.status) return audit(p, v.status === 'approved' ? 'اعتماد طلب مدربة' : 'رفض طلب مدربة', mTr(v.trainerId) + ' · ' + ({ leave: 'إجازة', avail: 'تعديل التوفر', fix: 'تصحيح رصيد' })[v.type] + (v.from ? ' · ' + v.from + ' ← ' + v.to : ''), c, v.id);
+  if (c === 'exp' && v && old && !old.paidAt && v.paidAt) return audit(p, 'سداد مستحق مورد', (v.supplier || v.cat) + ' · ' + fmtMoney(v.amount), c, v.id);
   if (c === 'members' && del && old) return audit(p, 'حذف عضو', old.name + ' · ' + old.code, c, old.id);
   if (c === 'freezeReq' && old && v && old.status !== v.status) return audit(p, v.status === 'approved' ? 'اعتماد طلب تجميد' : v.status === 'rejected' ? 'رفض طلب تجميد' : 'تحديث طلب تجميد', mName(v.memberId) + ' · ' + v.days + ' يوم', c, v.id);
   if (c === 'shifts' && !old && v) return audit(p, 'إغلاق وردية', 'المتوقع ' + fmtMoney(v.expTotal) + ' · المعدود ' + fmtMoney(v.cntTotal) + ' · الفرق ' + fmtMoney(v.diff), c, v.id);
@@ -228,6 +246,7 @@ function auditOp(p, c, op, old, v) {
 }
 
 /* ---------------- role views ---------------- */
+const packUnit = (s, k) => { const subs = (s.subs || []).filter(x => x.kind === 'pt' && (x.packId === k.id || x.id === k.subId)); const val = subs.reduce((a, x) => a + Math.max(0, +x.total || 0), 0), n = (+k.sessions || 0) + (k.topups || []).reduce((a, t) => a + (+t.n || 0), 0); return n ? Math.round(val / n * 100) / 100 : 0; };
 const stripPt = x => { const o = Object.assign({}, x); PT_PRIVATE.forEach(k => delete o[k]); return o; };
 const pick = (o, keys) => { const r = {}; keys.forEach(k => { if (o[k] !== undefined) r[k] = o[k]; }); return r; };
 function viewFor(p) {
@@ -244,14 +263,25 @@ function viewFor(p) {
   const set = pick(s.settings || {}, ['gym', 'soonDays', 'churnDays', 'portalLink', 'dailyPrice', 'ptCancelHours', 'ptLateCharge', 'ptNoShowCharge', 'classCancelHours', 'phone', 'legalName', 'crNo', 'vatNo', 'address', 'terms', 'termsVer', 'termsDate', 'offers', 'tpl', 'site']);
   const trainers = (s.trainers || []).map(t => pick(t, ['id', 'name', 'spec']));
   if (p.role === 'trainer') {
+    const me = p.ref, classes = (s.classes || []).filter(c => c.trainerId === me), cids = new Set(classes.map(c => c.id));
+    const book = (s.book || []).filter(b => cids.has(b.classId));
+    const packs = (s.ptPacks || []).filter(k => (k.trainerIds || []).indexOf(me) >= 0);
+    const ids = new Set((s.members || []).filter(m => m.trainerId === me).map(m => m.id));
+    packs.forEach(k => ids.add(k.memberId)); (s.pt || []).filter(x => x.trainerId === me).forEach(x => ids.add(x.memberId)); book.forEach(b => ids.add(b.memberId));
+    (s.ptSess || []).filter(x => x.trainerId === me).forEach(x => ids.add(x.memberId));
+    const mine = a => (a || []).filter(x => ids.has(x.memberId));
     return {
-      settings: set, trainers, plans: s.plans || [], classes: s.classes || [], book: s.book || [], att: s.att || [],
-      members: (s.members || []).map(m => pick(m, ['id', 'code', 'name', 'phone', 'gender', 'trainerId', 'joined', 'birth', 'notes'])),
-      subs: (s.subs || []).map(x => pick(x, ['id', 'memberId', 'planId', 'planName', 'start', 'end', 'cancelled', 'freezes', 'freezeMax'])),
-      pt: (s.pt || []).filter(x => x.trainerId === p.ref),
+      settings: set, trainers, plans: s.plans || [], classes, book, att: mine(s.att),
+      members: (s.members || []).filter(m => ids.has(m.id)).map(m => pick(m, ['id', 'code', 'name', 'phone', 'gender', 'trainerId', 'joined', 'birth', 'notes'])),
+      subs: mine(s.subs).filter(x => x.kind !== 'pt').map(x => pick(x, ['id', 'memberId', 'planId', 'planName', 'start', 'end', 'cancelled', 'freezes', 'freezeMax'])),
+      pt: (s.pt || []).filter(x => ids.has(x.memberId)),
       ptPlans: s.ptPlans || [],
-      ptPacks: (s.ptPacks || []).filter(k => (k.trainerIds || []).indexOf(p.ref) >= 0),
-      ptSess: (s.ptSess || []).filter(x => x.trainerId === p.ref)
+      ptPacks: packs.map(k => Object.assign({}, k, { uv: packUnit(s, k) })),
+      ptSess: (s.ptSess || []).filter(x => ids.has(x.memberId) && (x.trainerId === me || packs.some(k => k.id === x.packId))),
+      treq: (s.treq || []).filter(x => x.trainerId === me),
+      ptTpl: (s.ptTpl || []).filter(x => !x.by || x.by === me || x.shared),
+      comms: (s.comms || []).filter(x => x.trainerId === me),
+      trainerSelf: pick((s.trainers || []).find(t => t.id === me) || {}, ['id', 'name', 'spec', 'avail', 'leaves'])
     };
   }
   // trainee: only their own records
@@ -270,19 +300,22 @@ function canWrite(p, c, oldV, newV) {
   const r = p.role;
   if (r === 'manager') return true;
   if (r === 'reception') {
-    if (['exp', 'cash', 'plans', 'trainers', 'pt', 'ptPlans'].indexOf(c) >= 0) return false;
+    if (['exp', 'cash', 'plans', 'trainers', 'pt', 'ptPlans', 'jrnl', 'periods', 'budget', 'comms', 'ptTpl', 'treq', 'coa', 'fsruns'].indexOf(c) >= 0) return false;
     if (c === 'pay') return !oldV && !!newV && +newV.amount > 0;   // collecting only: no refunds, edits or deletions
     if (c === 'shifts') return !oldV && !!newV;
     return true;
   }
   if (r === 'accountant') {
-    if (['pay', 'exp', 'cash', 'daily'].indexOf(c) >= 0) return true;
+    if (['pay', 'exp', 'cash', 'daily', 'budget', 'coa'].indexOf(c) >= 0) return true;
+    if (c === 'jrnl') return !(oldV && oldV.status === 'posted' && (!newV || newV.status !== 'posted' || JSON.stringify(newV.lines) !== JSON.stringify(oldV.lines)));
     if (c === 'subs') return !!oldV && !!newV;                   // refunds and invoice corrections, not new sales
     if (c === 'shifts') return !oldV && !!newV;
     return false;
   }
   if (r === 'trainer') {
-    if (c === 'book') return true;
+    if (c === 'book') { const mineC = id => (st().classes || []).some(x => x.id === id && x.trainerId === p.ref); return (!oldV || mineC(oldV.classId)) && (!newV || mineC(newV.classId)); }
+    if (c === 'treq') return (!oldV || (oldV.trainerId === p.ref && oldV.status === 'pending')) && (!newV || (newV.trainerId === p.ref && newV.status === 'pending'));
+    if (c === 'ptTpl') return (!oldV || oldV.by === p.ref) && (!newV || newV.by === p.ref);
     if (c === 'pt' || c === 'ptSess') return (!oldV || oldV.trainerId === p.ref) && (!newV || newV.trainerId === p.ref);
     return false;
   }
@@ -294,6 +327,26 @@ function canWrite(p, c, oldV, newV) {
   }
   return false;
 }
+const elev = new Map();
+const PDATE = { pay: 'date', exp: 'date', cash: 'date', daily: 'date', jrnl: 'date', ptSess: 'date' };
+function lockCheck(s, op, old) {
+  const closed = new Set((s.periods || []).filter(x => x.status === 'closed').map(x => x.id));
+  if (!closed.size) return;
+  const isClosed = d => !!d && closed.has(String(d).slice(0, 7));
+  const v = op.op === 'put' ? op.v : null, k = PDATE[op.c];
+  const err = () => { throw httpErr(423, 'الفترة ' + String((v && v[k]) || (old && old[k]) || (v && v.start) || '').slice(0, 7) + ' مقفلة. يعيد المدير فتحها أولاً إذا لزم التعديل'); };
+  if (op.c === 'subs') { if (!old && v && isClosed(v.start)) err(); if (old && v && isClosed(old.start) && (old.total !== v.total || old.disc !== v.disc)) err(); return; }
+  if (op.c === 'exp' && old && v && old.paidAt !== v.paidAt && isClosed(v.paidAt)) err();
+  if (!k) return;
+  if (op.c === 'ptSess') { if (old && v && old.status === v.status && !!old.charged === !!v.charged && (+old.units || 1) === (+v.units || 1) && old.date === v.date) return; if ((old && old.status !== 'booked' && isClosed(old.date)) || (v && v.status !== 'booked' && isClosed(v.date))) err(); return; }
+  if (old && isClosed(old[k])) err();
+  if (v && !old && isClosed(v[k])) err();
+  if (v && old && isClosed(v[k]) && !isClosed(old[k])) err();
+}
+const approved = p => p.role === 'manager' || (elev.get(p.key) || 0) > Date.now();
+const packTot = k => (+k.sessions || 0) + (k.topups || []).reduce((a, t) => a + (+t.n || 0), 0) + (k.adj || []).filter(a => +a.n < 0).reduce((a, x) => a - (+x.n), 0);
+const packUse = (k, sess) => sess.filter(x => x.packId === k.id && x.charged).reduce((a, x) => a + (+x.units || 1), 0) + (k.adj || []).filter(a => +a.n > 0).reduce((a, x) => a + (+x.n), 0);
+const GRP = x => x && (x.fmt === 'pair' || x.fmt === 'group');
 const mins = t => { const a = String(t || '0:0').split(':'); return (+a[0] || 0) * 60 + (+a[1] || 0); };
 function sessHoursAway(x) {
   const off = (st().settings || {}).tzOffset || '+03:00';
@@ -307,6 +360,8 @@ function applySync(p, ops) {
   const maps = {};
   const mapOf = c => maps[c] || (maps[c] = new Map((s[c] = s[c] || []).map((x, i) => [x.id, i])));
   // validate everything first so a refused batch changes nothing
+  const pend = { ptPacks: new Map(), ptSess: new Map() };
+  const cur = c => { const m = new Map((s[c] || []).map(x => [x.id, x])); pend[c].forEach((v, k) => { if (v) m.set(k, v); else m.delete(k); }); return [...m.values()]; };
   for (const op of ops) {
     if (!op || typeof op !== 'object') throw httpErr(400, 'طلب غير صالح');
     if (op.c === 'meta') { if (META_KEYS.indexOf(op.k) < 0 || OFFICE.indexOf(p.role) < 0) throw httpErr(403, 'غير مسموح'); continue; }
@@ -317,16 +372,46 @@ function applySync(p, ops) {
     if (op.op !== 'put' && op.op !== 'del') throw httpErr(400, 'عملية غير معروفة');
     const i = mapOf(op.c).get(id), old = i === undefined ? null : s[op.c][i];
     if (!canWrite(p, op.c, old, op.op === 'put' ? op.v : null)) throw httpErr(403, 'لا تملك صلاحية تعديل هذه البيانات');
+    if (op.c === 'periods' && p.role !== 'manager') throw httpErr(403, 'إقفال الفترات وإعادة فتحها للمدير فقط');
+    if (op.c === 'comms' && p.role !== 'manager') throw httpErr(403, 'اعتماد العمولات للمدير فقط');
+    if (op.c === 'jrnl' && op.op === 'put') { const L = op.v.lines || []; const d = L.reduce((a, x) => a + (+x.dr || 0), 0), cr = L.reduce((a, x) => a + (+x.cr || 0), 0); if (op.v.status === 'posted' && (Math.abs(d - cr) > 0.005 || d <= 0)) throw httpErr(400, 'القيد غير متوازن: مجموع المدين يجب أن يساوي مجموع الدائن'); }
+    lockCheck(s, op, old);
     if (op.op === 'put' && op.c === 'book' && !old) {
       const v = op.v, cls = (s.classes || []).find(x => x.id === v.classId), taken = (s.book || []).filter(b => b.classId === v.classId && b.date === v.date);
       if (taken.some(b => b.memberId === v.memberId)) throw httpErr(409, 'محجوز مسبقاً في هذه الحصة');
-      if (cls && cls.cap && taken.length >= cls.cap) throw httpErr(409, 'اكتمل عدد المقاعد في هذه الحصة');
+      if (!v.wait && cls && cls.cap && taken.filter(b => !b.wait).length >= cls.cap) throw httpErr(409, 'اكتمل عدد المقاعد في هذه الحصة، يمكنك الانضمام لقائمة الانتظار');
     }
-    if (op.op === 'put' && op.c === 'ptSess' && op.v.status === 'booked') {
-      const v = op.v, a0 = mins(v.time), a1 = a0 + (+v.dur || 60);
-      const clash = (s.ptSess || []).find(x => x.id !== v.id && x.date === v.date && (x.status === 'booked' || x.status === 'done') && (x.trainerId === v.trainerId || x.memberId === v.memberId) && mins(x.time) < a1 && a0 < mins(x.time) + (+x.dur || 60));
-      if (clash) throw httpErr(409, clash.trainerId === v.trainerId ? 'المدرب لديه جلسة أخرى في هذا الوقت' : 'المتدرب لديه جلسة أخرى في هذا الوقت');
+    if (op.c === 'ptPacks' && op.op === 'put') {
+      const v = op.v, oa = (old && old.adj) || [], na = v.adj || [], ot = (old && old.topups) || [], nt = v.topups || [];
+      if (na.length < oa.length || nt.length < ot.length) throw httpErr(403, 'لا يمكن حذف حركات الرصيد المسجلة');
+      if (na.length > oa.length && !approved(p)) throw httpErr(403, 'إضافة أو خصم الجلسات يدوياً يحتاج موافقة المدير');
+      if (nt.slice(ot.length).some(t => !t.subId) && !approved(p)) throw httpErr(403, 'إضافة رصيد بدون فاتورة تحتاج موافقة المدير');
+      if (na.slice(oa.length).some(a => !String(a.reason || '').trim())) throw httpErr(400, 'اكتب سبب التعديل');
     }
+    if (op.c === 'ptSess' && op.op === 'put') {
+      const v = op.v;
+      if (v.units != null && [0.5, 1].indexOf(+v.units) < 0) throw httpErr(400, 'قيمة الخصم غير صالحة');
+      if (old && old.charged && !v.charged && !approved(p)) throw httpErr(403, 'استرجاع جلسة مخصومة يحتاج موافقة المدير');
+      if (v.status === 'booked') {
+        const sess = cur('ptSess').filter(x => x.id !== v.id), k = cur('ptPacks').find(x => x.id === v.packId);
+        if (!old || old.status !== 'booked' || old.packId !== v.packId) {
+          if (!k) throw httpErr(409, 'الباقة غير موجودة');
+          if (k.status === 'cancelled') throw httpErr(409, 'الباقة ملغاة');
+          const left = packTot(k) - packUse(k, sess) - sess.filter(x => x.packId === k.id && x.status === 'booked').length;
+          if (left < 1) throw httpErr(409, 'نفد رصيد الباقة، لا يمكن حجز جلسة جديدة');
+        }
+        if (k && k.expires && v.date > k.expires) throw httpErr(409, 'موعد الجلسة بعد انتهاء صلاحية الباقة');
+        const a0 = mins(v.time), a1 = a0 + (+v.dur || 60);
+        const clash = sess.find(x => x.date === v.date && (x.status === 'booked' || x.status === 'done') && (x.trainerId === v.trainerId || x.memberId === v.memberId) && mins(x.time) < a1 && a0 < mins(x.time) + (+x.dur || 60)
+          && !(x.memberId !== v.memberId && GRP(x) && GRP(v) && x.time === v.time && (x.service || '') === (v.service || '')));
+        if (clash) throw httpErr(409, clash.trainerId === v.trainerId ? 'المدرب لديه جلسة أخرى في هذا الوقت' : 'المتدرب لديه جلسة أخرى في هذا الوقت');
+        if (GRP(v)) {
+          const n = sess.filter(x => x.date === v.date && x.time === v.time && x.trainerId === v.trainerId && x.status === 'booked').length;
+          if (n >= (+v.cap || (v.fmt === 'pair' ? 2 : 4))) throw httpErr(409, 'اكتمل عدد المشاركين في هذه الجلسة');
+        }
+      }
+    }
+    if (op.c === 'ptPacks' || op.c === 'ptSess') pend[op.c].set(id, op.op === 'put' ? op.v : null);
   }
   for (const op of ops) {
     if (op.c === 'meta') { s[op.k] = Math.max(s[op.k] || 0, +op.v || 0); continue; }
@@ -367,7 +452,12 @@ function applySync(p, ops) {
     } else {
       const i = m.get(op.id);
       if (i !== undefined) auditOp(p, op.c, 'del', arr[i], null);
+      const gone = i !== undefined ? arr[i] : null;
       if (i !== undefined) { arr.splice(i, 1); maps[op.c] = null; logged.push({ c: op.c, op: 'del', id: op.id }); }
+      if (op.c === 'book' && gone && !gone.wait) {
+        const w = arr.filter(b => b.wait && b.classId === gone.classId && b.date === gone.date).sort((a, b) => String(a.at || a.id).localeCompare(String(b.at || b.id)))[0];
+        if (w) { w.wait = false; w.promotedAt = new Date().toISOString(); logged.push({ c: 'book', op: 'put', v: w }); audit(null, 'ترقية من قائمة الانتظار', mName(w.memberId) + ' · ' + w.date, 'book', w.id); }
+      }
       if (op.c === 'members') delete db.creds['m:' + op.id];
       if (op.c === 'trainers') delete db.creds['t:' + op.id];
     }
@@ -461,7 +551,7 @@ async function api(req, res, route) {
       gym: set.gym || 'جولة اللياقة', phone: set.phone || '', address: set.address || '', legalName: set.legalName || '', crNo: set.crNo || '', vatNo: set.vatNo || '',
       site: set.site || {},
       plans: (s.plans || []).filter(x => !x.archived && !x.hidden).map(x => pick(x, ['id', 'name', 'days', 'price'])),
-      ptPlans: (s.ptPlans || []).filter(x => !x.archived).map(x => pick(x, ['id', 'name', 'sessions', 'validDays', 'price'])),
+      ptPlans: (s.ptPlans || []).filter(x => !x.archived).map(x => pick(x, ['id', 'name', 'sessions', 'validDays', 'price', 'service', 'fmt'])),
       classes: (s.classes || []).map(x => ({ id: x.id, name: x.name, days: x.days || [], time: x.time, dur: x.dur, trainer: tn(x.trainerId) })),
       trainers: (s.trainers || []).filter(x => !x.hidden).map(x => pick(x, ['id', 'name', 'spec']))
     }, { 'Cache-Control': 'public, max-age=60' });
@@ -516,6 +606,7 @@ async function api(req, res, route) {
       ch = ch.filter(e => hide.indexOf(e.c) < 0).map(e => {
         if (e.c === 'settings') return Object.assign({}, e, { v: Object.assign({}, e.v, { pin: undefined }) });
         if (p.role === 'accountant' && e.c === 'members' && e.v) return Object.assign({}, e, { v: pick(e.v, ['id', 'code', 'name', 'phone', 'gender', 'trainerId', 'joined']) });
+        if (e.c === 'ptSess' && e.v) return Object.assign({}, e, { v: stripPt(e.v) });
         return e;
       });
     }
@@ -556,8 +647,9 @@ async function api(req, res, route) {
   if (route === 'pin' && method === 'POST') {
     need(STAFF);
     if (limited('pin:' + p.key, 10, 15 * 60e3)) throw httpErr(429, 'محاولات كثيرة، انتظر قليلاً');
-    const b = await readBody(req, 1024), want = String((st().settings || {}).pin || '1234');
-    return send(res, 200, { ok: String(b.pin || '') === want });
+    const b = await readBody(req, 1024), want = String((st().settings || {}).pin || '1234'), ok = String(b.pin || '') === want;
+    if (ok && p.role !== 'manager') { elev.set(p.key, Date.now() + 10 * 60e3); audit(p, 'موافقة المدير برمز المدير', String(b.why || '').slice(0, 120), 'settings'); persist(); }
+    return send(res, 200, { ok });
   }
   if (route === 'users') {
     need(['manager']);

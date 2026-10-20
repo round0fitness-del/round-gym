@@ -1,0 +1,91 @@
+name: iPhone app
+
+on:
+  push:
+    branches: [main]
+    paths: ['mobile/**', '.github/workflows/ios.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ios
+  cancel-in-progress: true
+
+env:
+  CI: 'true'
+  NPM_CONFIG_YES: 'true'
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install packages
+        working-directory: mobile
+        run: |
+          npm install --no-audit --no-fund
+          npm install --no-audit --no-fund @capacitor/ios@^7.0.0
+
+      - name: Create the iPhone project
+        working-directory: mobile
+        run: |
+          rm -rf ios
+          npx cap add ios --packagemanager SPM
+
+      - name: App icon and splash screen
+        working-directory: mobile
+        continue-on-error: true
+        timeout-minutes: 4
+        run: npx --no-install capacitor-assets generate --ios --iconBackgroundColor '#161312' --iconBackgroundColorDark '#161312' --splashBackgroundColor '#161312' --splashBackgroundColorDark '#161312' < /dev/null
+
+      - name: Permissions text
+        working-directory: mobile/ios/App/App
+        run: |
+          /usr/libexec/PlistBuddy -c "Add :NSCameraUsageDescription string 'لمسح رمز QR عند الدخول'" Info.plist || true
+          /usr/libexec/PlistBuddy -c "Add :NSPhotoLibraryUsageDescription string 'لاختيار صورة'" Info.plist || true
+          /usr/libexec/PlistBuddy -c "Add :NSPhotoLibraryAddUsageDescription string 'لحفظ الفواتير والملفات'" Info.plist || true
+
+      - name: Sync
+        working-directory: mobile
+        run: npx cap sync ios
+
+      - name: Build the app (unsigned)
+        working-directory: mobile/ios/App
+        shell: bash
+        run: |
+          xcodebuild -project App.xcodeproj -scheme App -configuration Release -sdk iphoneos \
+            -destination 'generic/platform=iOS' -derivedDataPath "$GITHUB_WORKSPACE/ios-build" \
+            MARKETING_VERSION=1.0.${GITHUB_RUN_NUMBER} CURRENT_PROJECT_VERSION=${GITHUB_RUN_NUMBER} \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" -quiet build
+
+      - name: Make the IPA file
+        shell: bash
+        run: |
+          mkdir -p Payload
+          cp -R ios-build/Build/Products/Release-iphoneos/App.app Payload/
+          zip -qry round-fitness.ipa Payload
+          ls -lh round-fitness.ipa
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: round-fitness-ipa
+          path: round-fitness.ipa
+
+      - name: Publish the download link
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ios-test
+          name: تطبيق جولة اللياقة · نسخة تجريبية للآيفون
+          prerelease: true
+          make_latest: false
+          files: round-fitness.ipa
+          body: |
+            نسخة تجريبية للآيفون غير موقعة. تُثبَّت من جهاز ماك ببرنامج Sideloadly وحساب Apple ID.

@@ -3,7 +3,7 @@
   "short_name": "جولة اللياقة",
   "lang": "ar",
   "dir": "rtl",
-  "start_url": "/",
+  "start_url": "/app",
   "display": "standalone",
   "background_color": "#161312",
   "theme_color": "#161312",

@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>جولة اللياقة | نادي لياقة وفنون قتالية</title>
+<meta name="description" content="نادي جولة اللياقة: صالة لياقة متكاملة، حصص جماعية، تدريب شخصي، وفنون قتالية للكبار والأطفال.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="جولة اللياقة">
+<meta property="og:description" content="صالة لياقة، حصص جماعية، تدريب شخصي، وفنون قتالية للكبار والأطفال.">
+<meta property="og:image" content="/icon.png">
+<meta name="theme-color" content="#121010">
+<link rel="icon" type="image/png" href="/icon.png">
+<link rel="apple-touch-icon" href="/icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Readex+Pro:wght@500;600;700&display=swap">
+<style>
+/* Layout: dark brand hero slider, then alternating white and warm-grey bands; the red diagonal from the logo mark is the one recurring motif. */
+:root{
+  --ink:#121010; --ink-2:#1E1A19; --paper:#FFFFFF; --sand:#F5F2EF; --line:#E6E0DB; --muted:#6B6460; --soft:#A39B96;
+  --red:#C8302A; --red-2:#9E211C; --red-soft:#FBE7E5; --good:#1B7F45;
+  --f-display:'Readex Pro','IBM Plex Sans Arabic',Tahoma,sans-serif;
+  --f-body:'IBM Plex Sans Arabic','Readex Pro',Tahoma,sans-serif;
+  --wrap:1180px; --r:18px;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:84px}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 16px/1.75 var(--f-body);-webkit-font-smoothing:antialiased}
+img{max-width:100%;display:block}
+a{color:inherit}
+h1,h2,h3{font-family:var(--f-display);line-height:1.2;margin:0;text-wrap:balance}
+p{margin:0}
+.wrap{max-width:var(--wrap);margin:0 auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 24px;border-radius:999px;border:2px solid transparent;font:600 15px var(--f-display);text-decoration:none;cursor:pointer;transition:background .2s,color .2s,border-color .2s,transform .2s;white-space:nowrap}
+.btn:active{transform:scale(.98)}
+.btn-red{background:var(--red);color:#fff}.btn-red:hover{background:var(--red-2)}
+.btn-ghost{border-color:rgba(255,255,255,.55);color:#fff}.btn-ghost:hover{background:#fff;color:var(--ink)}
+.btn-dark{background:var(--ink);color:#fff}.btn-dark:hover{background:var(--red)}
+.btn-line{border-color:var(--ink);color:var(--ink)}.btn-line:hover{background:var(--ink);color:#fff}
+:focus-visible{outline:3px solid var(--red);outline-offset:3px}
+.eyebrow{display:inline-flex;align-items:center;gap:10px;font:600 13px var(--f-display);color:var(--red);letter-spacing:.04em}
+.eyebrow::before{content:"";width:22px;height:4px;background:var(--red);transform:skewX(-30deg)}
+.sec{padding-block:88px}
+.sec-h{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;margin-bottom:40px}
+.sec-h h2{font-size:clamp(28px,4vw,42px);margin-top:10px}
+.sec-h p{color:var(--muted);max-width:52ch;margin-top:10px}
+.sand{background:var(--sand)}
+
+/* header */
+.hdr{position:sticky;top:0;z-index:50;background:rgba(18,16,16,.92);backdrop-filter:saturate(1.4) blur(10px);-webkit-backdrop-filter:saturate(1.4) blur(10px);color:#fff;padding-top:env(safe-area-inset-top,0px)}
+.hdr>.wrap{display:flex;align-items:center;gap:24px;height:76px}
+.hdr .logo img{height:42px;width:auto}
+.nav{display:flex;gap:4px;margin-inline-start:auto}
+.nav a{padding:8px 12px;border-radius:10px;text-decoration:none;font:500 14.5px var(--f-display);color:rgba(255,255,255,.82)}
+.nav a:hover{color:#fff;background:rgba(255,255,255,.08)}
+.hdr-cta{display:flex;gap:10px;align-items:center}
+.hdr-cta .login{color:#fff;text-decoration:none;font:600 14.5px var(--f-display);padding:10px 14px;border-radius:999px;display:inline-flex;gap:8px;align-items:center}
+.hdr-cta .login:hover{background:rgba(255,255,255,.1)}
+.hdr-cta .btn{min-height:42px;padding:0 20px}
+.burger{display:none;background:none;border:0;color:#fff;width:44px;height:44px;border-radius:12px;cursor:pointer}
+.mnav{display:none}
+
+/* hero */
+.hero{position:relative;background:var(--ink);color:#fff;overflow:hidden}
+.slides{position:relative;min-height:min(78vh,720px)}
+.slide{position:absolute;inset:0;display:flex;align-items:center;opacity:0;visibility:hidden;transition:opacity .7s,visibility .7s}
+.slide.on{opacity:1;visibility:visible;position:relative;min-height:min(78vh,720px)}
+.slide .bg{position:absolute;inset:0;background-size:cover;background-position:center}
+.slide .bg::after{content:"";position:absolute;inset:0;background:linear-gradient(270deg,rgba(18,16,16,.92) 0%,rgba(18,16,16,.7) 45%,rgba(18,16,16,.25) 100%)}
+.slide .art{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.slide .art i{position:absolute;top:-20%;bottom:-20%;background:var(--red);transform:skewX(-24deg)}
+.slide .art i:nth-child(1){left:6%;width:22%}
+.slide .art i:nth-child(2){left:30%;width:3.5%;opacity:.55}
+.slide .art i:nth-child(3){left:-14%;width:12%;opacity:.25}
+.slide .art img{position:absolute;left:8%;top:50%;width:min(34vw,420px);transform:translateY(-50%);filter:brightness(0) invert(1);opacity:.1}
+.slide .in{position:relative;z-index:2;padding-block:80px;max-width:640px}
+.slide h1{font-size:clamp(36px,6vw,68px);font-weight:700;letter-spacing:-.01em}
+.slide h1 em{font-style:normal;color:var(--red)}
+.slide p{font-size:clamp(16px,1.6vw,19px);color:rgba(255,255,255,.82);margin-top:18px;max-width:46ch}
+.slide .acts{display:flex;gap:12px;flex-wrap:wrap;margin-top:32px}
+.hero-ctrl{position:absolute;z-index:5;bottom:84px;inset-inline:0}
+.hero-ctrl .wrap{display:flex;align-items:center;gap:14px}
+.dots{display:flex;gap:8px}
+.dots button{width:34px;height:5px;border-radius:5px;border:0;background:rgba(255,255,255,.3);cursor:pointer;padding:0}
+.dots button[aria-current="true"]{background:var(--red)}
+.arrows{display:flex;gap:8px;margin-inline-start:auto}
+.arrows button{width:46px;height:46px;border-radius:50%;border:1.5px solid rgba(255,255,255,.35);background:transparent;color:#fff;cursor:pointer;display:grid;place-items:center}
+.arrows button:hover{background:#fff;color:var(--ink)}
+
+/* values */
+.values{margin-top:-56px;position:relative;z-index:6}
+.vgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.vcard{background:#fff;border-radius:var(--r);padding:26px;box-shadow:0 22px 40px -26px rgba(18,16,16,.35),0 1px 0 rgba(18,16,16,.04);display:grid;gap:10px;align-content:start;border-top:4px solid var(--red)}
+.vcard .ic{width:48px;height:48px;border-radius:14px;background:var(--red-soft);color:var(--red);display:grid;place-items:center}
+.vcard h3{font-size:19px}
+.vcard p{color:var(--muted);font-size:15px}
+
+/* offers */
+.ogrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:18px}
+.ocard{position:relative;border-radius:var(--r);overflow:hidden;background:var(--ink);color:#fff;min-height:240px;display:flex;flex-direction:column;justify-content:flex-end;padding:26px}
+.ocard .bg{position:absolute;inset:0;background-size:cover;background-position:center;opacity:.45}
+.ocard::before{content:"";position:absolute;top:-30%;bottom:-30%;left:-6%;width:30%;background:var(--red);transform:skewX(-24deg);opacity:.85}
+.ocard>*{position:relative}
+.ocard .until{font-size:13px;color:rgba(255,255,255,.75)}
+.ocard h3{font-size:24px;margin:8px 0}
+.ocard p{color:rgba(255,255,255,.85)}
+.ocard .btn{margin-top:18px;align-self:flex-start;min-height:42px}
+
+/* programs */
+.pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:16px}
+.pcard{background:#fff;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column;transition:transform .25s,box-shadow .25s}
+.pcard:hover{transform:translateY(-4px);box-shadow:0 24px 40px -28px rgba(18,16,16,.45)}
+.pimg{aspect-ratio:16/10;background:var(--ink);position:relative;overflow:hidden}
+.pimg img{width:100%;height:100%;object-fit:cover}
+.pimg.blank::before{content:"";position:absolute;top:-30%;bottom:-30%;right:12%;width:24%;background:var(--red);transform:skewX(-24deg)}
+.pimg.blank::after{content:"";position:absolute;top:-30%;bottom:-30%;right:40%;width:5%;background:var(--red);opacity:.5;transform:skewX(-24deg)}
+.pimg .ico{position:absolute;inset:auto auto 18px 18px;color:#fff;opacity:.9}
+.pcard .tag{position:absolute;top:14px;right:14px;z-index:2;background:#fff;color:var(--ink);font:600 12px var(--f-display);padding:4px 12px;border-radius:999px}
+.pbody{padding:20px 22px 24px;display:grid;gap:8px}
+.pbody h3{font-size:20px}
+.pbody p{color:var(--muted);font-size:15px}
+
+/* pricing */
+.prgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:16px;align-items:stretch}
+.plan{background:#fff;border:1.5px solid var(--line);border-radius:var(--r);padding:26px 24px;display:flex;flex-direction:column;gap:6px;position:relative}
+.plan.feat{border-color:var(--ink);background:var(--ink);color:#fff}
+.plan .badge{position:absolute;top:-13px;right:22px;background:var(--red);color:#fff;font:600 12px var(--f-display);padding:4px 12px;border-radius:999px}
+.plan h3{font-size:18px}
+.plan .price{font:700 40px/1.1 var(--f-display);margin-top:10px;font-variant-numeric:tabular-nums}
+.plan .price small{font-size:15px;font-weight:500;color:var(--muted)}
+.plan.feat .price small,.plan.feat .per{color:var(--soft)}
+.plan .per{color:var(--muted);font-size:14px}
+.plan ul{list-style:none;margin:14px 0 18px;padding:0;display:grid;gap:8px;font-size:14.5px;flex:1;align-content:start}
+.plan li{display:flex;gap:8px;align-items:flex-start}
+.plan li::before{content:"";flex:none;width:16px;height:16px;margin-top:5px;border-radius:50%;background:var(--red-soft) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23C8302A' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center/10px no-repeat}
+.plan.feat li::before{background-color:rgba(255,255,255,.12)}
+.plan .btn{width:100%}
+.plan.feat .btn-line{border-color:#fff;color:#fff}.plan.feat .btn-line:hover{background:#fff;color:var(--ink)}
+.prnote{margin-top:22px;display:flex;gap:12px;align-items:center;background:var(--red-soft);color:var(--red-2);border-radius:14px;padding:14px 18px;font-weight:500}
+.ptrow{margin-top:34px}
+.ptrow h3{font-size:20px;margin-bottom:14px}
+.ptlist{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px}
+.ptitem{border:1px solid var(--line);border-radius:14px;padding:16px 18px;background:#fff;display:flex;justify-content:space-between;gap:10px;align-items:center}
+.ptitem b{font-family:var(--f-display)}
+.ptitem span{color:var(--muted);font-size:14px}
+.ptitem .p{font:700 20px var(--f-display);white-space:nowrap}
+
+/* schedule */
+.days{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:22px;scrollbar-width:thin}
+.days button{flex:none;border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:9px 18px;font:600 14px var(--f-display);cursor:pointer;color:var(--ink)}
+.days button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.days button .today{color:var(--red);margin-inline-start:6px;font-size:12px}
+.days button[aria-pressed="true"] .today{color:#ffb3ae}
+.clist{display:grid;gap:10px}
+.citem{display:grid;grid-template-columns:110px minmax(0,1fr) auto;gap:16px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 18px}
+.citem .t{font:700 20px var(--f-display);font-variant-numeric:tabular-nums}
+.citem .t small{display:block;font-size:12.5px;color:var(--muted);font-weight:500}
+.citem b{font-family:var(--f-display);font-size:17px}
+.citem span{color:var(--muted);font-size:14px}
+.cempty{color:var(--muted);text-align:center;padding:36px;background:#fff;border-radius:14px;border:1px dashed var(--line)}
+
+/* trainers */
+.tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,220px),1fr));gap:18px}
+.tcard{border-radius:var(--r);overflow:hidden;background:#fff;border:1px solid var(--line)}
+.tphoto{aspect-ratio:4/5;background:var(--ink);position:relative;overflow:hidden;display:grid;place-items:center}
+.tphoto img{width:100%;height:100%;object-fit:cover}
+.tphoto .mono{font:700 64px var(--f-display);color:#fff;position:relative;z-index:1}
+.tphoto.blank::before{content:"";position:absolute;top:-30%;bottom:-30%;right:-10%;width:45%;background:var(--red);transform:skewX(-24deg);opacity:.9}
+.tbody{padding:16px 18px}
+.tbody b{font:600 17px var(--f-display);display:block}
+.tbody span{color:var(--muted);font-size:14px}
+
+/* gallery + reviews */
+.ggrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.ggrid img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:14px}
+.ggrid img:first-child{grid-column:span 2;grid-row:span 2;aspect-ratio:auto;height:100%}
+.rgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px}
+.rcard{background:#fff;border-radius:var(--r);padding:24px;border:1px solid var(--line);display:grid;gap:12px}
+.rcard .st{color:var(--red);letter-spacing:2px}
+.rcard p{font-size:16px}
+.rcard b{font-family:var(--f-display);font-size:15px}
+
+/* app */
+.app{background:var(--ink);color:#fff;overflow:hidden;position:relative}
+.app::before{content:"";position:absolute;top:-20%;bottom:-20%;left:4%;width:20%;background:var(--red);transform:skewX(-24deg)}
+.app .wrap{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:48px;align-items:center;position:relative}
+.app h2{font-size:clamp(28px,4vw,44px);margin:12px 0 16px}
+.app p{color:rgba(255,255,255,.8)}
+.app ul{list-style:none;padding:0;margin:22px 0 30px;display:grid;gap:10px}
+.app li{display:flex;gap:10px;align-items:center}
+.app li i{width:28px;height:28px;border-radius:9px;background:rgba(255,255,255,.1);display:grid;place-items:center;flex:none;color:#ff8f88}
+.phone{justify-self:center;width:min(300px,80vw);aspect-ratio:9/18.5;background:#000;border-radius:44px;padding:12px;box-shadow:0 40px 80px -30px rgba(0,0,0,.8),inset 0 0 0 2px #2b2626}
+.screen{width:100%;height:100%;border-radius:34px;background:#F5F2EF;color:var(--ink);overflow:hidden;padding:20px 14px;display:flex;flex-direction:column;gap:12px}
+.screen .hi{font:700 18px var(--f-display);margin-top:14px}
+.mcard{border-radius:18px;background:var(--ink);color:#fff;padding:14px;position:relative;overflow:hidden;min-height:150px;display:flex;flex-direction:column;justify-content:space-between}
+.mcard::before{content:"";position:absolute;top:-30%;bottom:-30%;left:-4%;width:36%;background:var(--red);transform:skewX(-24deg)}
+.mcard *{position:relative}
+.mcard img{height:22px;width:auto;margin-inline-start:auto}
+.mcard .qr{position:absolute;left:14px;bottom:14px;width:62px;height:62px;border-radius:9px;background:#fff;padding:6px}
+.mcard .qr i{display:block;width:100%;height:100%;background:conic-gradient(#000 25%,#fff 0 50%,#000 0 75%,#fff 0) 0 0/12px 12px}
+.mcard b{font:600 16px var(--f-display)}
+.mcard small{color:rgba(255,255,255,.7);font-size:11px}
+.mini{background:#fff;border-radius:14px;padding:12px;display:flex;justify-content:space-between;align-items:center;font-size:12.5px}
+.mini b{font:700 20px var(--f-display);color:var(--red)}
+
+/* join */
+.join .wrap{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:48px;align-items:start}
+.join h2{font-size:clamp(28px,4vw,42px);margin:10px 0 14px}
+.join p.lead{color:var(--muted)}
+.steps{list-style:none;padding:0;margin:26px 0 0;display:grid;gap:14px;counter-reset:s}
+.steps li{display:flex;gap:14px;align-items:flex-start;counter-increment:s}
+.steps li::before{content:counter(s);flex:none;width:34px;height:34px;border-radius:50%;background:var(--ink);color:#fff;display:grid;place-items:center;font:700 15px var(--f-display)}
+.steps b{display:block;font-family:var(--f-display)}
+.steps span{color:var(--muted);font-size:14.5px}
+.form{background:#fff;border-radius:22px;padding:30px;box-shadow:0 30px 60px -40px rgba(18,16,16,.5);border:1px solid var(--line);display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form .full{grid-column:1/-1}
+.fld{display:grid;gap:6px}
+.fld span{font:600 13.5px var(--f-display)}
+.fld input,.fld select,.fld textarea{font:inherit;border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;min-height:50px;background:#fff;color:var(--ink);width:100%}
+.fld input:focus,.fld select:focus,.fld textarea:focus{border-color:var(--ink);outline:none}
+.chk{display:flex;gap:10px;align-items:flex-start;font-size:13.5px;color:var(--muted)}
+.chk input{width:20px;height:20px;margin-top:3px;accent-color:var(--red);flex:none}
+.hp{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.form .btn{min-height:54px}
+.msg{grid-column:1/-1;border-radius:12px;padding:12px 16px;font-weight:500}
+.msg.ok{background:#E3F3E8;color:var(--good)}
+.msg.bad{background:var(--red-soft);color:var(--red-2)}
+.done{grid-column:1/-1;text-align:center;padding:20px 10px;display:grid;gap:12px;justify-items:center}
+.done .ic{width:64px;height:64px;border-radius:50%;background:#E3F3E8;color:var(--good);display:grid;place-items:center}
+.done h3{font-size:24px}
+
+/* contact + footer */
+.contact .wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:32px;align-items:stretch}
+.cinfo{display:grid;gap:14px;align-content:start}
+.crow{display:flex;gap:14px;align-items:flex-start;background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.crow i{width:40px;height:40px;border-radius:12px;background:var(--red-soft);color:var(--red);display:grid;place-items:center;flex:none}
+.crow b{display:block;font-family:var(--f-display)}
+.crow span,.crow a{color:var(--muted);text-decoration:none}
+.crow a:hover{color:var(--red)}
+.map{border-radius:var(--r);overflow:hidden;min-height:340px;background:var(--line);border:1px solid var(--line)}
+.map iframe{width:100%;height:100%;min-height:340px;border:0;display:block}
+.ftr{background:var(--ink);color:rgba(255,255,255,.75);padding-block:56px calc(28px + env(safe-area-inset-bottom,0px))}
+.ftr .top{display:grid;grid-template-columns:minmax(0,1.4fr) repeat(2,minmax(0,1fr));gap:32px}
+.ftr img{height:46px;width:auto}
+.ftr p{margin-top:14px;max-width:38ch;font-size:14.5px}
+.ftr h4{font:600 15px var(--f-display);color:#fff;margin:0 0 14px}
+.ftr ul{list-style:none;padding:0;margin:0;display:grid;gap:8px;font-size:14.5px}
+.ftr a{text-decoration:none}.ftr a:hover{color:#fff}
+.soc{display:flex;gap:10px;margin-top:18px}
+.soc a{width:42px;height:42px;border-radius:12px;background:rgba(255,255,255,.08);display:grid;place-items:center;color:#fff}
+.soc a:hover{background:var(--red)}
+.pay{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.pay span{border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:3px 10px;font-size:12.5px}
+.bottom{border-top:1px solid rgba(255,255,255,.12);margin-top:40px;padding-top:22px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:13px}
+.wa-float{position:fixed;left:max(20px,env(safe-area-inset-left,0px));bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:60;width:58px;height:58px;border-radius:50%;background:#1FAF55;color:#fff;display:grid;place-items:center;box-shadow:0 14px 30px -10px rgba(0,0,0,.5)}
+.reveal{transition:opacity .6s,transform .6s}
+.reveal.pre{opacity:.001;transform:translateY(18px)}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.reveal,.slide,.pcard{transition:none}.reveal.pre{opacity:1;transform:none}}
+
+@media (max-width:980px){
+  .nav,.hdr-cta .login span{display:none}
+  .burger{display:grid;place-items:center}
+  .mnav{display:block;background:var(--ink-2);border-top:1px solid rgba(255,255,255,.08)}
+  .mnav[hidden]{display:none}
+  .mnav .wrap{display:grid;gap:4px;padding-block:12px 18px}
+  .mnav a{color:#fff;text-decoration:none;padding:12px 6px;border-bottom:1px solid rgba(255,255,255,.06);font:500 16px var(--f-display)}
+  .vgrid{grid-template-columns:minmax(0,1fr)}
+  .app .wrap,.join .wrap,.contact .wrap{grid-template-columns:minmax(0,1fr)}
+  .ftr .top{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .ftr .top>div:first-child{grid-column:1/-1}
+  .ggrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:620px){
+  .sec{padding-block:64px}
+  .hdr>.wrap{height:66px;gap:12px}.hdr .logo img{height:36px}
+  .hdr-cta .btn{padding:0 14px;min-height:40px;font-size:14px}
+  .slide .art i:nth-child(1){left:-12%;width:40%;opacity:.5}
+  .slide .art img{display:none}
+  .slide .in{padding-block:60px 110px}
+  .form{grid-template-columns:minmax(0,1fr);padding:22px}
+  .citem{grid-template-columns:84px minmax(0,1fr)}
+  .citem .seats{grid-column:1/-1}
+  .values{margin-top:-40px}
+}
+</style>
+</head>
+<body>
+<header class="hdr">
+  <div class="wrap">
+    <a class="logo" href="#top" aria-label="جولة اللياقة، الصفحة الرئيسية"><img src="/brand/logo-light.png" alt="جولة اللياقة" width="300" height="100"></a>
+    <nav class="nav" aria-label="أقسام الموقع" id="nav"></nav>
+    <div class="hdr-cta">
+      <a class="login" href="/app"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg><span>تسجيل الدخول</span></a>
+      <a class="btn btn-red" href="#join">انضم الآن</a>
+      <button class="burger" type="button" aria-label="القائمة" aria-expanded="false" aria-controls="mnav" id="burger"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+    </div>
+  </div>
+  <div class="mnav" id="mnav" hidden><div class="wrap" id="mnavIn"></div></div>
+</header>
+<main id="top">
+  <div id="root"></div>
+</main>
+<script src="/site-defaults.js"></script>
+<script>
+(function(){
+'use strict';
+const $=(s,r=document)=>r.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num=n=>Number(n||0).toLocaleString('en-US',{maximumFractionDigits:0});
+const DOW=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+const pad=n=>String(n).padStart(2,'0');
+const ft=t=>{const p=String(t||'0:0').split(':').map(Number);return ((p[0]%12)||12)+':'+pad(p[1])+(p[0]<12?' ص':' م')};
+const fdate=s=>{try{return new Date(s+'T00:00:00').toLocaleDateString('ar-SA-u-ca-gregory-nu-latn',{day:'numeric',month:'long',year:'numeric'})}catch(e){return s}};
+const safeUrl=u=>/^(https?:\/\/|\/uploads\/|\/brand\/)/.test(String(u||''))?String(u):'';
+const safeLink=u=>/^(#[\w-]*|https?:\/\/|\/)/.test(String(u||''))?String(u):'#join';
+const I={
+ spark:'<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M6 18l2.5-2.5M15.5 8.5L18 6"/>',
+ coach:'<circle cx="12" cy="7" r="3.5"/><path d="M5 21c.8-4 3.5-6.5 7-6.5s6.2 2.5 7 6.5"/><path d="M16 4.5l3-1.5"/>',
+ users:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.6 3.2-5.5 6.5-5.5s5.9 1.9 6.5 5.5"/><circle cx="17.5" cy="9" r="2.5"/><path d="M17 14.5c2.3.2 4 1.7 4.5 4.5"/>',
+ shield:'<path d="M12 3l8 3v6c0 4.5-3.4 8.2-8 9-4.6-.8-8-4.5-8-9V6z"/>',
+ heart:'<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>',
+ clock:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
+ trophy:'<path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H4.5a3 3 0 0 0 3.5 4M16 6h3.5a3 3 0 0 1-3.5 4M12 13v4M8 21h8M9.5 17h5"/>',
+ dumbbell:'<path d="M6 8v8M18 8v8M3 10v4M21 10v4M6 12h12"/>',
+ qr:'<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><path d="M14 14h3v3h-3zM20 14v2M17 20h3"/>',
+ cal:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+ file:'<path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5M10 13h6M10 17h6"/>',
+ pin:'<path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>',
+ phone:'<path d="M5 4h3l2 5-2.5 1.5a11 11 0 0 0 6 6L15 14l5 2v3a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/>',
+ mail:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',
+ ok:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+ chevL:'<path d="M14.5 6l-6 6 6 6"/>',chevR:'<path d="M9.5 6l6 6-6 6"/>'
+};
+const ic=(n,s)=>'<svg width="'+(s||22)+'" height="'+(s||22)+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(I[n]||I.spark)+'</svg>';
+const SOC={
+ instagram:['إنستقرام','<rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/>',h=>'https://instagram.com/'+h],
+ tiktok:['تيك توك','<path d="M14 3v11.5a3.5 3.5 0 1 1-3.5-3.5"/><path d="M14 3c.5 3 2.5 5 5.5 5"/>',h=>'https://www.tiktok.com/@'+h],
+ snapchat:['سناب شات','<path d="M12 3c3 0 5 2.2 5 5.2v2.3l2 .8-1.6 1.5c.8 1.7 2 2.7 3.6 3.2-1 .9-2.4.9-3.4 1.4-.4 1-1.5 1-2.6 1-1 0-1.8 1.6-3 1.6s-2-1.6-3-1.6c-1.1 0-2.2 0-2.6-1-1-.5-2.4-.5-3.4-1.4 1.6-.5 2.8-1.5 3.6-3.2L3 11.3l2-.8V8.2C5 5.2 9 3 12 3z"/>',h=>'https://www.snapchat.com/add/'+h],
+ x:['إكس','<path d="M4 4l16 16M20 4L4 20"/>',h=>'https://x.com/'+h]
+};
+const handle=v=>String(v||'').trim().replace(/^https?:\/\/[^/]+\/@?/,'').replace(/^@/,'').replace(/\/.*$/,'');
+let D=null,day=new Date().getDay(),slide=0,timer=null;
+
+function merge(def,v){if(!v||typeof v!=='object'||Array.isArray(def))return v===undefined?def:v;const o=Object.assign({},def);Object.keys(v).forEach(k=>{o[k]=def&&def[k]&&typeof def[k]==='object'&&!Array.isArray(def[k])?merge(def[k],v[k]):v[k]});return o}
+
+function render(){
+ const c=D.site,show=c.show,o=[];
+ const offers=(c.offers||[]).filter(x=>x&&x.title&&(!x.until||x.until>=new Date().toISOString().slice(0,10)));
+ const navItems=[['programs','البرامج',show.programs],['pricing','الباقات',show.pricing],['schedule','الجدول',show.schedule],['trainers','المدربون',show.trainers&&D.trainers.length],['offers','العروض',show.offers&&offers.length],['contact','تواصل معنا',show.contact]].filter(x=>x[2]);
+ $('#nav').innerHTML=navItems.map(x=>'<a href="#'+x[0]+'">'+x[1]+'</a>').join('');
+ $('#mnavIn').innerHTML=navItems.map(x=>'<a href="#'+x[0]+'">'+x[1]+'</a>').join('')+'<a href="/app">تسجيل الدخول</a>';
+ document.title=c.metaTitle||document.title;
+ const md=$('meta[name="description"]');if(md&&c.metaDesc)md.setAttribute('content',c.metaDesc);
+
+ if(show.hero&&c.hero.length){
+  o.push('<section class="hero" aria-roledescription="شرائح" aria-label="أبرز ما في النادي"><div class="slides">'+c.hero.map((h,i)=>{const img=safeUrl(h.img);return '<article class="slide'+(i===0?' on':'')+'" aria-hidden="'+(i!==0)+'" aria-label="'+(i+1)+' من '+c.hero.length+'">'+(img?'<div class="bg" style="background-image:url(\''+img+'\')"></div>':'<div class="art"><i></i><i></i><i></i><img src="/brand/mark.png" alt=""></div>')+'<div class="wrap"><div class="in"><span class="eyebrow">'+esc(D.gym)+'</span><h1 style="margin-top:16px">'+esc(h.title)+'</h1>'+(h.sub?'<p>'+esc(h.sub)+'</p>':'')+'<div class="acts">'+(h.btn?'<a class="btn btn-red" href="'+esc(safeLink(h.link))+'">'+esc(h.btn)+'</a>':'')+'<a class="btn btn-ghost" href="/app">ادخل إلى حسابك</a></div></div></div></article>'}).join('')+'</div>'+
+  (c.hero.length>1?'<div class="hero-ctrl"><div class="wrap"><div class="dots" role="tablist">'+c.hero.map((_,i)=>'<button type="button" data-go="'+i+'" aria-label="الشريحة '+(i+1)+'" aria-current="'+(i===0)+'"></button>').join('')+'</div><div class="arrows"><button type="button" data-step="-1" aria-label="السابقة">'+ic('chevR',20)+'</button><button type="button" data-step="1" aria-label="التالية">'+ic('chevL',20)+'</button></div></div></div>':'')+'</section>');
+ }
+ if(show.values&&c.values.length)o.push('<section class="values"><div class="wrap"><div class="vgrid">'+c.values.map(v=>'<div class="vcard reveal"><span class="ic">'+ic(v.icon)+'</span><h3>'+esc(v.title)+'</h3><p>'+esc(v.text)+'</p></div>').join('')+'</div></div></section>');
+ if(show.offers&&offers.length)o.push('<section class="sec" id="offers"><div class="wrap"><div class="sec-h"><div><span class="eyebrow">عروض حالية</span><h2>عروض لفترة محدودة</h2></div></div><div class="ogrid">'+offers.map(x=>{const img=safeUrl(x.img);return '<article class="ocard reveal">'+(img?'<div class="bg" style="background-image:url(\''+img+'\')"></div>':'')+(x.until?'<span class="until">حتى '+fdate(x.until)+'</span>':'')+'<h3>'+esc(x.title)+'</h3><p>'+esc(x.text||'')+'</p><a class="btn btn-red" href="#join" data-interest="'+esc('عرض: '+x.title)+'">'+esc(x.btn||'احصل على العرض')+'</a></article>'}).join('')+'</div></div></section>');
+ if(show.programs&&c.programs.length)o.push('<section class="sec sand" id="programs"><div class="wrap"><div class="sec-h"><div><span class="eyebrow">برامجنا</span><h2>تمرين لكل هدف ولكل عمر</h2></div><p>اختر البرنامج الذي يناسبك، ونساعدك في الزيارة التجريبية على تحديد البداية الصحيحة.</p></div><div class="pgrid">'+c.programs.map((p,i)=>{const img=safeUrl(p.img);return '<article class="pcard reveal"><div class="pimg'+(img?'':' blank')+'">'+(p.tag?'<span class="tag">'+esc(p.tag)+'</span>':'')+(img?'<img src="'+esc(img)+'" alt="'+esc(p.title)+'" loading="lazy">':'<span class="ico">'+ic(['dumbbell','users','shield','trophy','coach'][i%5],42)+'</span>')+'</div><div class="pbody"><h3>'+esc(p.title)+'</h3><p>'+esc(p.text)+'</p></div></article>'}).join('')+'</div></div></section>');
+ if(show.pricing&&D.plans.length){
+  const feat=c.pricing.featured||(D.plans[Math.min(1,D.plans.length-1)]||{}).id;
+  o.push('<section class="sec" id="pricing"><div class="wrap"><div class="sec-h"><div><span class="eyebrow">الباقات</span><h2>'+esc(c.pricing.title||'باقات تناسب هدفك')+'</h2></div><p>الأسعار بالريال السعودي.</p></div><div class="prgrid">'+D.plans.map(p=>{const months=Math.max(1,Math.round(p.days/30)),per=months>1?Math.round(p.price/months):0,f=p.id===feat;
+   return '<article class="plan reveal'+(f?' feat':'')+'">'+(f?'<span class="badge">الأكثر طلباً</span>':'')+'<h3>'+esc(p.name)+'</h3><div class="price">'+num(p.price)+' <small>ر.س</small></div><span class="per">'+(per?'يعادل '+num(per)+' ر.س شهرياً':p.days+' يوماً')+'</span><ul><li>دخول الصالة طوال مدة الاشتراك</li><li>بطاقة دخول QR على الجوال</li><li>حجز الحصص الجماعية من حسابك</li>'+(p.days>=90?'<li>إمكانية تجميد الاشتراك عند السفر أو الإصابة</li>':'')+'</ul><a class="btn '+(f?'btn-red':'btn-line')+'" href="#join" data-interest="'+esc('باقة '+p.name)+'">اشترك الآن</a></article>'}).join('')+'</div>'+
+   (c.pricing.note?'<div class="prnote">'+ic('file',20)+'<span>'+esc(c.pricing.note)+'</span></div>':'')+
+   (c.pricing.showPT&&D.ptPlans.length?'<div class="ptrow"><h3>باقات التدريب الشخصي</h3><div class="ptlist">'+D.ptPlans.map(p=>'<div class="ptitem reveal"><div><b>'+esc(p.name)+'</b><br><span>'+p.sessions+' جلسة · صالحة '+p.validDays+' يوماً</span></div><span class="p">'+num(p.price)+' <small style="font-size:13px;color:var(--muted)">ر.س</small></span></div>').join('')+'</div></div>':'')+'</div></section>');
+ }
+ if(show.schedule&&D.classes.length)o.push('<section class="sec sand" id="schedule"><div class="wrap"><div class="sec-h"><div><span class="eyebrow">الجدول الأسبوعي</span><h2>اختر يومك ووقتك</h2></div><p>الحصص تتكرر كل أسبوع، والمشتركون يحجزون مقاعدهم من حساباتهم.</p></div><div class="days" role="group" aria-label="أيام الأسبوع" id="days"></div><div class="clist" id="clist"></div></div></section>');
+ if(show.trainers&&D.trainers.length)o.push('<section class="sec" id="trainers"><div class="wrap"><div class="sec-h"><div><span class="eyebrow">فريق التدريب</span><h2>مدربون يتابعون تقدّمك</h2></div></div><div class="tgrid">'+D.trainers.map(t=>{const ph=safeUrl((c.trainerPhotos||{})[t.id]);const nm=t.name.replace('كابتن ','');return '<article class="tcard reveal"><div class="tphoto'+(ph?'':' blank')+'">'+(ph?'<img src="'+esc(ph)+'" alt="'+esc(t.name)+'" loading="lazy">':'<span class="mono">'+esc(nm.charAt(0))+'</span>')+'</div><div class="tbody"><b>'+esc(t.name)+'</b><span>'+esc(t.spec||'مدرب')+'</span></div></article>'}).join('')+'</div></div></section>');
+ const gal=(c.gallery||[]).map(safeUrl).filter(Boolean);
+ if(show.gallery&&gal.length)o.push('<section class="sec sand"><div class="wrap"><div class="sec-h"><div><span class="eyebrow">من داخل النادي</span><h2>مكان تحب أن تعود إليه</h2></div></div><div class="ggrid">'+gal.slice(0,7).map((u,i)=>'<img src="'+esc(u)+'" alt="صورة من داخل النادي '+(i+1)+'" loading="lazy">').join('')+'</div></div></section>');
+ const rev=(c.reviews||[]).filter(r=>r&&r.text&&r.name);
+ if(show.reviews&&rev.length)o.push('<section class="sec"><div class="wrap"><div class="sec-h"><div><span class="eyebrow">آراء المشتركين</span><h2>ماذا يقولون عنا</h2></div></div><div class="rgrid">'+rev.map(r=>'<figure class="rcard reveal" style="margin:0"><span class="st" aria-label="'+(+r.stars||5)+' من 5">'+'★'.repeat(Math.max(1,Math.min(5,+r.stars||5)))+'</span><blockquote style="margin:0"><p>'+esc(r.text)+'</p></blockquote><figcaption><b>'+esc(r.name)+'</b></figcaption></figure>').join('')+'</div></div></section>');
+ if(show.app)o.push('<section class="sec app"><div class="wrap"><div><span class="eyebrow" style="color:#ff8f88">للمشتركين</span><h2>'+esc(c.app.title)+'</h2><p>'+esc(c.app.text)+'</p><ul><li><i>'+ic('qr',16)+'</i>بطاقة دخول برمز QR</li><li><i>'+ic('cal',16)+'</i>حجز الحصص وإلغاؤها</li><li><i>'+ic('dumbbell',16)+'</i>رصيد جلسات التدريب وخطتك</li><li><i>'+ic('file',16)+'</i>فواتيرك بصيغة PDF</li></ul><a class="btn btn-red" href="/app">ادخل إلى حسابك</a></div><div class="phone" aria-hidden="true"><div class="screen"><div class="hi">أهلاً بك 👋</div><div class="mcard"><img src="/brand/logo-light.png" alt=""><div><small>المشترك</small><br><b>عضو جولة اللياقة</b><br><small>ربع سنوي · نشط</small></div><span class="qr"><i></i></span></div><div class="mini"><span>يوم متبقٍ</span><b>64</b></div><div class="mini"><span>رصيد التدريب</span><b>6</b></div><div class="mini"><span>حجزك القادم</span><b style="font-size:14px;color:var(--ink)">الخميس 7:00 م</b></div></div></div></div></section>');
+ if(show.join){
+  const ints=['زيارة تجريبية'].concat(D.plans.map(p=>'باقة '+p.name),c.programs.map(p=>p.title));
+  o.push('<section class="sec join sand" id="join"><div class="wrap"><div><span class="eyebrow">ابدأ اليوم</span><h2>'+esc(c.join.title)+'</h2><p class="lead">'+esc(c.join.text)+'</p><ol class="steps"><li><div><b>اترك بياناتك</b><span>اسمك ورقم جوالك والبرنامج الذي يهمك.</span></div></li><li><div><b>نتواصل معك</b><span>نحدد معك موعد زيارة تناسب وقتك.</span></div></li><li><div><b>ابدأ تمرينك</b><span>تقييم أولي وخطة واضحة من أول يوم.</span></div></li></ol></div>'+
+  '<form class="form" id="lf" novalidate><label class="fld"><span>الاسم</span><input name="name" id="l-name" required autocomplete="name" maxlength="60"></label><label class="fld"><span>رقم الجوال</span><input name="phone" id="l-phone" required inputmode="tel" autocomplete="tel" dir="ltr" placeholder="05XXXXXXXX" maxlength="10"></label>'+
+  '<label class="fld"><span>ما الذي يهمك؟</span><select name="interest" id="l-int">'+ints.map(x=>'<option>'+esc(x)+'</option>').join('')+'</select></label><label class="fld"><span>الوقت المناسب للتمرين</span><select name="time" id="l-time"><option>صباحاً</option><option>بعد الظهر</option><option selected>مساءً</option><option>غير محدد</option></select></label>'+
+  '<label class="fld full"><span>ملاحظة (اختياري)</span><input name="note" id="l-note" maxlength="300" placeholder="مثال: أبحث عن برنامج لطفلي عمره 9 سنوات"></label><label class="hp" aria-hidden="true">لا تملأ هذا الحقل<input name="website" tabindex="-1" autocomplete="off"></label>'+
+  '<label class="chk full"><input type="checkbox" name="consent" id="l-consent" checked> أوافق على أن يتواصل معي النادي عبر الجوال وواتساب بخصوص طلبي والعروض، ويمكنني إيقاف ذلك متى شئت.</label><div id="lmsg" class="full" role="status"></div><button class="btn btn-red full" type="submit" id="l-go">أرسل طلبي</button></form></div></section>');
+ }
+ if(show.contact){
+  const ct=c.contact,soc=Object.keys(SOC).filter(k=>handle(ct[k]));
+  const mapQ=ct.mapQuery||D.address;
+  o.push('<section class="sec contact" id="contact"><div class="wrap"><div class="cinfo"><div><span class="eyebrow">تواصل معنا</span><h2 style="font-size:clamp(28px,4vw,42px);margin:10px 0 18px">زرنا أو راسلنا</h2></div>'+
+   (D.address?'<div class="crow"><i>'+ic('pin',20)+'</i><div><b>العنوان</b><span>'+esc(D.address)+'</span></div></div>':'')+
+   (ct.hours?'<div class="crow"><i>'+ic('clock',20)+'</i><div><b>أوقات العمل</b><span>'+esc(ct.hours)+'</span></div></div>':'')+
+   (D.phone?'<div class="crow"><i>'+ic('phone',20)+'</i><div><b>الجوال وواتساب</b><a href="tel:'+esc(D.phone)+'" dir="ltr">'+esc(D.phone)+'</a></div></div>':'')+
+   (ct.email?'<div class="crow"><i>'+ic('mail',20)+'</i><div><b>البريد</b><a href="mailto:'+esc(ct.email)+'">'+esc(ct.email)+'</a></div></div>':'')+
+   (soc.length?'<div class="soc">'+soc.map(k=>'<a href="'+esc(SOC[k][2](handle(ct[k])))+'" target="_blank" rel="noopener" aria-label="'+SOC[k][0]+'"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+SOC[k][1]+'</svg></a>').join('')+'</div>':'')+
+   '</div><div class="map">'+(mapQ?'<iframe title="موقع النادي على الخريطة" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="https://maps.google.com/maps?q='+encodeURIComponent(mapQ)+'&z=15&output=embed"></iframe>':'<div style="display:grid;place-items:center;height:100%;min-height:340px;color:var(--muted);padding:20px;text-align:center">'+ic('pin',40)+'<span>يظهر موقع النادي هنا بعد إضافة العنوان من لوحة التحكم.</span></div>')+'</div></div></section>');
+ }
+ o.push('<footer class="ftr"><div class="wrap"><div class="top"><div><img src="/brand/logo-light.png" alt="جولة اللياقة" width="300" height="100"><p>'+esc(c.tagline)+'</p></div><div><h4>روابط</h4><ul>'+navItems.map(x=>'<li><a href="#'+x[0]+'">'+x[1]+'</a></li>').join('')+'<li><a href="/app">تسجيل الدخول</a></li></ul></div><div><h4>طرق الدفع</h4><div class="pay"><span>نقداً</span><span>مدى</span><span>البطاقات الائتمانية</span><span>تحويل بنكي</span><span>التقسيط على دفعات</span></div></div></div>'+
+  '<div class="bottom"><span>© '+new Date().getFullYear()+' '+esc(D.legalName||D.gym)+(D.crNo?' · سجل تجاري '+esc(D.crNo):'')+(D.vatNo?' · الرقم الضريبي '+esc(D.vatNo):'')+'</span><span>الأسعار والمواعيد قابلة للتغيير.</span></div></div></footer>');
+ if(D.phone)o.push('<a class="wa-float" href="https://wa.me/'+esc(waNum(D.phone))+'?text='+encodeURIComponent('مرحباً، أرغب في الاستفسار عن الاشتراك في '+D.gym)+'" target="_blank" rel="noopener" aria-label="راسلنا على واتساب"><svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.6.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.4a.5.5 0 0 0 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.2 2.2 2.2 0 0 0 .2-1.2c-.1-.1-.3-.2-.5-.3z"/></svg></a>');
+ $('#root').innerHTML=o.join('');
+ drawDays();startSlides();reveal();
+}
+const waNum=p=>{let x=String(p||'').replace(/\D/g,'');if(x.charAt(0)==='0')x='966'+x.slice(1);return x};
+function drawDays(){
+ const d=$('#days');if(!d)return;const today=new Date().getDay();
+ d.innerHTML=DOW.map((n,i)=>'<button type="button" data-day="'+i+'" aria-pressed="'+(i===day)+'">'+n+(i===today?'<span class="today">اليوم</span>':'')+'</button>').join('');
+ const L=D.classes.filter(c=>(c.days||[]).indexOf(day)>=0).sort((a,b)=>String(a.time).localeCompare(String(b.time)));
+ $('#clist').innerHTML=L.length?L.map(c=>'<div class="citem"><div class="t">'+ft(c.time)+'<small>'+(c.dur||60)+' دقيقة</small></div><div><b>'+esc(c.name)+'</b><br><span>'+esc(c.trainer||'')+'</span></div><a class="btn btn-line seats" href="#join" data-interest="'+esc('حصة '+c.name)+'" style="min-height:40px">احجز زيارة</a></div>').join(''):'<div class="cempty">لا توجد حصص جماعية في هذا اليوم.</div>';
+}
+function show(i){
+ const s=document.querySelectorAll('.slide'),dts=document.querySelectorAll('.dots button');if(!s.length)return;
+ slide=(i+s.length)%s.length;s.forEach((x,k)=>{x.classList.toggle('on',k===slide);x.setAttribute('aria-hidden',k!==slide)});dts.forEach((x,k)=>x.setAttribute('aria-current',k===slide));
+}
+function startSlides(){clearInterval(timer);if(document.querySelectorAll('.slide').length>1&&!matchMedia('(prefers-reduced-motion: reduce)').matches)timer=setInterval(()=>show(slide+1),6500)}
+function reveal(){
+ const els=document.querySelectorAll('.reveal');if(!('IntersectionObserver' in window)||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+ const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.remove('pre');io.unobserve(e.target)}}),{rootMargin:'0px 0px -40px 0px'});
+ els.forEach(el=>{const r=el.getBoundingClientRect();if(r.top>innerHeight){el.classList.add('pre');io.observe(el)}});
+}
+document.addEventListener('click',e=>{
+ const t=e.target.closest('[data-go],[data-step],[data-day],[data-interest],#burger,.mnav a');if(!t)return;
+ if(t.dataset.go){show(+t.dataset.go);startSlides()}
+ else if(t.dataset.step){show(slide+ +t.dataset.step);startSlides()}
+ else if(t.dataset.day!=null){day=+t.dataset.day;drawDays()}
+ else if(t.id==='burger'){const m=$('#mnav'),o=m.hidden;m.hidden=!o;t.setAttribute('aria-expanded',o)}
+ else if(t.closest('.mnav')){$('#mnav').hidden=true;$('#burger').setAttribute('aria-expanded','false')}
+ if(t.dataset.interest){const s=$('#l-int');if(s){if(![...s.options].some(o=>o.value===t.dataset.interest)){const op=document.createElement('option');op.textContent=t.dataset.interest;s.appendChild(op)}s.value=t.dataset.interest}}
+});
+document.addEventListener('submit',async e=>{
+ if(e.target.id!=='lf')return;e.preventDefault();
+ const f=e.target,msg=$('#lmsg'),go=$('#l-go'),name=f.name.value.trim(),phone=f.phone.value.replace(/\D/g,'');
+ if(name.length<2){msg.className='msg bad';msg.textContent='اكتب اسمك.';f.name.focus();return}
+ if(!/^05\d{8}$/.test(phone)){msg.className='msg bad';msg.textContent='اكتب رقم جوال سعودي من 10 أرقام يبدأ بـ 05.';f.phone.focus();return}
+ go.disabled=true;go.textContent='جارٍ الإرسال…';msg.className='';msg.textContent='';
+ try{
+  const r=await fetch('/api/lead',{method:'POST',headers:{'Content-Type':'application/json','X-Requested-With':'gym'},body:JSON.stringify({name:name,phone:phone,interest:f.interest.value,time:f.time.value,note:f.note.value.trim(),consent:f.consent.checked,website:f.website.value})});
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(j.error||'تعذّر الإرسال');
+  f.innerHTML='<div class="done"><span class="ic">'+ic('ok',32)+'</span><h3>وصلنا طلبك يا '+esc(name.split(' ')[0])+'</h3><p style="color:var(--muted)">سيتواصل معك فريق '+esc(D.gym)+' قريباً لتحديد موعد زيارتك.</p>'+(D.phone?'<a class="btn btn-dark" target="_blank" rel="noopener" href="https://wa.me/'+waNum(D.phone)+'?text='+encodeURIComponent('مرحباً، أرسلت طلب اشتراك من الموقع باسم '+name)+'">تابع معنا على واتساب</a>':'')+'</div>';
+ }catch(err){msg.className='msg bad';msg.textContent=err.message+'. حاول مرة أخرى.';go.disabled=false;go.textContent='أرسل طلبي'}
+});
+fetch('/api/site').then(r=>r.json()).then(j=>{
+ D=j;D.site=merge(window.SITE_DEFAULTS,j.site||{});D.site.show=Object.assign({},window.SITE_DEFAULTS.show,(j.site||{}).show||{});
+ D.plans=j.plans||[];D.ptPlans=j.ptPlans||[];D.classes=j.classes||[];D.trainers=j.trainers||[];
+ render();
+}).catch(()=>{D={gym:'جولة اللياقة',site:window.SITE_DEFAULTS,plans:[],ptPlans:[],classes:[],trainers:[]};render()});
+})();
+</script>
+</body>
+</html>

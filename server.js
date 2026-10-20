@@ -22,8 +22,14 @@ if (NO_DISK) console.warn('\n!!! No persistent volume is attached. Data will be 
 const PUB = path.join(__dirname, 'public');
 const DBF = path.join(DATA, 'db.json');
 const BAK = path.join(DATA, 'backups');
-const COLS = ['members', 'subs', 'pay', 'exp', 'att', 'classes', 'book', 'freezeReq', 'pt', 'campaigns', 'daily', 'leads', 'cash', 'plans', 'trainers'];
+const COLS = ['members', 'subs', 'pay', 'exp', 'att', 'classes', 'book', 'freezeReq', 'pt', 'campaigns', 'daily', 'leads', 'cash', 'plans', 'trainers', 'shifts', 'ptPlans', 'ptPacks', 'ptSess'];
 const STAFF = ['manager', 'reception'];
+const OFFICE = ['manager', 'reception', 'accountant'];
+const META_KEYS = ['nextCode', 'nextInv', 'nextCn'];
+const STAMP = ['pay', 'exp', 'cash', 'daily', 'shifts', 'subs', 'ptPacks', 'ptSess'];
+const PT_PRIVATE = ['note', 'exercises', 'perf'];
+const AUDIT_MAX = 20000;
+const HIDDEN = { reception: ['exp', 'cash', 'pt'], accountant: ['pt', 'ptSess'] };
 const LOG_MAX = 3000;
 
 fs.mkdirSync(BAK, { recursive: true });
@@ -44,6 +50,7 @@ function loadDb() {
   d.users = d.users || [];
   d.creds = d.creds || {};
   d.secret = d.secret || crypto.randomBytes(32).toString('hex');
+  d.audit = d.audit || [];
   return d;
 }
 function writeNow() {
@@ -131,24 +138,120 @@ function limited(key, max, ms) {
 }
 setInterval(() => { const now = Date.now(); for (const [k, v] of hits) if (!v.some(t => now - t < 3600e3)) hits.delete(k); }, 600e3).unref();
 
+/* ---------------- audit log ---------------- */
+const fmtMoney = n => (Math.round((+n || 0) * 100) / 100).toLocaleString('en-US') + ' ر.س';
+const mName = id => { const m = findMember(id); return m ? m.name : 'عضو محذوف'; };
+function audit(p, act, detail, c, ref) {
+  db.audit.push({ t: new Date().toISOString(), by: p ? p.name : 'النظام', role: p ? p.role : '', act, detail: detail || '', c: c || '', ref: ref || '' });
+  if (db.audit.length > AUDIT_MAX) db.audit = db.audit.slice(-AUDIT_MAX);
+}
+const SET_LABELS = { gym: 'اسم النادي', soonDays: 'أيام التنبيه', churnDays: 'أيام الانقطاع', dailyPrice: 'سعر الدخول اليومي', openingCash: 'الرصيد الافتتاحي', discLimit: 'حد خصم الاستقبال', portalLink: 'رابط صفحة المتدرب' };
+function auditSettings(p, old, v) {
+  old = old || {};
+  if ((old.pin || '1234') !== (v.pin || '1234')) audit(p, 'تغيير رمز المدير', '', 'settings');
+  const ch = Object.keys(SET_LABELS).filter(k => old[k] !== undefined && String(old[k]) !== String(v[k])).map(k => SET_LABELS[k] + ': ' + old[k] + ' ← ' + v[k]);
+  if (ch.length) audit(p, 'تعديل الإعدادات', ch.join('، '), 'settings');
+  if (JSON.stringify(old.site || null) !== JSON.stringify(v.site || null)) audit(p, 'تحديث محتوى الموقع', '', 'settings');
+}
+function auditOp(p, c, op, old, v) {
+  const del = op === 'del';
+  if (c === 'plans') {
+    if (del) return old && audit(p, 'حذف باقة', old.name, c, old.id);
+    if (!old) return audit(p, 'إضافة باقة', v.name + ' · ' + fmtMoney(v.price), c, v.id);
+    const ch = [];
+    if (old.price !== v.price) ch.push('السعر ' + fmtMoney(old.price) + ' ← ' + fmtMoney(v.price));
+    if (old.days !== v.days) ch.push('المدة ' + old.days + ' ← ' + v.days + ' يوم');
+    if ((old.freeze || 0) !== (v.freeze || 0)) ch.push('التجميد ' + (old.freeze || 0) + ' ← ' + (v.freeze || 0) + ' يوم');
+    if (old.name !== v.name) ch.push('الاسم ' + old.name + ' ← ' + v.name);
+    if (ch.length) audit(p, 'تعديل باقة', v.name + ': ' + ch.join('، '), c, v.id);
+    return;
+  }
+  if (c === 'subs') {
+    if (del) return old && audit(p, 'حذف اشتراك', old.inv + ' · ' + mName(old.memberId), c, old.id);
+    if (!old) { if (v.disc > 0) audit(p, 'خصم على اشتراك', v.inv + ' · ' + mName(v.memberId) + ' · ' + fmtMoney(v.disc), c, v.id); return; }
+    if (!old.cancelled && v.cancelled) audit(p, 'إلغاء اشتراك', v.inv + ' · ' + mName(v.memberId), c, v.id);
+    if (old.total !== v.total) audit(p, 'تعديل قيمة الفاتورة', v.inv + ' · ' + fmtMoney(old.total) + ' ← ' + fmtMoney(v.total), c, v.id);
+    if ((old.freezes || []).length === (v.freezes || []).length && old.end !== v.end) audit(p, 'تعديل تاريخ انتهاء الاشتراك', v.inv + ' · ' + old.end + ' ← ' + v.end, c, v.id);
+    return;
+  }
+  if (c === 'pay') {
+    if (del) return old && audit(p, 'حذف دفعة', fmtMoney(old.amount) + ' · ' + (old.name || mName(old.memberId)), c, old.id);
+    if (!old && v.amount < 0) return audit(p, 'استرداد', fmtMoney(-v.amount) + ' · ' + mName(v.memberId) + (v.cn ? ' · ' + v.cn : '') + (v.reason ? ' · ' + v.reason : ''), c, v.id);
+    if (old && old.amount !== v.amount) audit(p, 'تعديل دفعة', fmtMoney(old.amount) + ' ← ' + fmtMoney(v.amount), c, v.id);
+    return;
+  }
+  if (c === 'exp') {
+    if (del) return old && audit(p, 'حذف مصروف', old.cat + ' · ' + fmtMoney(old.amount), c, old.id);
+    if (!old) return audit(p, 'تسجيل مصروف', v.cat + ' · ' + fmtMoney(v.amount), c, v.id);
+    if (old.amount !== v.amount) audit(p, 'تعديل مصروف', v.cat + ' · ' + fmtMoney(old.amount) + ' ← ' + fmtMoney(v.amount), c, v.id);
+    return;
+  }
+  if (c === 'cash') {
+    if (del) return old && audit(p, 'حذف حركة صندوق', fmtMoney(old.amount) + (old.note ? ' · ' + old.note : ''), c, old.id);
+    if (!old) return audit(p, v.type === 'in' ? 'إيداع في الصندوق' : 'سحب من الصندوق', fmtMoney(v.amount) + (v.note ? ' · ' + v.note : ''), c, v.id);
+    return;
+  }
+  if (c === 'pt') {
+    if (del) return old && audit(p, 'حذف ملف تدريب شخصي', mName(old.memberId), c, old.id);
+    if (old && v && old.sessions && v.sessions) {
+      if (v.sessions.used !== old.sessions.used) audit(p, v.sessions.used > old.sessions.used ? 'خصم جلسة تدريب' : 'إرجاع جلسة تدريب', mName(v.memberId) + ' · ' + v.sessions.used + ' من ' + v.sessions.total, c, v.id);
+      if (v.sessions.total !== old.sessions.total) audit(p, 'تعديل رصيد الجلسات', mName(v.memberId) + ' · ' + old.sessions.total + ' ← ' + v.sessions.total, c, v.id);
+    }
+    return;
+  }
+  if (c === 'ptPlans') {
+    if (del) return old && audit(p, 'حذف باقة تدريب', old.name, c, old.id);
+    if (!old) return audit(p, 'إضافة باقة تدريب', v.name + ' · ' + v.sessions + ' جلسة · ' + fmtMoney(v.price), c, v.id);
+    if (old.price !== v.price || old.sessions !== v.sessions) audit(p, 'تعديل باقة تدريب', v.name + ': ' + fmtMoney(old.price) + ' ← ' + fmtMoney(v.price) + '، ' + old.sessions + ' ← ' + v.sessions + ' جلسة', c, v.id);
+    return;
+  }
+  if (c === 'ptPacks') {
+    if (del) return old && audit(p, 'حذف باقة تدريب مباعة', mName(old.memberId) + ' · ' + old.name, c, old.id);
+    if (!old) return audit(p, 'بيع باقة تدريب شخصي', mName(v.memberId) + ' · ' + v.name + ' · ' + v.sessions + ' جلسة', c, v.id);
+    const oa = old.adj || [], na = v.adj || [];
+    if (na.length > oa.length) na.slice(oa.length).forEach(a => audit(p, 'تعديل يدوي لرصيد الجلسات', mName(v.memberId) + ' · ' + (a.n > 0 ? 'خصم ' + a.n : 'إضافة ' + (-a.n)) + ' جلسة · ' + (a.reason || ''), c, v.id));
+    if (old.status !== 'cancelled' && v.status === 'cancelled') audit(p, 'إلغاء باقة تدريب', mName(v.memberId) + ' · ' + v.name, c, v.id);
+    if (old.expires !== v.expires) audit(p, 'تمديد صلاحية باقة تدريب', mName(v.memberId) + ' · ' + old.expires + ' ← ' + v.expires, c, v.id);
+    return;
+  }
+  if (c === 'ptSess') {
+    if (del) return old && audit(p, 'حذف جلسة تدريب', mName(old.memberId) + ' · ' + old.date + ' ' + old.time, c, old.id);
+    if (!old || old.status === v.status && !!old.charged === !!v.charged) return;
+    const lbl = { done: 'توثيق حضور جلسة', noshow: 'غياب عن جلسة', late_cancel: 'إلغاء متأخر لجلسة', cancelled: 'إلغاء جلسة', booked: 'إعادة حجز جلسة' }[v.status] || 'تحديث جلسة';
+    return audit(p, old.status === v.status ? 'تعديل يدوي لخصم جلسة' : lbl, mName(v.memberId) + ' · ' + v.date + ' ' + v.time + (v.charged ? ' · خُصمت من الرصيد' : ' · بدون خصم') + (v.adjReason ? ' · ' + v.adjReason : ''), c, v.id);
+  }
+  if (c === 'members' && del && old) return audit(p, 'حذف عضو', old.name + ' · ' + old.code, c, old.id);
+  if (c === 'freezeReq' && old && v && old.status !== v.status) return audit(p, v.status === 'approved' ? 'اعتماد طلب تجميد' : v.status === 'rejected' ? 'رفض طلب تجميد' : 'تحديث طلب تجميد', mName(v.memberId) + ' · ' + v.days + ' يوم', c, v.id);
+  if (c === 'shifts' && !old && v) return audit(p, 'إغلاق وردية', 'المتوقع ' + fmtMoney(v.expTotal) + ' · المعدود ' + fmtMoney(v.cntTotal) + ' · الفرق ' + fmtMoney(v.diff), c, v.id);
+  if (c === 'daily' && del && old) return audit(p, 'حذف زيارة يومية', old.name + ' · ' + fmtMoney(old.amount), c, old.id);
+  if ((c === 'trainers' || c === 'classes') && del && old) return audit(p, c === 'trainers' ? 'حذف مدرب' : 'حذف حصة', old.name, c, old.id);
+}
+
 /* ---------------- role views ---------------- */
+const stripPt = x => { const o = Object.assign({}, x); PT_PRIVATE.forEach(k => delete o[k]); return o; };
 const pick = (o, keys) => { const r = {}; keys.forEach(k => { if (o[k] !== undefined) r[k] = o[k]; }); return r; };
 function viewFor(p) {
   const s = st();
   if (p.role === 'manager') return s;
-  if (p.role === 'reception') {
-    const o = Object.assign({}, s); delete o.exp; delete o.cash;
+  if (p.role === 'reception' || p.role === 'accountant') {
+    const o = Object.assign({}, s);
+    HIDDEN[p.role].forEach(k => delete o[k]);
     o.settings = Object.assign({}, s.settings || {}); delete o.settings.pin;
+    if (p.role === 'accountant') o.members = (s.members || []).map(m => pick(m, ['id', 'code', 'name', 'phone', 'gender', 'trainerId', 'joined']));
+    if (o.ptSess) o.ptSess = o.ptSess.map(stripPt);
     return o;
   }
-  const set = pick(s.settings || {}, ['gym', 'soonDays', 'churnDays', 'portalLink', 'dailyPrice']);
+  const set = pick(s.settings || {}, ['gym', 'soonDays', 'churnDays', 'portalLink', 'dailyPrice', 'ptCancelHours', 'ptLateCharge', 'ptNoShowCharge', 'classCancelHours', 'phone', 'legalName', 'crNo', 'vatNo', 'address', 'terms', 'termsVer', 'termsDate', 'offers', 'tpl', 'site']);
   const trainers = (s.trainers || []).map(t => pick(t, ['id', 'name', 'spec']));
   if (p.role === 'trainer') {
     return {
       settings: set, trainers, plans: s.plans || [], classes: s.classes || [], book: s.book || [], att: s.att || [],
       members: (s.members || []).map(m => pick(m, ['id', 'code', 'name', 'phone', 'gender', 'trainerId', 'joined', 'birth', 'notes'])),
       subs: (s.subs || []).map(x => pick(x, ['id', 'memberId', 'planId', 'planName', 'start', 'end', 'cancelled', 'freezes', 'freezeMax'])),
-      pt: (s.pt || []).filter(x => x.trainerId === p.ref)
+      pt: (s.pt || []).filter(x => x.trainerId === p.ref),
+      ptPlans: s.ptPlans || [],
+      ptPacks: (s.ptPacks || []).filter(k => (k.trainerIds || []).indexOf(p.ref) >= 0),
+      ptSess: (s.ptSess || []).filter(x => x.trainerId === p.ref)
     };
   }
   // trainee: only their own records
@@ -157,6 +260,7 @@ function viewFor(p) {
     settings: set, trainers, plans: s.plans || [], classes: s.classes || [],
     members: (s.members || []).filter(m => m.id === me),
     subs: own(s.subs), pay: own(s.pay), att: own(s.att), pt: own(s.pt), freezeReq: own(s.freezeReq),
+    ptPacks: own(s.ptPacks), ptSess: own(s.ptSess), ptPlans: s.ptPlans || [],
     book: (s.book || []).map(b => b.memberId === me ? b : { id: b.id, classId: b.classId, date: b.date })
   };
 }
@@ -165,18 +269,35 @@ function viewFor(p) {
 function canWrite(p, c, oldV, newV) {
   const r = p.role;
   if (r === 'manager') return true;
-  if (r === 'reception') return ['exp', 'cash', 'plans', 'trainers'].indexOf(c) < 0;
+  if (r === 'reception') {
+    if (['exp', 'cash', 'plans', 'trainers', 'pt', 'ptPlans'].indexOf(c) >= 0) return false;
+    if (c === 'pay') return !oldV && !!newV && +newV.amount > 0;   // collecting only: no refunds, edits or deletions
+    if (c === 'shifts') return !oldV && !!newV;
+    return true;
+  }
+  if (r === 'accountant') {
+    if (['pay', 'exp', 'cash', 'daily'].indexOf(c) >= 0) return true;
+    if (c === 'subs') return !!oldV && !!newV;                   // refunds and invoice corrections, not new sales
+    if (c === 'shifts') return !oldV && !!newV;
+    return false;
+  }
   if (r === 'trainer') {
     if (c === 'book') return true;
-    if (c === 'pt') return (!oldV || oldV.trainerId === p.ref) && (!newV || newV.trainerId === p.ref);
+    if (c === 'pt' || c === 'ptSess') return (!oldV || oldV.trainerId === p.ref) && (!newV || newV.trainerId === p.ref);
     return false;
   }
   if (r === 'trainee') {
     if (c === 'book') return (!oldV || oldV.memberId === p.ref) && (!newV || newV.memberId === p.ref);
     if (c === 'freezeReq') return !oldV && newV && newV.memberId === p.ref && newV.status === 'pending';
+    if (c === 'ptSess') return !!oldV && !!newV && oldV.memberId === p.ref && newV.memberId === p.ref && oldV.status === 'booked' && ['cancelled', 'late_cancel'].indexOf(newV.status) >= 0;
     return false;
   }
   return false;
+}
+const mins = t => { const a = String(t || '0:0').split(':'); return (+a[0] || 0) * 60 + (+a[1] || 0); };
+function sessHoursAway(x) {
+  const off = (st().settings || {}).tzOffset || '+03:00';
+  return (new Date(x.date + 'T' + x.time + ':00' + off) - Date.now()) / 36e5;
 }
 function numFrom(code) { return parseInt(String(code || '').replace(/\D/g, ''), 10) || 0; }
 
@@ -188,7 +309,7 @@ function applySync(p, ops) {
   // validate everything first so a refused batch changes nothing
   for (const op of ops) {
     if (!op || typeof op !== 'object') throw httpErr(400, 'طلب غير صالح');
-    if (op.c === 'meta') { if (['nextCode', 'nextInv'].indexOf(op.k) < 0 || STAFF.indexOf(p.role) < 0) throw httpErr(403, 'غير مسموح'); continue; }
+    if (op.c === 'meta') { if (META_KEYS.indexOf(op.k) < 0 || OFFICE.indexOf(p.role) < 0) throw httpErr(403, 'غير مسموح'); continue; }
     if (op.c === 'settings') { if (p.role !== 'manager' || !op.v || typeof op.v !== 'object') throw httpErr(403, 'الإعدادات للمدير فقط'); continue; }
     if (COLS.indexOf(op.c) < 0) throw httpErr(400, 'نوع بيانات غير معروف');
     const id = op.op === 'put' ? op.v && op.v.id : op.id;
@@ -196,17 +317,41 @@ function applySync(p, ops) {
     if (op.op !== 'put' && op.op !== 'del') throw httpErr(400, 'عملية غير معروفة');
     const i = mapOf(op.c).get(id), old = i === undefined ? null : s[op.c][i];
     if (!canWrite(p, op.c, old, op.op === 'put' ? op.v : null)) throw httpErr(403, 'لا تملك صلاحية تعديل هذه البيانات');
+    if (op.op === 'put' && op.c === 'book' && !old) {
+      const v = op.v, cls = (s.classes || []).find(x => x.id === v.classId), taken = (s.book || []).filter(b => b.classId === v.classId && b.date === v.date);
+      if (taken.some(b => b.memberId === v.memberId)) throw httpErr(409, 'محجوز مسبقاً في هذه الحصة');
+      if (cls && cls.cap && taken.length >= cls.cap) throw httpErr(409, 'اكتمل عدد المقاعد في هذه الحصة');
+    }
+    if (op.op === 'put' && op.c === 'ptSess' && op.v.status === 'booked') {
+      const v = op.v, a0 = mins(v.time), a1 = a0 + (+v.dur || 60);
+      const clash = (s.ptSess || []).find(x => x.id !== v.id && x.date === v.date && (x.status === 'booked' || x.status === 'done') && (x.trainerId === v.trainerId || x.memberId === v.memberId) && mins(x.time) < a1 && a0 < mins(x.time) + (+x.dur || 60));
+      if (clash) throw httpErr(409, clash.trainerId === v.trainerId ? 'المدرب لديه جلسة أخرى في هذا الوقت' : 'المتدرب لديه جلسة أخرى في هذا الوقت');
+    }
   }
   for (const op of ops) {
     if (op.c === 'meta') { s[op.k] = Math.max(s[op.k] || 0, +op.v || 0); continue; }
     if (op.c === 'settings') {
       const v = Object.assign({}, op.v);
       if (p.role !== 'manager') v.pin = (s.settings || {}).pin;
+      auditSettings(p, s.settings, v);
       s.settings = v; logged.push({ c: 'settings', op: 'set', v: s.settings }); continue;
     }
     const arr = s[op.c], m = mapOf(op.c);
     if (op.op === 'put') {
-      const v = op.v, i = m.get(v.id);
+      const v = op.v, i = m.get(v.id), old = i === undefined ? null : arr[i];
+      if (STAMP.indexOf(op.c) >= 0) {
+        if (old && old.by) { v.by = old.by; v.byName = old.byName; v.at = old.at; }
+        else if (!old) { v.by = p.key; v.byName = p.name; v.at = new Date().toISOString(); }
+      }
+      if (op.c === 'ptSess' && old) {
+        if (p.role === 'reception') PT_PRIVATE.forEach(k => { if (old[k] !== undefined) v[k] = old[k]; else delete v[k]; });
+        if (p.role === 'trainee') {
+          const set = s.settings || {}, late = sessHoursAway(old) < (+set.ptCancelHours || 0);
+          Object.keys(v).forEach(k => delete v[k]); Object.assign(v, old);
+          v.status = late ? 'late_cancel' : 'cancelled'; v.charged = late ? set.ptLateCharge !== false : false; v.cancelledBy = 'member'; v.cancelledAt = new Date().toISOString();
+        }
+      }
+      auditOp(p, op.c, 'put', old, v);
       if (i === undefined) {
         if (op.c === 'members' && arr.some(x => x.code === v.code)) {
           s.nextCode = Math.max(s.nextCode || 1001, ...arr.map(x => numFrom(x.code) + 1));
@@ -221,6 +366,7 @@ function applySync(p, ops) {
       logged.push({ c: op.c, op: 'put', v });
     } else {
       const i = m.get(op.id);
+      if (i !== undefined) auditOp(p, op.c, 'del', arr[i], null);
       if (i !== undefined) { arr.splice(i, 1); maps[op.c] = null; logged.push({ c: op.c, op: 'del', id: op.id }); }
       if (op.c === 'members') delete db.creds['m:' + op.id];
       if (op.c === 'trainers') delete db.creds['t:' + op.id];
@@ -260,15 +406,19 @@ function sessCookie(req, tok, maxAge) {
 }
 function clientIp(req) { return String(req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim(); }
 
-const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.png': 'image/png', '.svg': 'image/svg+xml', '.ico': 'image/x-icon', '.webmanifest': 'application/manifest+json', '.json': 'application/json' };
+const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.png': 'image/png', '.svg': 'image/svg+xml', '.ico': 'image/x-icon', '.webmanifest': 'application/manifest+json', '.json': 'application/json', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.txt': 'text/plain; charset=utf-8', '.xml': 'application/xml' };
+const UPL = path.join(DATA, 'uploads');
 function serveStatic(req, res) {
-  let rel = decodeURIComponent(new URL(req.url, 'http://x').pathname);
-  if (rel === '/' || !path.extname(rel)) rel = '/index.html';
-  const f = path.normalize(path.join(PUB, rel));
-  if (!f.startsWith(PUB)) { res.writeHead(403); return res.end(); }
+  let rel; try { rel = decodeURIComponent(new URL(req.url, 'http://x').pathname); } catch (e) { res.writeHead(400); return res.end(); }
+  let base = PUB;
+  if (rel.startsWith('/uploads/')) { base = UPL; rel = rel.slice(8); }
+  else if (rel === '/app' || rel.startsWith('/app/')) rel = '/index.html';
+  else if (rel === '/' || !path.extname(rel)) rel = '/site.html';
+  const f = path.normalize(path.join(base, rel));
+  if (!f.startsWith(base + path.sep)) { res.writeHead(403); return res.end(); }
   fs.readFile(f, (err, buf) => {
     if (err) { res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' }); return res.end('Not found'); }
-    res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream', 'Cache-Control': rel === '/index.html' ? 'no-cache' : 'public, max-age=86400', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'same-origin' });
+    res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream', 'Cache-Control': /\.html$/.test(rel) ? 'no-cache' : base === UPL ? 'public, max-age=31536000, immutable' : 'public, max-age=86400', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'same-origin' });
     res.end(buf);
   });
 }
@@ -297,24 +447,78 @@ async function api(req, res, route) {
       }
     }
     if (!tok) {
-      const m = (st().members || []).find(x => String(x.code || '').toLowerCase() === u), cm = m && db.creds['m:' + m.id];
+      const m = (st().members || []).find(x => (x.uname && String(x.uname).toLowerCase() === u) || String(x.code || '').toLowerCase() === u), cm = m && db.creds['m:' + m.id];
       if (cm && checkPw(pw, cm.hash)) tok = { k: 'm', id: m.id, pv: cm.pv || 0 };
     }
     if (!tok) throw httpErr(401, 'اسم المستخدم أو رقم الجوال أو كلمة المرور غير صحيحة');
     tok.exp = Date.now() + 30 * 86400e3;
     const who = principal(tok);
-    return send(res, 200, { role: who.role, ref: who.ref, name: who.name, rev: db.rev }, { 'Set-Cookie': sessCookie(req, sign(tok), 30 * 86400) });
+    return send(res, 200, { role: who.role, ref: who.ref, name: who.name, key: who.key, rev: db.rev }, { 'Set-Cookie': sessCookie(req, sign(tok), 30 * 86400) });
+  }
+  if (route === 'site' && method === 'GET') {
+    const s = st(), set = s.settings || {}, tn = id => { const t = (s.trainers || []).find(x => x.id === id); return t ? t.name : ''; };
+    return send(res, 200, {
+      gym: set.gym || 'جولة اللياقة', phone: set.phone || '', address: set.address || '', legalName: set.legalName || '', crNo: set.crNo || '', vatNo: set.vatNo || '',
+      site: set.site || {},
+      plans: (s.plans || []).filter(x => !x.archived && !x.hidden).map(x => pick(x, ['id', 'name', 'days', 'price'])),
+      ptPlans: (s.ptPlans || []).filter(x => !x.archived).map(x => pick(x, ['id', 'name', 'sessions', 'validDays', 'price'])),
+      classes: (s.classes || []).map(x => ({ id: x.id, name: x.name, days: x.days || [], time: x.time, dur: x.dur, trainer: tn(x.trainerId) })),
+      trainers: (s.trainers || []).filter(x => !x.hidden).map(x => pick(x, ['id', 'name', 'spec']))
+    }, { 'Cache-Control': 'public, max-age=60' });
+  }
+  if (route === 'lead' && method === 'POST') {
+    if (limited('lead:' + clientIp(req), 6, 3600e3)) throw httpErr(429, 'أرسلت طلبات كثيرة. حاول لاحقاً أو تواصل معنا على واتساب');
+    const b = await readBody(req, 4096);
+    const clean = (x, n) => String(x || '').replace(/[<>\u0000-\u001f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, n);
+    if (b.website) return send(res, 200, { ok: true });
+    const name = clean(b.name, 60), phone = String(b.phone || '').replace(/\D/g, '');
+    if (name.length < 2) throw httpErr(400, 'اكتب اسمك');
+    if (!/^05\d{8}$/.test(phone)) throw httpErr(400, 'رقم الجوال غير صحيح');
+    const s = st(); s.leads = s.leads || [];
+    const today = new Date(Date.now() + 3 * 3600e3).toISOString().slice(0, 10);
+    const interest = clean(b.interest, 80), time = clean(b.time, 30), note = clean(b.note, 300);
+    const plan = (s.plans || []).find(x => interest === 'باقة ' + x.name);
+    const txt = ['طلب من الموقع: ' + (interest || 'زيارة تجريبية'), time ? 'الوقت المناسب: ' + time : '', note, b.consent ? 'وافق على التواصل' : 'لم يوافق على الرسائل التسويقية'].filter(Boolean).join(' · ');
+    let l = s.leads.find(x => x.phone === phone && x.status !== 'won' && x.status !== 'lost');
+    if (l) { l.log = l.log || []; l.log.push({ date: today, note: txt, st: l.status }); l.next = today; }
+    else {
+      l = { id: 'l' + Date.now().toString(36) + crypto.randomBytes(3).toString('hex'), name, phone, source: 'الموقع الإلكتروني', planId: plan ? plan.id : '', status: 'new', next: today, notes: txt, created: today, log: [], web: true, consent: !!b.consent };
+      s.leads.push(l);
+    }
+    db.rev++; changeLog.push({ rev: db.rev, c: 'leads', op: 'put', v: l });
+    if (changeLog.length > LOG_MAX) changeLog = changeLog.slice(-LOG_MAX);
+    persist();
+    return send(res, 200, { ok: true });
+  }
+  if (route === 'upload' && method === 'POST') {
+    need(['manager']);
+    const b = await readBody(req, 7.2e6), mt = /^data:image\/(png|jpeg|webp);base64,([A-Za-z0-9+/=]+)$/.exec(String(b.data || ''));
+    if (!mt) throw httpErr(400, 'الصورة يجب أن تكون PNG أو JPG أو WEBP');
+    const buf = Buffer.from(mt[2], 'base64');
+    if (buf.length > 5e6) throw httpErr(413, 'حجم الصورة أكبر من 5 ميغابايت');
+    fs.mkdirSync(UPL, { recursive: true });
+    const name = Date.now().toString(36) + crypto.randomBytes(6).toString('hex') + '.' + (mt[1] === 'jpeg' ? 'jpg' : mt[1]);
+    fs.writeFileSync(path.join(UPL, name), buf);
+    audit(p, 'رفع صورة للموقع', name, 'site'); persist();
+    return send(res, 200, { url: '/uploads/' + name });
   }
   if (route === 'logout' && method === 'POST') return send(res, 200, { ok: true }, { 'Set-Cookie': sessCookie(req, '', 0) });
-  if (route === 'me') { need(); return send(res, 200, { role: p.role, ref: p.ref, name: p.name, rev: db.rev }); }
+  if (route === 'me') { need(); return send(res, 200, { role: p.role, ref: p.ref, name: p.name, key: p.key, rev: db.rev }); }
   if (route === 'rev') { need(); return send(res, 200, { rev: db.rev }); }
   if (route === 'state') { need(); return send(res, 200, { rev: db.rev, state: viewFor(p), warn: NO_DISK && p.role === 'manager' ? 'لا يوجد قرص دائم مربوط بالخادم، وستُحذف البيانات عند أي تحديث. اربط Volume بالخدمة من لوحة الاستضافة قبل إدخال بيانات حقيقية.' : '' }); }
   if (route === 'changes') {
-    need(STAFF);
+    need(OFFICE);
     const since = +new URL(req.url, 'http://x').searchParams.get('since') || 0;
     if (!changeLog.length || since < changeLog[0].rev - 1) return send(res, 200, { full: true, rev: db.rev });
     let ch = changeLog.filter(e => e.rev > since);
-    if (p.role === 'reception') ch = ch.filter(e => e.c !== 'exp' && e.c !== 'cash').map(e => e.c === 'settings' ? Object.assign({}, e, { v: Object.assign({}, e.v, { pin: undefined }) }) : e);
+    if (p.role !== 'manager') {
+      const hide = HIDDEN[p.role] || [];
+      ch = ch.filter(e => hide.indexOf(e.c) < 0).map(e => {
+        if (e.c === 'settings') return Object.assign({}, e, { v: Object.assign({}, e.v, { pin: undefined }) });
+        if (p.role === 'accountant' && e.c === 'members' && e.v) return Object.assign({}, e, { v: pick(e.v, ['id', 'code', 'name', 'phone', 'gender', 'trainerId', 'joined']) });
+        return e;
+      });
+    }
     return send(res, 200, { rev: db.rev, changes: ch });
   }
   if (route === 'sync' && method === 'POST') {
@@ -330,6 +534,8 @@ async function api(req, res, route) {
     if (pw.length < 4) throw httpErr(400, 'كلمة المرور 4 أحرف على الأقل');
     const k = kind + ':' + b.id, old = db.creds[k];
     db.creds[k] = { hash: hashPw(pw), pv: ((old && old.pv) || 0) + 1 };
+    const who = kind === 't' ? (findTrainer(b.id) || {}).name : (findMember(b.id) || {}).name;
+    if (old) audit(p, kind === 't' ? 'كلمة مرور جديدة لمدرب' : 'كلمة مرور جديدة لعضو', who || '', 'creds', b.id);
     persist();
     return send(res, 200, { ok: true });
   }
@@ -362,19 +568,29 @@ async function api(req, res, route) {
       if (!/^[a-z0-9._-]{3,32}$/.test(un)) throw httpErr(400, 'اسم المستخدم بالإنجليزية والأرقام فقط، من 3 إلى 32 حرفاً');
       if (db.users.some(u => u.username === un)) throw httpErr(400, 'اسم المستخدم مستخدم من قبل');
       if (pw.length < 6) throw httpErr(400, 'كلمة المرور 6 أحرف على الأقل');
-      db.users.push({ id: 'u' + crypto.randomBytes(6).toString('hex'), username: un, name: String(b.name || un).slice(0, 60), role: b.role === 'manager' ? 'manager' : 'reception', hash: hashPw(pw), pv: 1 });
+      const role = ['manager', 'accountant'].indexOf(b.role) >= 0 ? b.role : 'reception';
+      db.users.push({ id: 'u' + crypto.randomBytes(6).toString('hex'), username: un, name: String(b.name || un).slice(0, 60), role, hash: hashPw(pw), pv: 1 });
+      audit(p, 'إنشاء حساب موظف', String(b.name || un) + ' · ' + un + ' · ' + ({ manager: 'مدير', accountant: 'محاسبة', reception: 'استقبال' })[role], 'users');
     } else if (b.action === 'delete') {
       if (b.id === 'admin') throw httpErr(400, 'لا يمكن حذف حساب المدير الرئيسي');
+      const gone = db.users.find(u => u.id === b.id);
       db.users = db.users.filter(u => u.id !== b.id);
+      if (gone) audit(p, 'حذف حساب موظف', gone.name + ' · ' + gone.username, 'users');
     } else if (b.action === 'password') {
       const u = db.users.find(x => x.id === b.id), pw = String(b.password || '');
       if (!u) throw httpErr(404, 'الحساب غير موجود');
       if (u.id === 'admin') throw httpErr(400, 'كلمة مرور المدير الرئيسي تُغيَّر من متغير ADMIN_PASSWORD في الاستضافة');
       if (pw.length < 6) throw httpErr(400, 'كلمة المرور 6 أحرف على الأقل');
       u.hash = hashPw(pw); u.pv = (u.pv || 0) + 1;
+      audit(p, 'تغيير كلمة مرور موظف', u.name + ' · ' + u.username, 'users');
     } else throw httpErr(400, 'طلب غير صالح');
     persist();
     return send(res, 200, { ok: true });
+  }
+  if (route === 'audit') {
+    need(['manager']);
+    const lim = Math.min(5000, +new URL(req.url, 'http://x').searchParams.get('limit') || 1000);
+    return send(res, 200, { total: db.audit.length, items: db.audit.slice(-lim).reverse() });
   }
   if (route === 'backup') {
     need(['manager']);

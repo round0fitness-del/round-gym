@@ -1,4 +1,4 @@
-<!doctype html><html lang="ar" dir="rtl"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><link rel="manifest" href="/manifest.webmanifest"><link rel="icon" type="image/png" href="/icon.png"><link rel="apple-touch-icon" href="/icon.png"><meta name="theme-color" content="#161312"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="جولة اللياقة"><meta name="robots" content="noindex"></head><body>
+<!doctype html><html lang="ar" dir="rtl"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><link rel="manifest" href="/manifest.webmanifest"><link rel="icon" type="image/png" href="/icon.png"><link rel="apple-touch-icon" href="/icon.png"><meta name="theme-color" content="#161312"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="جولة اللياقة"><meta name="robots" content="noindex"><script src="/site-defaults.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script></head><body>
 <title>نظام جولة اللياقة</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -443,6 +443,73 @@ button.cchip:hover{background:color-mix(in srgb,var(--c) 22%,var(--surface))}
 .sync.saving::before,.sync.pending::before{background:#f0b429}
 .sync.off::before,.sync.err::before{background:#ff6b5e}
 .pinbig{font:700 40px/1.2 var(--f-display);letter-spacing:.18em;color:var(--accent);font-variant-numeric:tabular-nums}
+.paysplit{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:520px){.paysplit{grid-template-columns:minmax(0,1fr)}}
+.instl{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.instl .pill{font-size:11px;padding:1px 8px}
+.chk{display:flex;align-items:center;gap:8px}.chk input{width:18px;height:18px;min-height:0}
+td.r.in{color:var(--good)}
+.sitejump{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:14px;flex-wrap:nowrap}.sitejump .chip{text-decoration:none;white-space:nowrap}
+.sitegrid{display:grid;gap:14px}
+.sitesec{scroll-margin-top:16px}.sitesec .card-h h2{font:600 16px var(--f-display)}.sitesec .card-h .note{margin-top:2px}
+.sitebody>.fm{padding-top:8px}
+.sw{font-size:13px;white-space:nowrap}
+.sl{display:grid;gap:10px;padding:8px 16px 16px}
+.sl-item{border:1px solid var(--line);border-radius:12px;background:var(--surface-2)}
+.sl-item .fm{padding-top:4px}
+.sl-h{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 14px 0;flex-wrap:wrap}.sl-h b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sl-tools .btn[disabled]{opacity:.4;pointer-events:none}
+.sl-add{justify-self:start}
+.simg{display:flex;align-items:center;gap:12px;border:1px dashed var(--line);border-radius:10px;padding:8px;background:var(--surface);min-width:0}
+.simg img{width:96px;height:64px;object-fit:cover;border-radius:8px;flex:none}
+.simg>i{width:96px;height:64px;border-radius:8px;background:var(--surface-2);display:grid;place-items:center;color:var(--muted);flex:none}
+.simg label.btn{cursor:pointer}
+.sitebar{position:sticky;bottom:12px;display:flex;justify-content:flex-end;margin-top:14px;pointer-events:none}.sitebar .btn{pointer-events:auto;box-shadow:0 10px 24px -10px rgba(0,0,0,.45)}
+.sett-h{font:600 15px var(--f-display);margin-top:10px;padding-top:12px;border-top:1px solid var(--line)}
+.slots{display:flex;flex-wrap:wrap;gap:6px}
+.slot{position:relative}.slot input{position:absolute;opacity:0;inset:0;width:100%;height:100%;cursor:pointer;margin:0}
+.slot span{display:inline-block;border:1px solid var(--line);border-radius:9px;padding:6px 12px;font-weight:600;font-variant-numeric:tabular-nums}
+.slot input:checked+span{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.slot input:focus-visible+span{outline:2px solid var(--accent);outline-offset:2px}
+.exhead,.exrow{display:grid;grid-template-columns:minmax(0,2.4fr) repeat(3,minmax(0,1fr));gap:6px}
+.exhead.pl,.exrow.pl{grid-template-columns:minmax(0,1fr) minmax(0,2fr) repeat(3,minmax(0,.8fr)) minmax(0,1.6fr)}
+.exhead b{font-size:12px;color:var(--muted);font-weight:500}
+.exrow{margin-top:6px}.exrow input{min-height:36px;padding:6px 8px}
+.avrow{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) minmax(0,1fr);gap:8px;align-items:center}
+.ptseg{margin-bottom:14px;flex-wrap:wrap}
+.ptalert{display:flex;gap:8px;align-items:center;background:var(--warn-soft);color:var(--warn);border-radius:12px;padding:10px 14px;margin-bottom:14px;font-weight:600}
+.ptweek{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;padding:10px 16px 16px}
+.ptday{background:var(--surface-2);border-radius:12px;padding:8px;display:flex;flex-direction:column;gap:6px;min-width:0;min-height:120px;border:1.5px solid transparent}
+.ptday.today{border-color:var(--accent);background:var(--surface)}
+.ptdh{display:flex;justify-content:space-between;gap:4px;font-size:12.5px}.ptdh span{color:var(--muted)}
+.ptses{background:var(--surface);border:1px solid var(--line);border-inline-start:3px solid var(--info);border-radius:9px;padding:7px;display:grid;gap:3px;min-width:0}
+.ptses.st-done{border-inline-start-color:var(--good)}.ptses.st-noshow{border-inline-start-color:var(--bad)}.ptses.st-late_cancel{border-inline-start-color:var(--warn)}.ptses.st-cancelled{opacity:.6;border-inline-start-color:var(--line)}
+.ptst{display:flex;justify-content:space-between;align-items:center;gap:4px;flex-wrap:wrap}.ptst b{white-space:nowrap}.ptst .pill{font-size:10.5px;padding:0 6px}
+.ptses .link{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ptses small{color:var(--muted);font-size:11.5px}.ptses .acts{gap:4px}.ptses .btn.sm{padding:3px 8px;font-size:11.5px}
+.plday{margin-bottom:12px}.plday h4{font:600 14px var(--f-display);color:var(--accent);margin:0 0 4px}
+.plday .row{padding-inline:0}
+.mh{display:grid;gap:16px;max-width:1100px}
+.mh-hello{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.mh-hello h1{font:700 26px/1.2 var(--f-display)}.mh-hello p{color:var(--muted)}
+.mh-hero{background:var(--surface);border:1px solid var(--edge);border-radius:20px;box-shadow:var(--shadow);padding:20px;display:grid;gap:14px;position:relative;overflow:hidden;border-top:5px solid var(--accent)}
+.mh-hero-main{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.mh-lbl{font:600 15px var(--f-display);width:100%}
+.mh-big{display:flex;align-items:baseline;gap:6px}.mh-big b{font:700 52px/1 var(--f-display);color:var(--accent)}.mh-big span{color:var(--muted)}
+.mh-sub{color:var(--muted);font-size:13px}
+.mh-prog small{display:block;color:var(--muted);font-size:12px;margin-top:4px}
+.mh-mini{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;border-top:1px solid var(--line);padding-top:12px}
+.mh-mini span{display:block;font-size:12px;color:var(--muted)}.mh-mini b{font:700 22px var(--f-display)}.mh-mini b small{font-size:12px;color:var(--muted);font-weight:500}.mh-mini b.due{color:var(--bad)}
+.mh-alerts{display:grid;gap:8px}
+.mh-al{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;background:var(--surface);border:1px solid var(--edge);box-shadow:var(--shadow)}
+.mh-al .grow{flex:1;min-width:0}.mh-al b{display:block}.mh-al small{color:var(--muted)}
+.mh-al .ic{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;flex:none;background:var(--surface-2)}
+.mh-al.warn .ic{background:var(--warn-soft);color:var(--warn)}.mh-al.bad .ic{background:var(--bad-soft);color:var(--bad)}.mh-al.good .ic{background:var(--good-soft);color:var(--good)}.mh-al.info .ic{background:var(--info-soft);color:var(--info)}
+.mh-al.offer{border-color:var(--accent)}.mh-al.offer .ic{background:var(--accent);color:var(--accent-ink)}
+.mh-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:16px;align-items:start}
+.mh-sec .row{padding:10px 18px}
+.mh-left{font:700 24px var(--f-display);color:var(--accent);white-space:nowrap}.mh-left small{font-size:13px;color:var(--muted)}
+@media (max-width:760px){.ptweek{grid-template-columns:minmax(0,1fr)}.ptday{min-height:0}.exhead.pl{display:none}.exrow.pl{grid-template-columns:repeat(3,minmax(0,1fr))}.mh-big b{font-size:44px}.mh-mini b{font-size:18px}}
 @media (max-width:1180px){.strip{grid-template-columns:repeat(3,minmax(0,1fr))}.g2{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:900px){
   .shell{grid-template-columns:minmax(0,1fr)}
@@ -523,7 +590,7 @@ const ic=(n,s)=>'<svg width="'+(s||18)+'" height="'+(s||18)+'" viewBox="0 0 24 2
 const KEY='nabd.v1';
 let S=null;
 const DEFAULT_TPL={
- invoice:'مرحباً {name}، شكراً لاشتراكك في {gym}.\nالفاتورة: {inv}\nالباقة: {plan}\nمن {start} إلى {end}\nالإجمالي: {total} · المدفوع: {paid} · المتبقي: {due}\n\nبطاقتك وجدولك: {link}\nرقم الدخول: {code}\nكلمة المرور: {pass}',
+ invoice:'مرحباً {name}، شكراً لاشتراكك في {gym}.\nالفاتورة: {inv}\nالباقة: {plan}\nمن {start} إلى {end}\nالإجمالي: {total} · المدفوع: {paid} · المتبقي: {due}\n\nبطاقتك وجدولك: {link}\nاسم المستخدم: {user}\nكلمة المرور: {pass}',
  expiring:'مرحباً {name}، نذكّرك أن اشتراكك في {gym} ينتهي {date}. يسعدنا تجديده والاستمرار معنا.',
  expired:'مرحباً {name}، انتهى اشتراكك في {gym} بتاريخ {date}. عُد إلينا، يوجد لك عرض تجديد.',
  away:'مرحباً {name}، لاحظنا غيابك عن {gym} منذ فترة. المدرب بانتظارك، متى تناسبك الحصة القادمة؟',
@@ -576,7 +643,7 @@ function basePlans(){return [
  {id:'p4',name:'سنوي',days:365,price:1900,freeze:30}]}
 
 function wipeState(){
- return {v:1,settings:{gym:'جولة اللياقة',soonDays:7,churnDays:14,pin:'1234',portalLink:'',dailyPrice:40,openingCash:0,tpl:Object.assign({},DEFAULT_TPL)},
+ return {v:1,settings:{gym:'جولة اللياقة',soonDays:7,churnDays:14,pin:'1234',portalLink:'',dailyPrice:40,openingCash:0,discLimit:10,classCancelHours:2,ptCancelHours:12,ptLateCharge:true,ptNoShowCharge:true,ptCommType:'percent',ptCommValue:30,ptCommPenalty:false,tpl:Object.assign({},DEFAULT_TPL)},
   plans:basePlans(),trainers:[],members:[],subs:[],pay:[],exp:[],att:[],classes:[],book:[],freezeReq:[],pt:[],campaigns:[],daily:[],leads:[],cash:[],v2:1,v3:1,nextCode:1001,nextInv:1}
 }
 
@@ -678,7 +745,7 @@ function subSt(s){
  return diff(s.end,t)<=S.settings.soonDays?'expiring':'active';
 }
 function mInfo(m){
- const t=TODAY(),subs=S.subs.filter(s=>s.memberId===m.id&&!s.cancelled);
+ const t=TODAY(),subs=S.subs.filter(s=>s.memberId===m.id&&!s.cancelled&&s.kind!=='pt');
  if(!subs.length)return {st:'none',sub:null,end:null,days:0};
  const maxEnd=subs.reduce((a,s)=>s.end>a?s.end:a,'0');
  const fr=subs.some(inFreeze);
@@ -704,14 +771,6 @@ function waLink(m,key,extra){
  const i=mInfo(m);
  const txt=fill(S.settings.tpl[key],Object.assign({name:m.name,gym:S.settings.gym,date:i.end?fdate(i.end):'',days:i.days},extra||{}));
  return 'https://wa.me/'+ph+'?text='+encodeURIComponent(txt);
-}
-function addPayment(s,amount,method){S.pay.push({id:uid('p'),subId:s.id,memberId:s.memberId,date:TODAY(),amount:amount,method:method})}
-function createSub(memberId,planId,start,disc,paid,method,fm){
- const p=planById(planId),total=Math.max(0,p.price-disc);
- const s={id:uid('s'),inv:'INV-'+String(S.nextInv++).padStart(4,'0'),memberId:memberId,planId:p.id,planName:p.name,start:start,end:addDays(start,p.days-1),total:total,freezeMax:fm==null?(p.freeze||0):fm,freezes:[]};
- S.subs.push(s);
- if(paid>0)addPayment(s,paid,method);
- return s;
 }
 function startFor(mid){const m=memberById(mid);if(!m)return TODAY();const i=mInfo(m),t=TODAY();return i.end&&i.end>=t?addDays(i.end,1):t}
 
@@ -848,7 +907,8 @@ function pageSubs(){
   const m=memberById(s.memberId),k=subSt(s),due=dueOf(s);
   let a='';
   if(due>0)a+=btn('pay','تحصيل','sm pri','data-id="'+s.id+'"');
-  if(k==='active'||k==='expiring'||k==='frozen')a+=btn('freezeReq','طلب تجميد','sm','data-id="'+s.id+'"');
+  if(s.kind!=='pt'&&(k==='active'||k==='expiring'||k==='frozen'))a+=btn('freezeReq','طلب تجميد','sm','data-id="'+s.id+'"');
+  if(canRefund()&&paidOf(s.id)>0)a+=btn('refund','استرداد','sm bad','data-id="'+s.id+'"');
   a+=btn('invoice','فاتورة','sm','data-id="'+s.id+'"');
   if(k!=='cancelled'&&k!=='expired')a+=btn('cancelSub','إلغاء','sm bad','data-id="'+s.id+'"');
   return '<tr><td class="mono">'+s.inv+'</td><td>'+(m?'<button type="button" class="link" data-act="openMember" data-id="'+m.id+'">'+esc(m.name)+'</button>':'-')+'</td><td>'+esc(s.planName)+'</td><td class="num">'+fdate(s.start,{day:'numeric',month:'short'})+' ← '+fdate(s.end,{day:'numeric',month:'short',year:'numeric'})+'</td><td class="num">'+money(s.total)+'</td><td class="num">'+(due>0?'<span style="color:var(--bad)">'+money(due)+'</span>':'<span class="mut">0</span>')+'</td><td>'+pill(k)+'</td><td><div class="cell-acts">'+a+'</div></td></tr>';
@@ -918,7 +978,7 @@ function pageFinance(){
  const shown=inv.filter(s=>U.ff==='all'||dueOf(s)>0).slice(0,40);
  const rows=shown.map(s=>{const m=memberById(s.memberId),due=dueOf(s),paid=paidOf(s.id);
   const state=s.cancelled?'<span class="pill">ملغاة</span>':due===0?'<span class="pill good">مسددة</span>':paid>0?'<span class="pill warn">جزئية</span>':'<span class="pill bad">غير مسددة</span>';
-  return '<tr><td class="mono">'+s.inv+'</td><td>'+fdate(s.start,{day:'numeric',month:'short'})+'</td><td>'+(m?esc(m.name):'-')+'</td><td class="num">'+money(s.total)+'</td><td class="num">'+(due?'<span style="color:var(--bad)">'+money(due)+'</span>':'0')+'</td><td>'+state+'</td><td>'+'<div class="cell-acts">'+btn('invoice','فاتورة','sm','data-id="'+s.id+'"')+(due?btn('pay','تحصيل','sm pri','data-id="'+s.id+'"'):'')+'</div>'+'</td></tr>'}).join('')||'<tr><td colspan="7" class="empty">لا توجد فواتير.</td></tr>';
+  return '<tr><td class="mono">'+s.inv+'</td><td>'+fdate(s.start,{day:'numeric',month:'short'})+'</td><td>'+(m?esc(m.name):'-')+'</td><td class="num">'+money(s.total)+'</td><td class="num">'+(due?'<span style="color:var(--bad)">'+money(due)+'</span>':'0')+'</td><td>'+state+'</td><td>'+'<div class="cell-acts">'+(canRefund()&&paid>0?btn('refund','استرداد','sm bad','data-id="'+s.id+'"'):'')+btn('invoice','فاتورة','sm','data-id="'+s.id+'"')+(due?btn('pay','تحصيل','sm pri','data-id="'+s.id+'"'):'')+'</div>'+'</td></tr>'}).join('')||'<tr><td colspan="7" class="empty">لا توجد فواتير.</td></tr>';
  const exps=S.exp.slice().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,25).map(e=>'<tr><td>'+fdate(e.date,{day:'numeric',month:'short'})+'</td><td>'+esc(e.cat)+(e.note?'<br><span class="mut">'+esc(e.note)+'</span>':'')+'</td><td class="num">'+money(e.amount)+'</td><td><div class="cell-acts"><button type="button" class="ib" data-act="delExpense" data-id="'+e.id+'" aria-label="حذف المصروف">'+ic('x',16)+'</button></div></td></tr>').join('')||'<tr><td colspan="4" class="empty">لا توجد مصروفات.</td></tr>';
  return head('المالية','الفواتير والتحصيل والمصروفات',btn('newExpense','مصروف جديد')+btn('newSub',ic('plus',16)+' اشتراك جديد','pri'))+
  '<div class="strip s4"><div class="kpi good"><span>إيرادات الشهر</span><b>'+num(rev)+' <small>ر.س</small></b></div><div class="kpi"><span>مصروفات الشهر</span><b>'+num(ex)+' <small>ر.س</small></b></div><div class="kpi"><span>صافي الربح</span><b style="color:'+(rev-ex>=0?'var(--good)':'var(--bad)')+'">'+num(rev-ex)+' <small>ر.س</small></b></div><div class="kpi'+(debt?' hot':'')+'"><span>غير محصّل</span><b>'+num(debt)+' <small>ر.س</small></b></div></div>'+
@@ -938,7 +998,7 @@ function pageClasses(){
 
 function pageTrainers(){
  const cards=S.trainers.map(tr=>{const n=S.members.filter(m=>m.trainerId===tr.id).length,nc=S.classes.filter(c=>c.trainerId===tr.id).length;
-  return '<div class="panel pb" style="display:grid;gap:8px"><div style="display:flex;gap:12px;align-items:center"><span class="av" style="width:44px;height:44px;font-size:16px">'+esc(initial(tr.name.replace('كابتن ','')))+'</span><div style="flex:1;min-width:0"><h3 style="font-size:16px">'+esc(tr.name)+'</h3><span class="note">'+esc(tr.spec)+'</span></div>'+btn('trainerPin','كلمة مرور','sm','data-id="'+tr.id+'"')+btn('editTrainer','تعديل','sm','data-id="'+tr.id+'"')+'</div><div class="chipline"><span>'+n+' عضو</span><span>'+nc+' حصة أسبوعية</span></div>'+(tr.phone?'<span class="mut ltr">'+esc(tr.phone)+'</span>':'')+'</div>'}).join('')||'<p class="empty">لا يوجد مدربون بعد.</p>';
+  return '<div class="panel pb" style="display:grid;gap:8px"><div style="display:flex;gap:12px;align-items:center"><span class="av" style="width:44px;height:44px;font-size:16px">'+esc(initial(tr.name.replace('كابتن ','')))+'</span><div style="flex:1;min-width:0"><h3 style="font-size:16px">'+esc(tr.name)+'</h3><span class="note">'+esc(tr.spec)+'</span></div>'+btn('trainerPin','كلمة مرور','sm','data-id="'+tr.id+'"')+btn('ptAvail','أوقات التوفر','sm','data-id="'+tr.id+'"')+btn('editTrainer','تعديل','sm','data-id="'+tr.id+'"')+'</div><div class="chipline"><span>'+n+' عضو</span><span>'+nc+' حصة أسبوعية</span></div>'+(tr.phone?'<span class="mut ltr">'+esc(tr.phone)+'</span>':'')+'</div>'}).join('')||'<p class="empty">لا يوجد مدربون بعد.</p>';
  return head('المدربون','تعيين الأعضاء والحصص لكل مدرب',btn('newTrainer',ic('plus',16)+' مدرب جديد','pri'))+'<div class="grid g3" style="margin-top:0">'+cards+'</div>';
 }
 
@@ -977,9 +1037,9 @@ function pageSettings(){
  '<form class="panel" id="setf" autocomplete="off"><div class="fm"><label class="fld full"><span>اسم النادي</span><input name="gym" id="f-gym" value="'+esc(s.gym)+'" required></label>'+
  '<label class="fld"><span>التنبيه قبل انتهاء الاشتراك (أيام)</span><input type="number" min="1" max="60" name="soon" id="f-soon" value="'+s.soonDays+'"></label>'+
  '<label class="fld"><span>اعتبار العضو منقطعاً بعد (أيام غياب)</span><input type="number" min="3" max="90" name="churn" id="f-churn" value="'+s.churnDays+'"></label>'+'<label class="fld"><span>رمز المدير لاعتماد التجميد</span><input name="pin" id="f-pin" value="'+esc(s.pin||'1234')+'" inputmode="numeric" required></label>'+
- '<label class="fld"><span>سعر الدخول اليومي (ر.س)</span><input type="number" min="0" step="1" name="dprice" id="f-dprice" value="'+(s.dailyPrice||0)+'"></label>'+'<label class="fld"><span>الرصيد الافتتاحي للصندوق (ر.س)</span><input type="number" step="0.01" name="opening" id="f-opening" value="'+(s.openingCash||0)+'"></label>'+'<p class="note full">المتغيرات المتاحة في القوالب: {name} {gym} {date} {days} {amount}، وفي تهنئة الميلاد {age}</p>'+
+ '<label class="fld"><span>حد الخصم لموظف الاستقبال (% من سعر الباقة)</span><input type="number" min="0" max="100" step="1" name="disclim" id="f-disclim" value="'+(s.discLimit==null?10:s.discLimit)+'"></label>'+'<label class="fld"><span>سعر الدخول اليومي (ر.س)</span><input type="number" min="0" step="1" name="dprice" id="f-dprice" value="'+(s.dailyPrice||0)+'"></label>'+'<label class="fld"><span>الرصيد الافتتاحي للصندوق (ر.س)</span><input type="number" step="0.01" name="opening" id="f-opening" value="'+(s.openingCash||0)+'"></label>'+'<p class="note full">المتغيرات المتاحة في القوالب: {name} {gym} {date} {days} {amount}، وفي تهنئة الميلاد {age}</p>'+
  '<label class="fld full"><span>رابط صفحة المتدرب (يُرسل في الفاتورة والحملات)</span><input name="link" id="f-link" dir="ltr" value="'+esc(s.portalLink||'')+'" placeholder="اتركه فارغاً لاستخدام رابط هذه الصفحة"></label>'+ta('expiring','رسالة قرب الانتهاء')+ta('expired','رسالة الاشتراك المنتهي')+ta('away','رسالة الغياب')+ta('debt','رسالة المبلغ المتبقي')+ta('lead','رسالة العميل المحتمل')+ta('bday','تهنئة عيد الميلاد')+ta('invoice','قالب الفاتورة: {name} {gym} {inv} {plan} {start} {end} {total} {paid} {due} {code} {link} {pass}')+
- '<div class="full acts"><button class="btn pri" type="submit">حفظ الإعدادات</button></div></div></form>'+
+ settingsExtra(s)+'<div class="full acts"><button class="btn pri" type="submit">حفظ الإعدادات</button></div></div></form>'+
  accountsPanel();
 }
 
@@ -1009,7 +1069,7 @@ function memberModal(m){
  U.conv='';const isNew=!m;m=m||{name:'',phone:'',gender:'m',trainerId:'',notes:'',birth:''};
  openModal(isNew?'عضو جديد':'تعديل بيانات العضو','<div class="fm">'+
   fld('الاسم الكامل',inp('name',m.name,'required'),'full')+
-  fld('رقم الجوال',inp('phone',m.phone,'required inputmode="tel" pattern="05[0-9]{8}" title="رقم سعودي يبدأ بـ 05 ويتكون من 10 أرقام" placeholder="05XXXXXXXX" dir="ltr"'))+
+  fld('رقم الجوال',inp('phone',m.phone,'required inputmode="tel" pattern="05[0-9]{8}" title="رقم سعودي يبدأ بـ 05 ويتكون من 10 أرقام" placeholder="05XXXXXXXX" dir="ltr"'))+fld('اسم المستخدم للتطبيق (بالإنجليزي)',inp('uname',m.uname||'','required dir="ltr" pattern="[A-Za-z0-9._-]{3,30}" title="حروف إنجليزية وأرقام و . _ - فقط" placeholder="مثال: noura.alshammari" autocomplete="off"'))+
   fld('الجنس',sel('gender',[['m','ذكر'],['f','أنثى']],m.gender))+
   fld('تاريخ الميلاد',inp('birth',m.birth||'','type="date"'))+
   fld('المدرب',sel('trainerId',trainerOpts(),m.trainerId))+
@@ -1018,40 +1078,13 @@ function memberModal(m){
    const name=d.name.trim(),phone=d.phone.trim();
    if(!name)return false;
    if(S.members.some(x=>x.phone===phone&&(!m.id||x.id!==m.id))){toast('رقم الجوال مسجّل لعضو آخر');return false}
-   if(isNew){const nm={id:uid('m'),code:'M-'+(S.nextCode++),name:name,phone:phone,gender:d.gender,trainerId:d.trainerId,joined:TODAY(),birth:d.birth||'',notes:d.notes};S.members.push(nm);
+   const un=(d.uname||'').trim().toLowerCase();if(!/^[a-z0-9._-]{3,30}$/.test(un)){toast('اسم المستخدم بالحروف الإنجليزية والأرقام فقط');return false}
+   if(S.members.some(x=>x.uname===un&&(!m.id||x.id!==m.id))){toast('اسم المستخدم مستخدم لعضو آخر');return false}
+   if(isNew){const nm={id:uid('m'),code:'M-'+(S.nextCode++),name:name,phone:phone,uname:un,gender:d.gender,trainerId:d.trainerId,joined:TODAY(),birth:d.birth||'',notes:d.notes};S.members.push(nm);
     if(U.conv){const l=(S.leads||[]).find(x=>x.id===U.conv);if(l){l.status='won';l.memberId=nm.id;l.wonAt=TODAY();l.next='';(l.log=l.log||[]).push({date:TODAY(),note:'اشترك وأصبح عضواً',st:'won'})}U.conv=''}
     save();render();toast('تمت إضافة '+name);Sync.flush().then(()=>setMemberPin(nm.id,true));subModal(nm.id);return 'keep'}
-   Object.assign(m,{name:name,phone:phone,gender:d.gender,trainerId:d.trainerId,birth:d.birth||'',notes:d.notes});save();render();toast('تم حفظ التعديلات');
+   Object.assign(m,{name:name,phone:phone,uname:un,gender:d.gender,trainerId:d.trainerId,birth:d.birth||'',notes:d.notes});save();render();toast('تم حفظ التعديلات');
   },{ok:isNew?'حفظ ومتابعة للاشتراك':'حفظ'});
-}
-function subModal(memberId){
- if(!S.plans.length){toast('أضف باقة أولاً');return}
- const memberField=memberId?'<input type="hidden" name="memberId" value="'+memberId+'">'+fld('العضو','<input value="'+esc(memberById(memberId).name)+'" readonly>','full'):fld('العضو',sel('memberId',[['','اختر العضو']].concat(S.members.map(m=>[m.id,m.name+' - '+m.code])),'','required'),'full');
- openModal('اشتراك جديد','<div class="fm">'+memberField+
-  fld('الباقة',sel('planId',S.plans.map(p=>[p.id,p.name+' - '+p.days+' يوم - '+num(p.price)+' ر.س']),S.plans[0].id),'full')+
-  fld('تاريخ البداية',inp('start',memberId?startFor(memberId):TODAY(),'type="date" required'))+
-  fld('خصم (ر.س)',inp('disc','0','type="number" min="0" step="1"'))+
-  fld('المدفوع الآن (ر.س)',inp('paid','','type="number" min="0" step="0.01" required'))+
-  fld('طريقة الدفع',sel('method',Object.keys(METH).map(k=>[k,METH[k]]),'cash'))+
-  fld('أيام التجميد المسموحة',inp('freezeMax',S.plans[0].freeze||0,'type="number" min="0" max="365"'))+
-  '<p class="note">يحدد الحد الأقصى للتجميد في هذا الاشتراك. أي تجميد يحتاج موافقة المدير.</p>'+
-  '<div class="sumline full"><span>الإجمالي بعد الخصم</span><b class="num" id="tot">0</b></div></div>',
-  d=>{
-   if(!d.memberId){toast('اختر العضو');return false}
-   const p=planById(d.planId),disc=Math.max(0,+d.disc||0),total=Math.max(0,p.price-disc),paid=Math.max(0,+d.paid||0);
-   if(paid>total){toast('المدفوع أكبر من الإجمالي');return false}
-   createSub(d.memberId,p.id,d.start,disc,paid,d.method,Math.max(0,+d.freezeMax||0));save();render();toast('تم إنشاء الاشتراك');cardModal(d.memberId,true);return 'keep';
-  },{ok:'إنشاء الاشتراك',mount:f=>{
-   let touched=false,ftouch=false;const calc=()=>{const p=planById(f.planId.value),tot=Math.max(0,p.price-(+f.disc.value||0));f.querySelector('#tot').textContent=money(tot);if(!touched)f.paid.value=tot;if(!ftouch)f.freezeMax.value=p.freeze||0};
-   f.addEventListener('input',e=>{if(e.target.name==='paid')touched=true;if(e.target.name==='freezeMax')ftouch=true;calc()});calc();
-  }});
-}
-function payModal(s){
- const due=dueOf(s),m=memberById(s.memberId);
- openModal('تحصيل دفعة','<div class="fm"><div class="sumline full"><span>'+esc(m?m.name:'')+' · '+s.inv+'</span><b class="num">'+money(due)+'</b></div>'+
-  fld('المبلغ (ر.س)',inp('amount',due,'type="number" min="0.01" max="'+due+'" step="0.01" required'))+
-  fld('طريقة الدفع',sel('method',Object.keys(METH).map(k=>[k,METH[k]]),'cash'))+'</div>',
-  d=>{const a=+d.amount;if(!(a>0)||a>due+0.001){toast('المبلغ غير صحيح');return false}addPayment(s,a,d.method);save();render();toast('تم تحصيل '+money(a))},{ok:'تأكيد التحصيل'});
 }
 function expenseModal(){
  openModal('مصروف جديد','<div class="fm">'+fld('التاريخ',inp('date',TODAY(),'type="date" required'))+
@@ -1093,13 +1126,13 @@ function attendeesModal(c){
 function profileModal(m){
  const i=mInfo(m),subs=S.subs.filter(s=>s.memberId===m.id).sort((a,b)=>b.start.localeCompare(a.start)),visits=S.att.filter(a=>a.memberId===m.id).sort((a,b)=>b.date.localeCompare(a.date)||b.time.localeCompare(a.time));
  const tr=trainerById(m.trainerId),debt=debtOf(m.id);
- const sl=subs.length?subs.map(s=>{const k=subSt(s),due=dueOf(s);return '<div class="row" style="padding-inline:0"><div class="grow"><b>'+esc(s.planName)+'</b><small>'+fdate(s.start,{day:'numeric',month:'short'})+' ← '+fdate(s.end)+' · '+money(s.total)+(due?' · متبقٍ '+money(due):'')+'</small></div>'+pill(k)+btn('invoice','فاتورة','sm','data-id="'+s.id+'"')+(due?btn('pay','تحصيل','sm pri','data-id="'+s.id+'"'):'')+'</div>'}).join(''):'<p class="note">لا توجد اشتراكات.</p>';
+ const sl=subs.length?subs.map(s=>{const k=subSt(s),due=dueOf(s);return '<div class="row" style="padding-inline:0"><div class="grow"><b>'+esc(s.planName)+'</b><small>'+fdate(s.start,{day:'numeric',month:'short'})+' ← '+fdate(s.end)+' · '+money(s.total)+(due?' · متبقٍ '+money(due):'')+'</small>'+instBlock(s)+'</div>'+pill(k)+(canRefund()&&paidOf(s.id)>0?btn('refund','استرداد','sm bad','data-id="'+s.id+'"'):'')+btn('invoice','فاتورة','sm','data-id="'+s.id+'"')+(due?btn('pay','تحصيل','sm pri','data-id="'+s.id+'"'):'')+'</div>'}).join(''):'<p class="note">لا توجد اشتراكات.</p>';
  openModal(esc(m.name),
   '<div class="prof"><div style="display:grid;gap:10px"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">'+pill(i.st)+'<span class="mono mut">'+esc(m.code)+'</span></div>'+
-  '<div class="chipline"><span class="ltr">'+esc(m.phone)+'</span><span>'+(m.gender==='f'?'أنثى':'ذكر')+'</span><span>انضم '+fdate(m.joined)+'</span>'+(m.birth?'<span>العمر '+ageOf(m)+' سنة</span>':'')+'<span>'+esc(tr?tr.name:'بدون مدرب')+'</span></div>'+
+  '<div class="chipline"><span class="ltr">'+esc(m.phone)+'</span>'+(m.uname?'<span class="ltr">@'+esc(m.uname)+'</span>':'')+'<span>'+(m.gender==='f'?'أنثى':'ذكر')+'</span><span>انضم '+fdate(m.joined)+'</span>'+(m.birth?'<span>العمر '+ageOf(m)+' سنة</span>':'')+'<span>'+esc(tr?tr.name:'بدون مدرب')+'</span></div>'+
   (debt>0?'<div class="sumline" style="background:var(--bad-soft)"><span>مبلغ متبقٍ</span><b class="num" style="color:var(--bad)">'+money(debt)+'</b></div>':'')+
   (m.notes?'<p class="note">ملاحظات: '+esc(m.notes)+'</p>':'')+
-  '<div class="acts">'+btn('checkin','تسجيل حضور','sm pri','data-id="'+m.id+'"')+btn('renew',i.st==='none'?'اشتراك':'تجديد','sm','data-id="'+m.id+'"')+btn('memberCard','بطاقة المشترك','sm','data-id="'+m.id+'"')+(isStaff()?btn('memberPin','كلمة مرور التطبيق','sm','data-id="'+m.id+'"'):'')+btn('openSchedule','الجدول الشهري','sm','data-id="'+m.id+'"')+btn('editMember','تعديل','sm','data-id="'+m.id+'"')+'<a class="btn sm" target="_blank" rel="noopener" href="'+waLink(m,i.st==='expired'?'expired':'expiring')+'">'+ic('msg',14)+' واتساب</a></div></div>'+
+  '<div class="acts">'+btn('checkin','تسجيل حضور','sm pri','data-id="'+m.id+'"')+btn('renew',i.st==='none'?'اشتراك':'تجديد','sm','data-id="'+m.id+'"')+btn('memberCard','بطاقة المشترك','sm','data-id="'+m.id+'"')+(isOffice()?btn('ptSell','باقة تدريب','sm','data-id="'+m.id+'"'):'')+(isStaff()?btn('memberPin','كلمة مرور التطبيق','sm','data-id="'+m.id+'"'):'')+btn('openSchedule','الجدول الشهري','sm','data-id="'+m.id+'"')+btn('editMember','تعديل','sm','data-id="'+m.id+'"')+'<a class="btn sm" target="_blank" rel="noopener" href="'+waLink(m,i.st==='expired'?'expired':'expiring')+'">'+ic('msg',14)+' واتساب</a></div></div>'+
   '<div class="qrbox"><div id="qr"></div><small>'+esc(m.code)+'</small></div></div>'+
   '<div class="sec"><h4>الاشتراكات</h4>'+sl+'</div>'+
   '<div class="sec"><h4>آخر الزيارات ('+visits.length+' زيارة)</h4><div class="chipline">'+(visits.slice(0,10).map(v=>'<span>'+fdate(v.date,{day:'numeric',month:'short'})+' '+ft(v.time)+'</span>').join('')||'<span>لا توجد زيارات</span>')+'</div></div>',
@@ -1223,7 +1256,7 @@ function pageRequests(){
  '<section class="panel"><header><h2>الطلبات</h2><span class="pill '+(isManager()?'good':'')+'">'+(isManager()?'تعتمد الطلبات بصفتك مدير':'الاعتماد يحتاج رمز المدير')+'</span></header><div class="tw"><table><thead><tr><th>العضو</th><th>الباقة</th><th>المدة</th><th>الفترة</th><th>المستخدم / المسموح</th><th>السبب</th><th>الحالة</th><th></th></tr></thead><tbody>'+body+'</tbody></table></div></section>';
 }
 function newFreezeModal(){
- const subs=S.subs.filter(s=>{const k=subSt(s);return k==='active'||k==='expiring'});
+ const subs=S.subs.filter(s=>{const k=subSt(s);return s.kind!=='pt'&&(k==='active'||k==='expiring')});
  if(!subs.length){toast('لا توجد اشتراكات سارية');return}
  openModal('طلب تجميد جديد','<div class="fm">'+fld('الاشتراك',sel('subId',subs.map(s=>{const m=memberById(s.memberId);return [s.id,(m?m.name:'')+' - '+s.planName+' ('+freezeLeft(s)+' يوم متاحة)']}),subs[0].id),'full')+'</div>',d=>{const s=S.subs.find(x=>x.id===d.subId);closeModal();freezeReqModal(s);return 'keep'},{ok:'متابعة'});
 }
@@ -1232,7 +1265,7 @@ function newFreezeModal(){
 function nmCalc(){
  const pl=$('#f-planId');if(!pl)return;const p=planById(pl.value);if(!p)return;
  const tot=Math.max(0,p.price-(+$('#f-disc').value||0));
- $('#ntot').textContent=money(tot);if(!U.nmTouched)$('#f-paid').value=tot;
+ $('#ntot').textContent=money(tot);if(!U.nmTouched){const c=$('#f-npl_cash');if(c)c.value=tot;['card','transfer'].forEach(k=>{const x=$('#f-npl_'+k);if(x)x.value=''})}
 }
 function pageNewMember(){
  const back=btn('goMembers','قائمة الأعضاء');
@@ -1246,7 +1279,7 @@ function pageNewMember(){
  '<form id="nmf" class="panel" autocomplete="off"><div class="fm">'+
   '<h3 class="full" style="font-size:15px">البيانات الشخصية</h3>'+
   fld('الاسم الكامل',inp('name','','required'),'full')+
-  fld('رقم الجوال',inp('phone','','required inputmode="tel" pattern="05[0-9]{8}" title="رقم سعودي يبدأ بـ 05 ويتكون من 10 أرقام" placeholder="05XXXXXXXX" dir="ltr"'))+
+  fld('رقم الجوال',inp('phone','','required inputmode="tel" pattern="05[0-9]{8}" title="رقم سعودي يبدأ بـ 05 ويتكون من 10 أرقام" placeholder="05XXXXXXXX" dir="ltr"'))+fld('اسم المستخدم للتطبيق (بالإنجليزي)',inp('uname','','required dir="ltr" pattern="[A-Za-z0-9._-]{3,30}" title="حروف إنجليزية وأرقام و . _ - فقط" placeholder="مثال: noura.alshammari" autocomplete="off"'))+
   fld('الجنس',sel('gender',[['m','ذكر'],['f','أنثى']],'m'))+
   fld('تاريخ الميلاد',inp('birth','','type="date"'))+
   fld('جوال للطوارئ',inp('emergency','','inputmode="tel" dir="ltr" placeholder="اختياري"'))+
@@ -1257,8 +1290,8 @@ function pageNewMember(){
   fld('الباقة',sel('planId',plans,S.plans[0]?S.plans[0].id:''),'full')+
   fld('تاريخ البداية',inp('start',TODAY(),'type="date" required'))+
   fld('خصم (ر.س)',inp('disc','0','type="number" min="0" step="1"'))+
-  fld('المدفوع الآن (ر.س)',inp('paid','','type="number" min="0" step="0.01"'))+
-  fld('طريقة الدفع',sel('method',Object.keys(METH).map(k=>[k,METH[k]]),'cash'))+
+  '<p class="note full">المدفوع الآن، ويمكن تقسيمه على أكثر من وسيلة:</p>'+payLines('npl')+
+  fld('تقسيط المتبقي',sel('inst',[['0','بدون تقسيط'],['2','على دفعتين شهريتين'],['3','على 3 دفعات شهرية'],['4','على 4 دفعات شهرية'],['6','على 6 دفعات شهرية']],'0'),'full')+
   '<div class="sumline full"><span>الإجمالي بعد الخصم</span><b class="num" id="ntot">0</b></div>'+
   '<div class="full acts"><button class="btn pri" type="submit">حفظ العضو</button></div></div></form>';
 }
@@ -1406,13 +1439,14 @@ function ptOpenModal(p){
 
 /* ---------- demo login with roles ---------- */
 /* ---------- server connection: login, roles, sync ---------- */
-const ROLES={manager:{name:'مدير',pages:null},reception:{name:'استقبال',pages:['daily','leads','dashboard','members','newmember','subs','requests','schedule','portal','gate','checkin','classes','marketing']},trainer:{name:'مدرب',pages:['trainer','classes']},trainee:{name:'متدرب',pages:['portal']}};
+const ROLES={manager:{name:'مدير',pages:null},reception:{name:'استقبال',pages:['pt','shift','daily','leads','dashboard','members','newmember','subs','requests','schedule','portal','gate','checkin','classes','marketing']},accountant:{name:'محاسبة',pages:['dashboard','finance','cashbox','shift','reports','daily','subs']},trainer:{name:'مدرب',pages:['pt','classes']},trainee:{name:'متدرب',pages:['home','portal']}};
 let SESS=null;
 const can=k=>{if(!SESS)return false;const r=ROLES[SESS.role];return !r.pages||r.pages.indexOf(k)>=0};
 const isManager=()=>!!SESS&&SESS.role==='manager';
 const isStaff=()=>!!SESS&&(SESS.role==='manager'||SESS.role==='reception');
-const landing=()=>SESS.role==='trainer'?'trainer':SESS.role==='trainee'?'portal':'dashboard';
-const SYNC_COLS=['members','subs','pay','exp','att','classes','book','freezeReq','pt','campaigns','daily','leads','cash','plans','trainers'];
+const landing=()=>SESS.role==='trainer'?'pt':SESS.role==='trainee'?'home':'dashboard';
+const SYNC_COLS=['members','subs','pay','exp','att','classes','book','freezeReq','pt','campaigns','daily','leads','cash','plans','trainers','shifts','ptPlans','ptPacks','ptSess'];
+const STAMP_COLS=['pay','exp','cash','daily','shifts','subs','ptPacks','ptSess'];
 
 async function api(path,opt){
  opt=opt||{};
@@ -1430,8 +1464,10 @@ function hydrate(raw){
  o.settings.tpl=Object.assign({},DEFAULT_TPL,(raw.settings&&raw.settings.tpl)||{});
  SYNC_COLS.forEach(c=>{if(!Array.isArray(o[c]))o[c]=[]});
  if(!raw.plans&&isManager())o.plans=basePlans();
+ if(!raw.ptPlans&&isManager())o.ptPlans=[{id:'pp1',name:'جلسة تعريفية',sessions:1,validDays:14,price:99,dur:60,intro:true},{id:'pp2',name:'8 جلسات',sessions:8,validDays:45,price:1200,dur:60,intro:false},{id:'pp3',name:'12 جلسة',sessions:12,validDays:60,price:1650,dur:60,intro:false}];
  o.nextCode=Math.max(raw.nextCode||1001,o.members.reduce((a,m)=>Math.max(a,(parseInt(String(m.code).replace(/\D/g,''),10)||0)+1),1001));
  o.nextInv=Math.max(raw.nextInv||1,o.subs.reduce((a,s)=>Math.max(a,(parseInt(String(s.inv).replace(/\D/g,''),10)||0)+1),1));
+ o.nextCn=Math.max(raw.nextCn||1,o.pay.reduce((a,p)=>Math.max(a,(parseInt(String(p.cn||'').replace(/\D/g,''),10)||0)+1),1));
  o.v=1;o.v2=1;o.v3=1;
  return o;
 }
@@ -1444,16 +1480,16 @@ const Sync=(function(){
   const ops=[];if(!BASE)return ops;
   SYNC_COLS.forEach(c=>{
    const a=BASE[c]||[],b=S[c]||[],am=new Map(a.map(x=>[x.id,x])),seen=new Set();
-   b.forEach(x=>{if(!x||!x.id)return;seen.add(x.id);const o=am.get(x.id);if(!o||JSON.stringify(o)!==JSON.stringify(x))ops.push({c:c,op:'put',v:x})});
+   b.forEach(x=>{if(!x||!x.id)return;seen.add(x.id);const o=am.get(x.id);if(!o&&STAMP_COLS.indexOf(c)>=0&&!x.by&&SESS){x.by=SESS.key;x.byName=SESS.name;x.at=new Date().toISOString()}if(!o||JSON.stringify(o)!==JSON.stringify(x))ops.push({c:c,op:'put',v:x})});
    a.forEach(x=>{if(x&&x.id&&!seen.has(x.id))ops.push({c:c,op:'del',id:x.id})});
   });
   if(isManager()&&JSON.stringify(BASE.settings)!==JSON.stringify(S.settings))ops.push({c:'settings',op:'set',v:S.settings});
-  if(isStaff())['nextCode','nextInv'].forEach(k=>{if((S[k]||0)>(BASE[k]||0))ops.push({c:'meta',op:'max',k:k,v:S[k]})});
+  if(isOffice())['nextCode','nextInv','nextCn'].forEach(k=>{if((S[k]||0)>(BASE[k]||0))ops.push({c:'meta',op:'max',k:k,v:S[k]})});
   return ops;
  }
  function adopt(raw,r){
   S=hydrate(raw);BASE=clone(S);
-  if(isManager()){if(!raw.plans)BASE.plans=[];if(!raw.settings)BASE.settings={}}
+  if(isManager()){if(!raw.plans)BASE.plans=[];if(!raw.ptPlans)BASE.ptPlans=[];if(!raw.settings)BASE.settings={}}
   rev=r;
  }
  async function load(){const j=await api('state');U.warn=j.warn||'';adopt(j.state,j.rev);if(diff().length)queue()}
@@ -1520,7 +1556,7 @@ async function boot(){
 async function start(){
  try{
   const me=await api('me');
-  SESS={role:me.role,uid:me.ref||'',name:me.name};
+  SESS={role:me.role,uid:me.ref||'',name:me.name,key:me.key||''};
   await Sync.load();Sync.startPolling();boot();
  }catch(e){
   if(e.status===401){SESS=null;S=hydrate({});loginScreen();return}
@@ -1539,7 +1575,7 @@ async function doLogin(u,p){
  const b=$('#lg-go'),er=$('#lg-err');if(b){b.disabled=true;b.textContent='جارٍ الدخول…'}
  try{
   const me=await api('login',{method:'POST',body:{u:u,p:p}});
-  SESS={role:me.role,uid:me.ref||'',name:me.name};
+  SESS={role:me.role,uid:me.ref||'',name:me.name,key:me.key||''};
   U.q='';U.mf='all';U.sf='all';U.ff='all';
   await Sync.load();Sync.startPolling();
   try{history.replaceState(null,'','#'+landing())}catch(e){location.hash='#'+landing()}
@@ -1575,7 +1611,7 @@ async function setMemberPin(mid,quiet){
  catch(e){if(!quiet)toast('تعذّر ضبط كلمة المرور: '+e.message);return null}
 }
 function pinModal(m,pin){
- const link=portalLink(),txt='مرحباً '+m.name+'، هذه بيانات دخولك إلى حسابك في '+S.settings.gym+':\nالرابط: '+link+'\nرقم الجوال: '+m.phone+'\nكلمة المرور: '+pin+'\n\nيمكنك تغييرها بعد الدخول.';
+ const link=portalLink(),txt='مرحباً '+m.name+'، هذه بيانات دخولك إلى حسابك في '+S.settings.gym+':\nالرابط: '+link+'\nاسم المستخدم: '+(m.uname||m.phone)+'\nكلمة المرور: '+pin+'\n\nيمكنك تغييرها بعد الدخول.';
  openModal('كلمة مرور '+esc(m.name),'<div class="mcm"><p class="note">كلمة المرور الجديدة لحساب المتدرب. تظهر الآن فقط، فأرسلها له قبل الإغلاق.</p><b class="pinbig" dir="ltr">'+pin+'</b><div class="acts"><a class="btn pri" target="_blank" rel="noopener" href="'+waTo(m.phone,txt)+'">'+ic('msg',15)+' إرسال على واتساب</a>'+btn('closeModal','تم')+'</div></div>',null,{noForm:true,noFocus:true});
 }
 function trainerPinModal(t){
@@ -1601,7 +1637,7 @@ async function loadAccounts(){
  const box=$('#accts');if(!box)return;
  try{
   const r=await api('users');
-  box.innerHTML=r.users.map(u=>'<div class="row"><span class="av">'+esc(initial(u.name||u.username))+'</span><div class="grow"><b>'+esc(u.name||u.username)+'</b><small><span class="ltr">'+esc(u.username)+'</span> · '+(u.role==='manager'?'مدير':'استقبال')+(u.main?' · الحساب الرئيسي':'')+'</small></div>'+(u.main?'':'<div class="cell-acts">'+btn('accPw','كلمة مرور','sm','data-id="'+u.id+'"')+btn('accDel','حذف','sm bad','data-id="'+u.id+'"')+'</div>')+'</div>').join('');
+  box.innerHTML=r.users.map(u=>'<div class="row"><span class="av">'+esc(initial(u.name||u.username))+'</span><div class="grow"><b>'+esc(u.name||u.username)+'</b><small><span class="ltr">'+esc(u.username)+'</span> · '+(ROLE_AR[u.role]||u.role)+(u.main?' · الحساب الرئيسي':'')+'</small></div>'+(u.main?'':'<div class="cell-acts">'+btn('accPw','كلمة مرور','sm','data-id="'+u.id+'"')+btn('accDel','حذف','sm bad','data-id="'+u.id+'"')+'</div>')+'</div>').join('');
  }catch(e){box.innerHTML='<p class="empty">'+esc(e.message)+'</p>'}
 }
 function accountsPanel(){
@@ -1609,7 +1645,7 @@ function accountsPanel(){
  '<section class="panel" style="margin-top:16px"><header><h2>البيانات</h2></header><div class="pb" style="display:grid;gap:12px"><p class="note">البيانات محفوظة على خادم النادي، ويأخذ الخادم نسخة احتياطية تلقائية كل يوم ويحتفظ بآخر 30 نسخة. يمكنك أيضاً تنزيل نسخة كاملة واحتفاظها عندك.</p><div class="acts"><a class="btn" href="/api/backup">'+ic('dl',15)+' تنزيل نسخة احتياطية</a></div></div></section>';
 }
 Object.assign(ACT,{
- accNew:()=>openModal('حساب موظف جديد','<div class="fm">'+fld('الاسم',inp('name','','required placeholder="مثال: موظف الاستقبال المسائي"'),'full')+fld('اسم المستخدم (إنجليزي)',inp('username','','required dir="ltr" pattern="[A-Za-z0-9._-]{3,32}" placeholder="desk1"'))+fld('الصلاحية',sel('role',[['reception','استقبال'],['manager','مدير']],'reception'))+fld('كلمة المرور',inp('password',genPin()+genPin().slice(0,2),'required minlength="6" dir="ltr"'),'full')+'<p class="note full">الاستقبال يرى الأعضاء والحضور والاشتراكات دون المصروفات وصندوق المال والإعدادات.</p></div>',
+ accNew:()=>openModal('حساب موظف جديد','<div class="fm">'+fld('الاسم',inp('name','','required placeholder="مثال: موظف الاستقبال المسائي"'),'full')+fld('اسم المستخدم (إنجليزي)',inp('username','','required dir="ltr" pattern="[A-Za-z0-9._-]{3,32}" placeholder="desk1"'))+fld('الصلاحية',sel('role',[['reception','استقبال'],['accountant','محاسبة'],['manager','مدير']],'reception'))+fld('كلمة المرور',inp('password',genPin()+genPin().slice(0,2),'required minlength="6" dir="ltr"'),'full')+'<p class="note full">الاستقبال: الأعضاء والحضور والاشتراكات والتحصيل، دون الاسترداد والمصروفات والصندوق والإعدادات وبيانات التدريب الشخصي. المحاسبة: الفواتير والتحصيل والاسترداد والمصروفات والصندوق والتقارير، دون البيانات الصحية.</p></div>',
   d=>{api('users',{method:'POST',body:{action:'create',name:d.name,username:d.username,role:d.role,password:d.password}}).then(()=>{closeModal();toast('تم إنشاء الحساب');loadAccounts()}).catch(e=>toast(e.message));return 'keep'},{ok:'إنشاء'}),
  accPw:d=>openModal('كلمة مرور جديدة','<div class="fm">'+fld('كلمة المرور',inp('password','','required minlength="6" dir="ltr"'),'full')+'</div>',x=>{api('users',{method:'POST',body:{action:'password',id:d.id,password:x.password}}).then(()=>{closeModal();toast('تم تغيير كلمة المرور')}).catch(e=>toast(e.message));return 'keep'},{ok:'حفظ'}),
  accDel:d=>confirmModal('حذف الحساب','لن يستطيع هذا الموظف الدخول بعد الآن.','حذف',()=>{api('users',{method:'POST',body:{action:'delete',id:d.id}}).then(()=>{toast('تم حذف الحساب');loadAccounts()}).catch(e=>toast(e.message))},true)
@@ -1621,7 +1657,7 @@ const waTo=(phone,text)=>{let ph=String(phone||'').replace(/\D/g,'');if(ph.charA
 const portalLink=()=>(S.settings.portalLink||location.href.split('#')[0]);
 function invoiceVars(s){
  const m=memberById(s.memberId),due=dueOf(s),paid=paidOf(s.id);
- return {name:m?m.name:'',gym:S.settings.gym,inv:s.inv,plan:s.planName,start:fdate(s.start),end:fdate(s.end),total:money(s.total),paid:money(paid),due:money(due),code:m?m.code:'',link:portalLink(),pass:(U.pins&&m&&U.pins[m.id])||'تصلك من الاستقبال'};
+ return {name:m?m.name:'',gym:S.settings.gym,inv:s.inv,plan:s.planName,start:fdate(s.start),end:fdate(s.end),total:money(s.total),paid:money(paid),due:money(due),code:m?m.code:'',link:portalLink(),pass:(U.pins&&m&&U.pins[m.id])||'تصلك من الاستقبال',user:m?(m.uname||m.phone):''};
 }
 function invoiceModal(sid){
  const s=S.subs.find(x=>x.id===sid),m=s&&memberById(s.memberId);if(!s||!m)return;
@@ -1629,7 +1665,7 @@ function invoiceModal(sid){
  openModal('إرسال الفاتورة · '+esc(m.name),'<div class="fm"><div class="sumline full"><span>'+s.inv+' · '+esc(s.planName)+'</span><b class="num">'+money(s.total)+'</b></div>'+
   '<label class="fld full"><span>نص الرسالة (يمكنك تعديله قبل الإرسال)</span><textarea id="f-invtxt" rows="11">'+esc(txt)+'</textarea></label>'+
   '<p class="note full">يُرسل إلى <span class="ltr">'+esc(m.phone)+'</span>. يفتح الزر واتساب والرسالة جاهزة، ثم تضغط إرسال هناك.</p>'+
-  '<div class="full acts"><a class="btn pri" id="inv-wa" target="_blank" rel="noopener" data-ph="'+esc(m.phone)+'" href="'+waTo(m.phone,txt)+'">'+ic('msg',16)+' فتح واتساب وإرسال</a><button type="button" class="btn" data-act="invCopy">نسخ النص</button></div></div>',
+  '<div class="full acts">'+btn('pdfShare',ic('file',16)+' إرسال الفاتورة PDF','pri','data-id="'+s.id+'"')+btn('pdfDl','تنزيل PDF','','data-id="'+s.id+'"')+'<a class="btn" id="inv-wa" target="_blank" rel="noopener" data-ph="'+esc(m.phone)+'" href="'+waTo(m.phone,txt)+'">'+ic('msg',16)+' فتح واتساب وإرسال</a><button type="button" class="btn" data-act="invCopy">نسخ النص</button></div></div>',
   null,{noForm:true,noFocus:true});
 }
 const MKT=[
@@ -1771,6 +1807,7 @@ function chrome(){
 function afterRender(){
  if(U.page==='marketing')mkUpdate();
  if(U.page==='settings')loadAccounts();
+ if(U.page==='audit')loadAudit();
  if(U.page==='newmember'){if(U.nmDone){const m=memberById(U.nmDone);if(m)drawQR('#nmqr',m,160)}else nmCalc()}
  if(U.page==='portal'){const m=memberById(U.pm);if(m)drawQR('#pqr',m,160)}
  if(U.page==='gate'&&!$('#modal')){const g=$('#gin');if(g)g.focus()}
@@ -1786,15 +1823,19 @@ document.addEventListener('submit',e=>{
   e.preventDefault();const d=Object.fromEntries(new FormData(f)),name=(d.name||'').trim(),phone=(d.phone||'').trim();
   if(!name)return;
   if(S.members.some(x=>x.phone===phone)){toast('رقم الجوال مسجّل لعضو آخر');return}
-  const p=d.mksub?planById(d.planId):null,disc=Math.max(0,+d.disc||0),paid=Math.max(0,+d.paid||0);
-  if(d.mksub){if(!p){toast('اختر الباقة');return}if(paid>Math.max(0,p.price-disc)){toast('المدفوع أكبر من الإجمالي');return}}
-  const nm={id:uid('m'),code:'M-'+(S.nextCode++),name:name,phone:phone,gender:d.gender,trainerId:d.trainerId||'',joined:TODAY(),birth:d.birth||'',emergency:(d.emergency||'').trim(),notes:(d.notes||'').trim()};
+  const un=(d.uname||'').trim().toLowerCase();if(!/^[a-z0-9._-]{3,30}$/.test(un)){toast('اسم المستخدم بالحروف الإنجليزية والأرقام فقط');return}
+  if(S.members.some(x=>x.uname===un)){toast('اسم المستخدم مستخدم لعضو آخر');return}
+  const p=d.mksub?planById(d.planId):null,disc=Math.max(0,+d.disc||0),lines=readLines(d,'npl'),paid=lines.reduce((a,l)=>a+l.amount,0),n=+d.inst||0;
+  if(d.mksub){if(!p){toast('اختر الباقة');return}if(paid>Math.max(0,p.price-disc)+0.001){toast('المدفوع أكبر من الإجمالي');return}
+   if(!discOk(p.price,disc)&&!U.nmOk){requireManager(()=>{U.nmOk=true;f.requestSubmit()});return}}
+  U.nmOk=false;
+  const nm={id:uid('m'),code:'M-'+(S.nextCode++),name:name,phone:phone,uname:un,gender:d.gender,trainerId:d.trainerId||'',joined:TODAY(),birth:d.birth||'',emergency:(d.emergency||'').trim(),notes:(d.notes||'').trim()};
   S.members.push(nm);
-  if(d.mksub)createSub(nm.id,p.id,d.start||TODAY(),disc,paid,d.method);
+  if(d.mksub)createSub(nm.id,p.id,d.start||TODAY(),disc,paid,'cash',null,{lines:lines,n:n});
   save();U.nmDone=nm.id;render();toast('تمت إضافة '+name);window.scrollTo(0,0);Sync.flush().then(()=>setMemberPin(nm.id,true));
  }
 });
-document.addEventListener('input',e=>{const t=e.target;if(t.form&&t.form.id==='nmf'){if(t.name==='paid')U.nmTouched=true;nmCalc()}});
+document.addEventListener('input',e=>{const t=e.target;if(t.form&&t.form.id==='nmf'){if(/^npl_/.test(t.name))U.nmTouched=true;nmCalc()}});
 document.addEventListener('change',e=>{
  const t=e.target;if(!t.dataset||!t.dataset.qr)return;const file=t.files&&t.files[0];if(!file)return;
  decodeQrFile(file,txt=>{
@@ -1820,7 +1861,7 @@ Object.assign(ICON,{
 });
 const LEAD_ST={new:['جديد','info'],contacted:['تم التواصل','warn'],trial:['حصة تجريبية','warn'],won:['اشترك','good'],lost:['غير مهتم','']};
 const OPEN_L=['new','contacted','trial'];
-const SOURCES=['زيارة للنادي','اتصال','واتساب','إنستقرام','سناب شات','تيك توك','توصية صديق','أخرى'];
+const SOURCES=['الموقع الإلكتروني','زيارة للنادي','اتصال','واتساب','إنستقرام','سناب شات','تيك توك','توصية صديق','أخرى'];
 const lpill=k=>'<span class="pill '+LEAD_ST[k][1]+'">'+LEAD_ST[k][0]+'</span>';
 const nowTime=()=>{const d=new Date();return pad(d.getHours())+':'+pad(d.getMinutes())};
 const sumAmt=a=>a.reduce((x,y)=>x+(+y.amount||0),0);
@@ -2327,16 +2368,737 @@ Object.assign(ACT,{
 document.addEventListener('submit',e=>{if(e.target.id!=='dqf')return;e.preventDefault();U.q=$('#dq').value.trim();U.mf='all';goPage('members')});
 
 
+/* ---------- v5: audit log, accountant role, split payments, installments, shift close, refunds ---------- */
+Object.assign(ICON,{
+ shield:'<path d="M12 3l8 3v6c0 4.5-3.4 8.2-8 9-4.6-.8-8-4.5-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/>',
+ shift:'<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/>',
+ refund:'<path d="M9 14l-4-4 4-4"/><path d="M5 10h9a5 5 0 0 1 0 10h-3"/>'
+});
+const ROLE_AR={manager:'مدير',reception:'استقبال',accountant:'محاسبة',trainer:'مدرب',trainee:'متدرب'};
+const isOffice=()=>!!SESS&&['manager','reception','accountant'].indexOf(SESS.role)>=0;
+const canRefund=()=>!!SESS&&(SESS.role==='manager'||SESS.role==='accountant');
+const nowIso=()=>new Date().toISOString();
+const fdt=iso=>{if(!iso)return '-';const d=new Date(iso);return d.toLocaleDateString(LOC,{day:'numeric',month:'short'})+' · '+d.toLocaleTimeString(LOC,{hour:'numeric',minute:'2-digit'})};
+const methOpts=()=>Object.keys(METH).map(k=>[k,METH[k]]);
+
+/* installments: payments beyond the up-front part cover installments in date order */
+function instStatus(s){
+ if(!s||!s.inst||!s.inst.length||s.cancelled)return [];
+ const sum=s.inst.reduce((a,x)=>a+x.amount,0);let rem=paidOf(s.id)-(s.total-sum);const t=TODAY();
+ return s.inst.map((x,i)=>{const cov=Math.max(0,Math.min(x.amount,rem));rem-=x.amount;
+  const st=cov>=x.amount-0.001?'paid':x.due<t?'late':diff(x.due,t)<=7?'soon':'later';
+  return {n:i+1,due:x.due,amount:x.amount,paid:cov,st:st}});
+}
+const INST_ST={paid:['مسدد','good'],late:['متأخر','bad'],soon:['يستحق قريباً','warn'],later:['قادم','']};
+function addMonths(d,k){const x=parse(d);const day=x.getDate();x.setDate(1);x.setMonth(x.getMonth()+k);const dim=new Date(x.getFullYear(),x.getMonth()+1,0).getDate();x.setDate(Math.min(day,dim));return ymd(x)}
+function makeInst(total,upfront,n,start){
+ const rem=Math.round((total-upfront)*100)/100;if(n<2||rem<=0)return null;
+ const base=Math.floor(rem/n*100)/100,out=[];let acc=0;
+ for(let i=0;i<n;i++){const a=i===n-1?Math.round((rem-acc)*100)/100:base;acc+=a;out.push({due:addMonths(start,i+1),amount:a})}
+ return out;
+}
+function allInst(){
+ const out=[];S.subs.forEach(s=>instStatus(s).forEach(x=>{if(x.st!=='paid')out.push(Object.assign({s:s,m:memberById(s.memberId)},x))}));
+ return out.sort((a,b)=>a.due.localeCompare(b.due));
+}
+
+/* payment lines (split across methods) */
+function payLines(prefix,first){
+ return '<div class="full paysplit">'+Object.keys(METH).map(k=>fld(METH[k]+' (ر.س)',inp(prefix+'_'+k,k==='cash'?(first||''):'','type="number" min="0" step="0.01" inputmode="decimal"'))).join('')+'</div>';
+}
+const readLines=(d,prefix)=>Object.keys(METH).map(k=>({method:k,amount:Math.max(0,Math.round((+d[prefix+'_'+k]||0)*100)/100)})).filter(x=>x.amount>0);
+function addPayments(s,lines){const grp=lines.length>1?uid('g'):'';lines.forEach(l=>S.pay.push({id:uid('p'),subId:s.id,memberId:s.memberId,date:TODAY(),time:nowTime(),amount:l.amount,method:l.method,grp:grp}))}
+function addPayment(s,amount,method){addPayments(s,[{amount:amount,method:method}])}
+function createSub(memberId,planId,start,disc,paid,method,fm,extra){
+ extra=extra||{};
+ const p=planById(planId),total=Math.max(0,p.price-disc);
+ const s={id:uid('s'),inv:'INV-'+String(S.nextInv++).padStart(4,'0'),memberId:memberId,planId:p.id,planName:p.name,start:start,end:addDays(start,p.days-1),total:total,disc:disc||0,freezeMax:fm==null?(p.freeze||0):fm,freezes:[]};
+ const lines=extra.lines||(paid>0?[{amount:paid,method:method}]:[]);
+ const up=lines.reduce((a,l)=>a+l.amount,0);
+ if(extra.n>=2){const ins=makeInst(total,up,extra.n,start);if(ins)s.inst=ins}
+ S.subs.push(s);
+ if(lines.length)addPayments(s,lines);
+ return s;
+}
+const discOk=(price,disc)=>isManager()||disc<=price*(+S.settings.discLimit||0)/100+0.001;
+
+function subModal(memberId){
+ if(!S.plans.length){toast('أضف باقة أولاً');return}
+ const memberField=memberId?'<input type="hidden" name="memberId" value="'+memberId+'">'+fld('العضو','<input value="'+esc(memberById(memberId).name)+'" readonly>','full'):fld('العضو',sel('memberId',[['','اختر العضو']].concat(S.members.map(m=>[m.id,m.name+' - '+m.code])),'','required'),'full');
+ openModal('اشتراك جديد','<div class="fm">'+memberField+
+  fld('الباقة',sel('planId',S.plans.map(p=>[p.id,p.name+' - '+p.days+' يوم - '+num(p.price)+' ر.س']),S.plans[0].id),'full')+
+  fld('تاريخ البداية',inp('start',memberId?startFor(memberId):TODAY(),'type="date" required'))+
+  fld('خصم (ر.س)',inp('disc','0','type="number" min="0" step="1"'))+
+  '<p class="note full">المدفوع الآن، ويمكن تقسيمه على أكثر من وسيلة:</p>'+payLines('pl')+
+  fld('تقسيط المتبقي',sel('inst',[['0','بدون تقسيط'],['2','على دفعتين شهريتين'],['3','على 3 دفعات شهرية'],['4','على 4 دفعات شهرية'],['6','على 6 دفعات شهرية']],'0'))+
+  fld('أيام التجميد المسموحة',inp('freezeMax',S.plans[0].freeze||0,'type="number" min="0" max="365"'))+
+  '<div class="sumline full"><span>الإجمالي بعد الخصم</span><b class="num" id="tot">0</b></div><div class="sumline full"><span>المتبقي بعد الدفع</span><b class="num" id="rem">0</b></div>'+
+  (isManager()?'':'<p class="note full">حد الخصم المسموح لك '+(+S.settings.discLimit||0)+'% من سعر الباقة. أكبر من ذلك يحتاج رمز المدير.</p>')+'</div>',
+  d=>{
+   if(!d.memberId){toast('اختر العضو');return false}
+   const p=planById(d.planId),disc=Math.max(0,+d.disc||0),total=Math.max(0,p.price-disc),lines=readLines(d,'pl'),paid=lines.reduce((a,l)=>a+l.amount,0),n=+d.inst||0;
+   if(paid>total+0.001){toast('المدفوع أكبر من الإجمالي');return false}
+   if(n>=2&&paid>=total){toast('لا يوجد مبلغ متبقٍ للتقسيط');return false}
+   const go=()=>{createSub(d.memberId,p.id,d.start,disc,paid,'cash',Math.max(0,+d.freezeMax||0),{lines:lines,n:n});save();render();toast('تم إنشاء الاشتراك');cardModal(d.memberId,true)};
+   if(!discOk(p.price,disc)){requireManager(go);return 'keep'}
+   go();return 'keep';
+  },{ok:'إنشاء الاشتراك',mount:f=>{
+   let touched=false,ftouch=false;
+   const calc=()=>{const p=planById(f.planId.value),tot=Math.max(0,p.price-(+f.disc.value||0));if(!touched){f.pl_cash.value=tot;f.pl_card.value='';f.pl_transfer.value=''}if(!ftouch)f.freezeMax.value=p.freeze||0;
+    const paid=['pl_cash','pl_card','pl_transfer'].reduce((a,k)=>a+(+f[k].value||0),0);
+    f.querySelector('#tot').textContent=money(tot);f.querySelector('#rem').textContent=money(Math.max(0,tot-paid))};
+   f.addEventListener('input',e=>{if(/^pl_/.test(e.target.name))touched=true;if(e.target.name==='freezeMax')ftouch=true;calc()});
+   f.addEventListener('change',calc);calc();
+  }});
+}
+function payModal(s){
+ const due=dueOf(s),m=memberById(s.memberId),ins=instStatus(s).find(x=>x.st!=='paid');
+ openModal('تحصيل دفعة','<div class="fm"><div class="sumline full"><span>'+esc(m?m.name:'')+' · '+s.inv+'</span><b class="num">'+money(due)+'</b></div>'+
+  (ins?'<p class="note full">القسط '+ins.n+' مستحق '+fdate(ins.due)+' بقيمة '+money(ins.amount-ins.paid)+'.</p>':'')+
+  '<p class="note full">يمكن تقسيم المبلغ على أكثر من وسيلة:</p>'+payLines('pl',ins?Math.min(due,ins.amount-ins.paid):due)+'</div>',
+  d=>{const lines=readLines(d,'pl'),a=lines.reduce((x,l)=>x+l.amount,0);
+   if(!(a>0)||a>due+0.001){toast('المجموع يجب أن يكون بين 0.01 و '+money(due));return false}
+   addPayments(s,lines);save();render();toast('تم تحصيل '+money(a)+(lines.length>1?' على '+lines.length+' وسائل':''))},{ok:'تأكيد التحصيل'});
+}
+
+/* refunds with credit notes */
+function refundModal(s){
+ const paid=paidOf(s.id),m=memberById(s.memberId);
+ if(paid<=0){toast('لا يوجد مبلغ محصّل على هذه الفاتورة');return}
+ openModal('استرداد مبلغ · '+s.inv,'<div class="fm"><div class="sumline full"><span>'+esc(m?m.name:'')+' · المحصّل على الفاتورة</span><b class="num">'+money(paid)+'</b></div>'+
+  fld('المبلغ المسترد (ر.س)',inp('amount',paid,'type="number" min="0.01" max="'+paid+'" step="0.01" required'))+
+  fld('طريقة الاسترداد',sel('method',methOpts(),'cash'))+
+  fld('السبب',inp('reason','','required placeholder="مثال: انتقال إلى مدينة أخرى، إصابة"'),'full')+
+  '<label class="full chk"><input type="checkbox" name="cancel" id="f-cancel"'+(s.cancelled?' checked disabled':'')+'> إلغاء الاشتراك أيضاً</label>'+
+  '<p class="note full">يصدر إشعار دائن برقم تسلسلي. إن لم تلغِ الاشتراك تنخفض قيمة الفاتورة بمقدار المبلغ المسترد، ويبقى الاشتراك سارياً.</p></div>',
+  d=>{const a=Math.round((+d.amount||0)*100)/100;
+   if(!(a>0)||a>paid+0.001){toast('المبلغ يجب ألا يتجاوز '+money(paid));return false}
+   S.nextCn=S.nextCn||1;const cn='CN-'+String(S.nextCn++).padStart(4,'0');
+   S.pay.push({id:uid('p'),subId:s.id,memberId:s.memberId,date:TODAY(),time:nowTime(),amount:-a,method:d.method,kind:'refund',cn:cn,reason:d.reason.trim()});
+   if(d.cancel||s.cancelled)s.cancelled=true;else s.total=Math.max(0,Math.round((s.total-a)*100)/100);
+   save();render();toast('تم الاسترداد · '+cn)},{ok:'تنفيذ الاسترداد',danger:true});
+}
+
+/* shift close */
+function myShiftData(){
+ const key=SESS.key,mine=(S.shifts||[]).filter(x=>x.by===key).sort((a,b)=>(b.closedAt||'').localeCompare(a.closedAt||''));
+ const since=mine[0]?mine[0].closedAt:'';
+ const pays=S.pay.filter(p=>p.by===key&&(p.at||'')>since).sort((a,b)=>(b.at||'').localeCompare(a.at||''));
+ const exp={};Object.keys(METH).forEach(k=>exp[k]=0);pays.forEach(p=>{exp[p.method]=(exp[p.method]||0)+p.amount});
+ return {since:since,pays:pays,exp:exp,total:pays.reduce((a,p)=>a+p.amount,0),mine:mine};
+}
+function pageShift(){
+ const d=myShiftData(),fin=can('finance');
+ const label=p=>p.kind==='daily'?'زائر يومي: '+esc(p.name||''):p.kind==='refund'?'استرداد '+esc(p.cn||''):esc((memberById(p.memberId)||{}).name||'')+((S.subs.find(x=>x.id===p.subId)||{}).inv?' · '+S.subs.find(x=>x.id===p.subId).inv:'');
+ const rows=d.pays.map(p=>'<tr><td class="num">'+fdt(p.at)+'</td><td>'+label(p)+'</td><td>'+esc(METH[p.method]||'')+'</td><td class="num r'+(p.amount<0?' out':' in')+'">'+num(p.amount)+'</td></tr>').join('')||'<tr><td colspan="4" class="empty">لا توجد عمليات تحصيل منذ آخر إغلاق.</td></tr>';
+ const hist=(fin?(S.shifts||[]):d.mine).slice().sort((a,b)=>(b.closedAt||'').localeCompare(a.closedAt||'')).slice(0,40);
+ const ffilter=U.shf||'all',people=[...new Set((S.shifts||[]).map(x=>x.byName))];
+ const hrows=hist.filter(x=>ffilter==='all'||x.byName===ffilter).map(x=>'<tr><td class="num">'+fdt(x.closedAt)+'</td>'+(fin?'<td>'+esc(x.byName||'')+'</td>':'')+'<td class="num">'+x.n+'</td><td class="num">'+num(x.expTotal)+'</td><td class="num">'+num(x.cntTotal)+'</td><td class="num"><span class="pill '+(Math.abs(x.diff)<0.01?'good':x.diff<0?'bad':'warn')+'">'+(x.diff>0?'+':'')+num(x.diff)+'</span></td><td style="min-width:140px;white-space:normal"><small class="mut">'+Object.keys(METH).map(k=>METH[k]+' '+num((x.cnt||{})[k]||0)+'/'+num((x.exp||{})[k]||0)).join(' · ')+(x.note?'<br>'+esc(x.note):'')+'</small></td></tr>').join('')||'<tr><td colspan="7" class="empty">لا توجد ورديات مغلقة بعد.</td></tr>';
+ return head('إغلاق الوردية','طابق ما حصّلته بنفسك منذ آخر إغلاق مع ما في الدرج وجهاز الشبكة',SESS.name?'<span class="pill info">'+esc(SESS.name)+'</span>':'')+
+ '<div class="strip s4"><div class="kpi"><span>عمليات منذ '+(d.since?fdt(d.since):'البداية')+'</span><b>'+d.pays.length+'</b></div>'+Object.keys(METH).map(k=>'<div class="kpi"><span>'+METH[k]+' المتوقع</span><b>'+num(d.exp[k]||0)+' <small>ر.س</small></b></div>').join('')+'</div>'+
+ '<div class="grid g2b"><form id="shf" class="panel" autocomplete="off"><header><h2>المعدود فعلياً</h2><span class="note">المتوقع '+money(d.total)+'</span></header><div class="fm">'+
+  Object.keys(METH).map(k=>fld(METH[k]+' (ر.س)',inp('c_'+k,k==='cash'?'':(d.exp[k]||0),'type="number" step="0.01" inputmode="decimal" required'))).join('')+
+  fld('ملاحظة',inp('note','','placeholder="اختياري: سبب أي فرق"'),'full')+
+  '<div class="sumline full"><span>الفرق</span><b class="num" id="shdiff">-</b></div>'+
+  '<div class="full acts"><button type="submit" class="btn pri"'+(d.pays.length?'':' disabled')+'>'+ic('shift',16)+' إغلاق الوردية</button></div></div></form>'+
+ '<section class="panel"><header><h2>عمليات الوردية الحالية</h2></header><div class="tw"><table><thead><tr><th>الوقت</th><th>البيان</th><th>الطريقة</th><th class="r">المبلغ</th></tr></thead><tbody>'+rows+'</tbody></table></div></section></div>'+
+ '<section class="panel" style="margin-top:16px"><header><h2>'+(fin?'ورديات الموظفين':'ورديّاتي السابقة')+'</h2>'+(fin&&people.length>1?'<div class="chips">'+[['all','الكل']].concat(people.map(n=>[n,n])).map(a=>'<button type="button" class="chip" aria-pressed="'+(ffilter===a[0])+'" data-act="shf" data-k="'+esc(a[0])+'">'+esc(a[1])+'</button>').join('')+'</div>':'')+'</header><div class="tw"><table><thead><tr><th>الإغلاق</th>'+(fin?'<th>الموظف</th>':'')+'<th>العمليات</th><th>المتوقع</th><th>المعدود</th><th>الفرق</th><th>حسب الوسيلة (معدود/متوقع)</th></tr></thead><tbody>'+hrows+'</tbody></table></div></section>';
+}
+document.addEventListener('input',e=>{
+ const f=e.target.form;if(!f||f.id!=='shf')return;
+ const d=myShiftData(),c=Object.keys(METH).reduce((a,k)=>a+(+f['c_'+k].value||0),0),df=Math.round((c-d.total)*100)/100;
+ const el=$('#shdiff');if(el){el.textContent=(df>0?'+':'')+money(df);el.style.color=Math.abs(df)<0.01?'var(--good)':df<0?'var(--bad)':'var(--warn)'}
+});
+document.addEventListener('submit',e=>{
+ const f=e.target;if(f.id!=='shf')return;e.preventDefault();
+ const d=myShiftData();if(!d.pays.length){toast('لا توجد عمليات لإغلاقها');return}
+ const cnt={};Object.keys(METH).forEach(k=>cnt[k]=Math.round((+f['c_'+k].value||0)*100)/100);
+ const cntTotal=Object.values(cnt).reduce((a,b)=>a+b,0),df=Math.round((cntTotal-d.total)*100)/100;
+ const done=()=>{S.shifts=S.shifts||[];S.shifts.push({id:uid('sh'),opened:d.since||(d.pays[d.pays.length-1]||{}).at||nowIso(),closedAt:nowIso(),exp:d.exp,cnt:cnt,expTotal:d.total,cntTotal:cntTotal,diff:df,n:d.pays.length,note:(f.note.value||'').trim()});save();render();toast(Math.abs(df)<0.01?'تم إغلاق الوردية ومطابقتها':'تم إغلاق الوردية بفرق '+money(df))};
+ if(Math.abs(df)>=0.01&&!(f.note.value||'').trim()){toast('اكتب سبب الفرق في الملاحظة');f.note.focus();return}
+ done();
+});
+
+/* audit log page (manager) */
+const AUD_CAT={all:'الكل',money:'المالية',plans:'الباقات والأسعار',pt:'التدريب الشخصي',accounts:'الحسابات',settings:'الإعدادات',ops:'الأعضاء والتشغيل'};
+const audCat=c=>['pay','exp','cash','subs','shifts','daily'].indexOf(c)>=0?'money':c==='plans'?'plans':c==='pt'?'pt':(c==='users'||c==='creds')?'accounts':c==='settings'?'settings':'ops';
+function pageAudit(){
+ return head('سجل العمليات','من نفّذ العمليات الحساسة ومتى. يسجّله الخادم تلقائياً، ولا يمكن تعديله أو حذفه.',btn('audRefresh','تحديث'))+
+ '<section class="panel"><div class="tools"><input type="search" placeholder="ابحث باسم موظف أو عضو أو رقم فاتورة" value="'+esc(U.audq||'')+'" data-in="audq" aria-label="بحث في السجل"><div class="chips">'+Object.keys(AUD_CAT).map(k=>'<button type="button" class="chip" aria-pressed="'+((U.audc||'all')===k)+'" data-act="audc" data-k="'+k+'">'+AUD_CAT[k]+'</button>').join('')+'</div></div><div class="tw"><table><thead><tr><th>الوقت</th><th>المنفّذ</th><th>العملية</th><th>التفاصيل</th></tr></thead><tbody id="audt"><tr><td colspan="4" class="empty">جارٍ التحميل…</td></tr></tbody></table></div></section>';
+}
+function drawAudit(){
+ const b=$('#audt');if(!b)return;
+ const q=(U.audq||'').trim().toLowerCase(),c=U.audc||'all';
+ const rows=(U.aud||[]).filter(x=>(c==='all'||audCat(x.c)===c)&&(!q||(x.by+' '+x.act+' '+x.detail).toLowerCase().indexOf(q)>=0)).slice(0,400);
+ b.innerHTML=rows.map(x=>'<tr><td class="num" style="white-space:nowrap">'+fdt(x.t)+'</td><td>'+esc(x.by)+'<br><span class="mut">'+esc(ROLE_AR[x.role]||'')+'</span></td><td><span class="pill '+({money:'warn',plans:'info',accounts:'bad',settings:'bad'})[audCat(x.c)]+'">'+esc(x.act)+'</span></td><td style="white-space:normal;min-width:220px">'+esc(x.detail)+'</td></tr>').join('')||'<tr><td colspan="4" class="empty">لا توجد عمليات مطابقة.</td></tr>';
+}
+async function loadAudit(){try{const r=await api('audit?limit=3000');U.aud=r.items||[];drawAudit()}catch(e){const b=$('#audt');if(b)b.innerHTML='<tr><td colspan="4" class="empty">'+esc(e.message)+'</td></tr>'}}
+
+/* finance: sales vs collected vs refunds, installments, credit notes */
+function financeExtra(){
+ const t=TODAY(),mk=t.slice(0,7),inM=x=>(x.date||x.start||'').startsWith(mk);
+ const sales=S.subs.filter(s=>(s.start||'').startsWith(mk)&&!s.cancelled).reduce((a,s)=>a+s.total,0)+S.daily.filter(inM).reduce((a,x)=>a+(+x.amount||0),0);
+ const coll=S.pay.filter(p=>inM(p)&&p.amount>0).reduce((a,p)=>a+p.amount,0),ref=S.pay.filter(p=>inM(p)&&p.amount<0).reduce((a,p)=>a-p.amount,0);
+ const disc=S.subs.filter(s=>(s.start||'').startsWith(mk)).reduce((a,s)=>a+(s.disc||0),0);
+ const ins=allInst(),late=ins.filter(x=>x.st==='late'),lateAmt=late.reduce((a,x)=>a+x.amount-x.paid,0);
+ const cns=S.pay.filter(p=>p.kind==='refund').sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time)).slice(0,30);
+ const strip='<div class="strip s4" style="margin-bottom:16px"><div class="kpi"><span>مبيعات الشهر</span><b>'+num(sales)+' <small>ر.س</small></b><em>قيمة الاشتراكات والزيارات المباعة · خصومات '+num(disc)+'</em></div><div class="kpi good"><span>المحصّل هذا الشهر</span><b>'+num(coll)+' <small>ر.س</small></b><em>المبالغ المستلمة فعلياً</em></div><div class="kpi'+(ref?' hot':'')+'"><span>الاستردادات</span><b>'+num(ref)+' <small>ر.س</small></b><em>صافي التحصيل '+num(coll-ref)+'</em></div><div class="kpi'+(late.length?' hot':'')+'"><span>أقساط متأخرة</span><b>'+num(lateAmt)+' <small>ر.س</small></b><em>'+late.length+' قسط</em></div></div>';
+ const insRows=ins.slice(0,40).map(x=>'<tr><td>'+(x.m?'<button type="button" class="link" data-act="openMember" data-id="'+x.m.id+'">'+esc(x.m.name)+'</button>':'-')+'<br><span class="mut">'+x.s.inv+' · القسط '+x.n+' من '+x.s.inst.length+'</span></td><td class="num">'+fdate(x.due,{day:'numeric',month:'short'})+'</td><td class="num">'+money(x.amount-x.paid)+'</td><td><span class="pill '+INST_ST[x.st][1]+'">'+INST_ST[x.st][0]+'</span></td><td><div class="cell-acts">'+(x.m?'<a class="btn sm" target="_blank" rel="noopener" href="'+waLink(x.m,'debt',{amount:money(x.amount-x.paid)})+'">'+ic('msg',14)+' تذكير</a>':'')+btn('pay','تحصيل','sm pri','data-id="'+x.s.id+'"')+'</div></td></tr>').join('')||'<tr><td colspan="5" class="empty">لا توجد أقساط مستحقة.</td></tr>';
+ const cnRows=cns.map(p=>{const s=S.subs.find(x=>x.id===p.subId),m=memberById(p.memberId);return '<tr><td class="mono">'+esc(p.cn||'')+'</td><td class="num">'+fdate(p.date,{day:'numeric',month:'short'})+'</td><td>'+esc(m?m.name:'')+'<br><span class="mut">'+(s?s.inv:'')+'</span></td><td class="num out">'+money(-p.amount)+'</td><td style="white-space:normal">'+esc(p.reason||'')+'<br><span class="mut">'+esc(p.byName||'')+'</span></td></tr>'}).join('')||'<tr><td colspan="5" class="empty">لا توجد استردادات.</td></tr>';
+ return {strip:strip,panels:'<div class="grid g2"><section class="panel"><header><h2>الأقساط المستحقة</h2></header><div class="tw"><table><thead><tr><th>العضو</th><th>الاستحقاق</th><th>المتبقي</th><th>الحالة</th><th></th></tr></thead><tbody>'+insRows+'</tbody></table></div></section><section class="panel"><header><h2>إشعارات دائنة (استرداد)</h2></header><div class="tw"><table><thead><tr><th>الرقم</th><th>التاريخ</th><th>العضو</th><th>المبلغ</th><th>السبب والمنفّذ</th></tr></thead><tbody>'+cnRows+'</tbody></table></div></section></div>'};
+}
+function pageFinance2(){
+ const base=pageFinance(),k=base.indexOf('<div class="grid g2">'),hd=base.slice(0,base.indexOf('<div class="strip'));
+ const x=financeExtra();
+ return hd+x.strip+x.panels+(k>=0?base.slice(k):'');
+}
+function instBlock(s){
+ const st=instStatus(s);if(!st.length)return '';
+ return '<div class="instl">'+st.map(x=>'<span class="pill '+INST_ST[x.st][1]+'" title="'+INST_ST[x.st][0]+'">'+x.n+'. '+fdate(x.due,{day:'numeric',month:'short'})+' · '+num(x.amount)+'</span>').join('')+'</div>';
+}
+
+Object.assign(ACT,{
+ refund:d=>{const s=S.subs.find(x=>x.id===d.id);if(s)refundModal(s)},
+ audRefresh:()=>loadAudit(),
+ audc:d=>{U.audc=d.k;document.querySelectorAll('[data-act=audc]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.k===d.k));drawAudit()},
+ shf:d=>{U.shf=d.k;render()}
+});
+Object.assign(IN,{audq:v=>{U.audq=v;drawAudit()}});
+
+
+/* ---------- v6: member home, PDF invoices with terms, personal training service ---------- */
+Object.assign(ICON,{
+ home:'<path d="M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/>',
+ dumbbell:'<path d="M6 8v8M18 8v8M3 10v4M21 10v4M6 12h12"/>',
+ bell:'<path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/>',
+ gift:'<rect x="4" y="9" width="16" height="11" rx="1"/><path d="M3 9h18M12 9v11M12 9c-2-4-6-4-6-1.5S9 9 12 9zm0 0c2-4 6-4 6-1.5S15 9 12 9z"/>',
+ file:'<path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5M10 13h6M10 17h6"/>'
+});
+
+/* ===== personal training: data helpers ===== */
+const PT_ST={booked:['محجوزة','info'],done:['حضر','good'],noshow:['لم يحضر','bad'],late_cancel:['إلغاء متأخر','warn'],cancelled:['ملغاة','']};
+const PACK_ST={active:['سارية','good'],low:['قاربت على الانتهاء','warn'],used:['استُهلكت',''],expired:['انتهت صلاحيتها','bad'],cancelled:['ملغاة','']};
+const ptPlanById=id=>(S.ptPlans||[]).find(x=>x.id===id);
+const packById=id=>(S.ptPacks||[]).find(x=>x.id===id);
+const packSessions=k=>(S.ptSess||[]).filter(x=>x.packId===k.id);
+const packUsed=k=>packSessions(k).filter(x=>x.charged).length+(k.adj||[]).reduce((a,x)=>a+(+x.n||0),0);
+const packBooked=k=>packSessions(k).filter(x=>x.status==='booked').length;
+const packLeft=k=>Math.max(0,(+k.sessions||0)-packUsed(k));
+function packState(k){
+ const sub=S.subs.find(s=>s.id===k.subId);
+ if(k.status==='cancelled'||(sub&&sub.cancelled))return 'cancelled';
+ if(packLeft(k)<=0)return 'used';
+ if(k.expires<TODAY())return 'expired';
+ if(packLeft(k)<=2||diff(k.expires,TODAY())<=7)return 'low';
+ return 'active';
+}
+const packOpen=k=>{const st=packState(k);return st==='active'||st==='low'};
+const packValue=k=>{const sub=S.subs.find(s=>s.id===k.subId);if(!sub)return 0;return Math.max(0,sub.cancelled?paidOf(sub.id):sub.total)};
+const mins=t=>{const a=String(t||'0:0').split(':');return (+a[0]||0)*60+(+a[1]||0)};
+const hhmm=n=>pad(Math.floor(n/60))+':'+pad(n%60);
+const sessStart=x=>new Date(x.date+'T'+x.time+':00');
+const hoursAway=x=>(sessStart(x)-Date.now())/36e5;
+function chargeFor(status){const s=S.settings;return status==='done'?true:status==='noshow'?s.ptNoShowCharge!==false:status==='late_cancel'?s.ptLateCharge!==false:false}
+const ptProfile=mid=>S.pt.find(p=>p.memberId===mid);
+const myTrainerScope=()=>SESS.role==='trainer'?SESS.uid:'';
+
+/* free slots for a trainer on a date */
+function trainerSlots(tid,date,dur,ignoreId,memberId){
+ const t=trainerById(tid);if(!t)return [];
+ const dow=parse(date).getDay(),wins=(t.avail||[]).filter(a=>+a.d===dow);
+ const busy=[];
+ (S.ptSess||[]).forEach(x=>{if(x.id!==ignoreId&&x.date===date&&(x.status==='booked'||x.status==='done')&&(x.trainerId===tid||(memberId&&x.memberId===memberId)))busy.push([mins(x.time),mins(x.time)+(+x.dur||60)])});
+ S.classes.forEach(c=>{if(c.trainerId===tid&&c.days.indexOf(dow)>=0)busy.push([mins(c.time),mins(c.time)+(+c.dur||60)])});
+ const now=new Date(),nowMin=date===TODAY()?now.getHours()*60+now.getMinutes():-1,out=[];
+ wins.forEach(w=>{for(let a=mins(w.from);a+dur<=mins(w.to);a+=30){if(a<=nowMin)continue;if(busy.some(b=>a<b[1]&&b[0]<a+dur))continue;out.push(hhmm(a))}});
+ return [...new Set(out)].sort();
+}
+function clashFor(v){
+ const a0=mins(v.time),a1=a0+(+v.dur||60);
+ return (S.ptSess||[]).find(x=>x.id!==v.id&&x.date===v.date&&(x.status==='booked'||x.status==='done')&&(x.trainerId===v.trainerId||x.memberId===v.memberId)&&mins(x.time)<a1&&a0<mins(x.time)+(+x.dur||60));
+}
+
+/* ===== selling a PT package (invoice reuses payments, installments and refunds) ===== */
+function ptSellModal(memberId){
+ const plans=(S.ptPlans||[]).filter(p=>!p.archived);
+ if(!plans.length){toast(isManager()?'أضف باقات التدريب أولاً من تبويب «باقات البيع»':'لا توجد باقات تدريب. اطلب من المدير إضافتها');return}
+ if(!S.trainers.length){toast('أضف مدرباً أولاً');return}
+ const m0=memberId?memberById(memberId):null;
+ openModal('بيع باقة تدريب شخصي','<div class="fm">'+
+  (m0?'<input type="hidden" name="memberId" value="'+m0.id+'">'+fld('العضو','<input value="'+esc(m0.name)+'" readonly>','full'):fld('العضو',sel('memberId',[['','اختر العضو']].concat(S.members.map(m=>[m.id,m.name+' - '+m.code])),'','required'),'full'))+
+  fld('الباقة',sel('ptPlanId',plans.map(p=>[p.id,p.name+' · '+p.sessions+' جلسة · '+p.validDays+' يوم · '+num(p.price)+' ر.س'+(p.intro?' · تعريفية':'')]),plans[0].id),'full')+
+  '<div class="fld full"><span>المدربون المسموح لهم (حسب السياسة)</span><div class="days">'+S.trainers.map(t=>'<label><input type="checkbox" name="trainerIds" value="'+t.id+'"'+((m0&&m0.trainerId===t.id)||(!m0&&S.trainers[0].id===t.id)?' checked':'')+'> '+esc(t.name)+'</label>').join('')+'</div></div>'+
+  fld('تاريخ البداية',inp('start',TODAY(),'type="date" required'))+fld('خصم (ر.س)',inp('disc','0','type="number" min="0" step="1"'))+
+  '<p class="note full">المدفوع الآن، ويمكن تقسيمه على أكثر من وسيلة:</p>'+payLines('pk')+
+  fld('تقسيط المتبقي',sel('inst',[['0','بدون تقسيط'],['2','دفعتان شهريتان'],['3','3 دفعات'],['4','4 دفعات']],'0'))+
+  '<div class="sumline full"><span>الإجمالي بعد الخصم</span><b class="num" id="pktot">0</b></div></div>',
+  (d,fd)=>{
+   if(!d.memberId){toast('اختر العضو');return false}
+   const pl=ptPlanById(d.ptPlanId),tids=fd.getAll('trainerIds');if(!tids.length){toast('اختر مدرباً واحداً على الأقل');return false}
+   const disc=Math.max(0,+d.disc||0),total=Math.max(0,pl.price-disc),lines=readLines(d,'pk'),paid=lines.reduce((a,l)=>a+l.amount,0),n=+d.inst||0;
+   if(paid>total+0.001){toast('المدفوع أكبر من الإجمالي');return false}
+   const go=()=>{
+    const start=d.start||TODAY(),expires=addDays(start,(+pl.validDays||30)-1),pid=uid('pk');
+    const s={id:uid('s'),kind:'pt',packId:pid,inv:'INV-'+String(S.nextInv++).padStart(4,'0'),memberId:d.memberId,planId:pl.id,planName:'تدريب شخصي: '+pl.name,start:start,end:expires,total:total,disc:disc,freezeMax:0,freezes:[]};
+    if(n>=2){const ins=makeInst(total,paid,n,start);if(ins)s.inst=ins}
+    S.subs.push(s);if(lines.length)addPayments(s,lines);
+    S.ptPacks.push({id:pid,memberId:d.memberId,planId:pl.id,name:pl.name,sessions:+pl.sessions,dur:+pl.dur||60,validDays:+pl.validDays,start:start,expires:expires,trainerIds:tids,subId:s.id,intro:!!pl.intro,status:'active',adj:[]});
+    if(!ptProfile(d.memberId))S.pt.push({id:uid('pt'),memberId:d.memberId,trainerId:tids[0],goal:'',height:0,started:start,sessions:{total:0,used:0},log:[],assess:null,plan:[]});
+    save();render();toast('تم بيع الباقة · '+s.inv);
+   };
+   if(!discOk(pl.price,disc)){requireManager(go);return 'keep'}
+   go();
+  },{ok:'بيع الباقة',mount:f=>{let touched=false;const calc=()=>{const pl=ptPlanById(f.ptPlanId.value),t=Math.max(0,pl.price-(+f.disc.value||0));f.querySelector('#pktot').textContent=money(t);if(!touched){f.pk_cash.value=t;f.pk_card.value='';f.pk_transfer.value=''}};f.addEventListener('input',e=>{if(/^pk_/.test(e.target.name))touched=true;calc()});f.addEventListener('change',calc);calc()}});
+}
+
+/* ===== booking a PT session with availability and conflict checks ===== */
+function ptBookModal(packId){
+ const scope=myTrainerScope(),packs=(S.ptPacks||[]).filter(k=>packOpen(k)&&packLeft(k)-packBooked(k)>0&&(!scope||(k.trainerIds||[]).indexOf(scope)>=0));
+ if(!packs.length){toast('لا توجد باقات سارية فيها جلسات متاحة للحجز');return}
+ const k0=packId?packById(packId):packs[0];
+ openModal('حجز جلسة تدريب','<div class="fm">'+
+  fld('الباقة',sel('packId',packs.map(k=>[k.id,(memberById(k.memberId)||{}).name+' · '+k.name+' · متبقٍ '+(packLeft(k)-packBooked(k))]),k0.id),'full')+
+  fld('المدرب',sel('trainerId',[],''))+fld('التاريخ',inp('date',TODAY(),'type="date" required min="'+TODAY()+'"'))+
+  fld('المدة (دقيقة)',inp('dur',k0.dur||60,'type="number" min="15" step="15" required'))+
+  '<div class="fld full"><span>الأوقات المتاحة</span><div id="slots" class="slots"></div></div>'+
+  fld('أو وقت آخر',inp('time','','type="time"'))+
+  '<p class="note full" id="slotnote">تظهر الأوقات من جدول توفر المدرب، مع استبعاد جلساته وحصصه وجلسات المتدرب الأخرى.</p></div>',
+  d=>{
+   const k=packById(d.packId),time=d.slot||d.time;if(!time){toast('اختر وقتاً');return false}
+   if(d.date>k.expires){toast('تاريخ الجلسة بعد انتهاء صلاحية الباقة ('+fdate(k.expires)+')');return false}
+   if(packLeft(k)-packBooked(k)<=0){toast('لا توجد جلسات متبقية في الباقة');return false}
+   const v={id:uid('ps'),packId:k.id,memberId:k.memberId,trainerId:d.trainerId,date:d.date,time:time,dur:+d.dur||60,status:'booked',charged:false};
+   const c=clashFor(v);if(c){toast(c.trainerId===v.trainerId?'المدرب لديه جلسة في هذا الوقت':'المتدرب لديه جلسة في هذا الوقت');return false}
+   S.ptSess.push(v);save();render();toast('تم حجز الجلسة '+dayLabel(v.date)+' '+ft(v.time));
+  },{ok:'حجز',mount:f=>{
+   const fillTr=()=>{const k=packById(f.packId.value),tids=(k.trainerIds||[]).filter(t=>trainerById(t)&&(!scope||t===scope));f.trainerId.innerHTML=tids.map(t=>'<option value="'+t+'">'+esc(trainerById(t).name)+'</option>').join('');f.dur.value=k.dur||60};
+   const draw=()=>{const k=packById(f.packId.value),sl=trainerSlots(f.trainerId.value,f.date.value,+f.dur.value||60,'',k.memberId),t=trainerById(f.trainerId.value);
+    $('#slots').innerHTML=sl.length?sl.map(s=>'<label class="slot"><input type="radio" name="slot" value="'+s+'"><span>'+ft(s)+'</span></label>').join(''):'<span class="note">'+(t&&(t.avail||[]).length?'لا توجد أوقات متاحة في هذا اليوم.':'لم يُحدَّد جدول توفر لهذا المدرب. أدخل الوقت يدوياً.')+'</span>'};
+   f.addEventListener('change',e=>{if(e.target.name==='packId')fillTr();if(['packId','trainerId','date','dur'].indexOf(e.target.name)>=0)draw()});
+   fillTr();draw();
+  }});
+}
+
+/* document a session: attendance, exercises, performance, trainer notes */
+function ptDocModal(id){
+ const x=(S.ptSess||[]).find(s=>s.id===id);if(!x)return;
+ const prof=ptProfile(x.memberId),plan=(prof&&prof.plan)||[],ex=x.exercises&&x.exercises.length?x.exercises:plan.slice(0,6).map(p=>({name:p.name,sets:p.sets,reps:p.reps,weight:p.weight}));
+ const row=(e,i)=>'<div class="exrow"><input name="en_'+i+'" value="'+esc(e.name||'')+'" placeholder="التمرين" aria-label="التمرين"><input name="es_'+i+'" value="'+esc(e.sets||'')+'" placeholder="مجموعات" inputmode="numeric" aria-label="المجموعات"><input name="er_'+i+'" value="'+esc(e.reps||'')+'" placeholder="تكرارات" aria-label="التكرارات"><input name="ew_'+i+'" value="'+esc(e.weight||'')+'" placeholder="الوزن" aria-label="الوزن"></div>';
+ const rows=ex.concat(Array(Math.max(0,8-ex.length)).fill({})).slice(0,10);
+ openModal('توثيق الجلسة · '+esc((memberById(x.memberId)||{}).name),'<div class="fm">'+
+  '<div class="sumline full"><span>'+dayLabel(x.date)+' · '+ft(x.time)+' · '+esc((trainerById(x.trainerId)||{}).name||'')+'</span>'+(x.status!=='booked'?'<span class="pill '+PT_ST[x.status][1]+'">'+PT_ST[x.status][0]+'</span>':'')+'</div>'+
+  fld('الحضور',sel('status',[['done','حضر الجلسة'],['noshow','لم يحضر']],x.status==='noshow'?'noshow':'done'))+
+  fld('مستوى الأداء',sel('perf',[['','-'],['5','ممتاز'],['4','جيد جداً'],['3','جيد'],['2','مقبول'],['1','ضعيف']],x.perf||''))+
+  '<div class="fld full"><span>التمارين المنفذة</span><div class="exhead"><b>التمرين</b><b>مجموعات</b><b>تكرارات</b><b>الوزن</b></div>'+rows.map(row).join('')+'</div>'+
+  fld('ملاحظات المدرب',inp('note',x.note||'','placeholder="ما لاحظته، وما يركز عليه في الجلسة القادمة"'),'full')+
+  '<p class="note full">'+(S.settings.ptNoShowCharge!==false?'الغياب يُخصم من رصيد الباقة حسب السياسة.':'الغياب لا يُخصم من رصيد الباقة حسب السياسة.')+'</p></div>',
+  d=>{
+   const exs=[];for(let i=0;i<10;i++){const n=(d['en_'+i]||'').trim();if(n)exs.push({name:n,sets:(d['es_'+i]||'').trim(),reps:(d['er_'+i]||'').trim(),weight:(d['ew_'+i]||'').trim()})}
+   x.status=d.status;x.charged=chargeFor(d.status);x.perf=d.perf?+d.perf:null;x.exercises=d.status==='done'?exs:[];x.note=d.note.trim();x.docAt=nowIso();x.docBy=SESS.name;
+   save();render();toast(d.status==='done'?'تم توثيق الجلسة وخصمها من الرصيد':'سُجّل الغياب'+(x.charged?' وخُصمت الجلسة':''));
+  },{ok:'حفظ التوثيق',wide:true});
+}
+function ptCancelModal(id){
+ const x=(S.ptSess||[]).find(s=>s.id===id);if(!x)return;
+ const late=hoursAway(x)<(+S.settings.ptCancelHours||0),def=late?chargeFor('late_cancel'):false;
+ openModal('إلغاء الجلسة','<div class="fm"><p class="full">'+esc((memberById(x.memberId)||{}).name)+' · '+dayLabel(x.date)+' '+ft(x.time)+'</p>'+
+  '<p class="note full">'+(late?'الإلغاء قبل أقل من '+S.settings.ptCancelHours+' ساعة من الموعد يُعد إلغاءً متأخراً'+(def?' وتُخصم الجلسة حسب السياسة.':' ولا تُخصم حسب السياسة.'):'الإلغاء في الوقت المسموح، ولن تُخصم الجلسة.')+'</p>'+
+  '<label class="full chk"><input type="checkbox" name="charge" id="f-charge"'+(def?' checked':'')+'> خصم الجلسة من الرصيد</label>'+
+  fld('سبب الاستثناء (إذا خالفت السياسة)',inp('reason','','placeholder="مثال: ظرف طارئ موثق"'),'full')+'</div>',
+  d=>{const ch=!!d.charge;if(ch!==def&&!d.reason.trim()){toast('اكتب سبب مخالفة السياسة');return false}
+   x.status=late?'late_cancel':'cancelled';x.charged=ch;x.cancelledBy=SESS.name;x.cancelledAt=nowIso();if(ch!==def)x.adjReason=d.reason.trim();
+   save();render();toast('تم إلغاء الجلسة'+(ch?' وخُصمت':''))},{ok:'إلغاء الجلسة',danger:true});
+}
+function ptAdjModal(packId){
+ const k=packById(packId);if(!k)return;
+ openModal('تعديل يدوي لرصيد الجلسات','<div class="fm"><div class="sumline full"><span>'+esc((memberById(k.memberId)||{}).name)+' · '+esc(k.name)+'</span><b class="num">متبقٍ '+packLeft(k)+' من '+k.sessions+'</b></div>'+
+  fld('النوع',sel('kind',[['add','إضافة جلسات للرصيد'],['sub','خصم جلسات من الرصيد'],['extend','تمديد الصلاحية']],'add'))+
+  fld('العدد (جلسات أو أيام)',inp('n','1','type="number" min="1" max="60" required'))+
+  fld('السبب',inp('reason','','required placeholder="يُحفظ في سجل العمليات"'),'full')+'</div>',
+  d=>{const n=Math.max(1,+d.n||1),r=d.reason.trim();if(!r)return false;k.adj=k.adj||[];
+   if(d.kind==='extend'){k.expires=addDays(k.expires,n);const sub=S.subs.find(s=>s.id===k.subId);if(sub)sub.end=k.expires}
+   else k.adj.push({n:d.kind==='add'?-n:n,reason:r,at:nowIso(),by:SESS.name});
+   save();render();toast('تم التعديل وتوثيقه')},{ok:'حفظ'});
+}
+
+/* ===== PT profile: goals, assessment, measurements, training plan ===== */
+function ptAssessModal(mid){
+ let p=ptProfile(mid);const m=memberById(mid);
+ const a=(p&&p.assess)||{};
+ openModal('التقييم الأولي والأهداف · '+esc(m.name),'<div class="fm">'+
+  fld('الهدف الرئيسي',inp('goal',p?p.goal:'','required placeholder="مثال: خسارة 6 كغ خلال 3 أشهر"'),'full')+
+  fld('المستوى',sel('level',[['مبتدئ','مبتدئ'],['متوسط','متوسط'],['متقدم','متقدم']],a.level||'مبتدئ'))+fld('تاريخ التقييم',inp('date',a.date||TODAY(),'type="date"'))+
+  fld('الطول (سم)',inp('height',p&&p.height||'','type="number" min="100" max="230"'))+fld('الوزن (كغ)',inp('weight',a.weight||'','type="number" min="30" max="300" step="0.1"'))+
+  fld('نبض الراحة',inp('hr',a.hr||'','type="number" min="30" max="140"'))+fld('نسبة الدهون %',inp('fat',a.fat||'','type="number" min="3" max="60" step="0.1"'))+
+  fld('إصابات أو قيود حركية',inp('injuries',a.injuries||'','placeholder="اختياري"'),'full')+
+  fld('ملاحظات صحية (سرية)',inp('medical',a.medical||'','placeholder="تظهر للمدير والمدرب فقط"'),'full')+
+  fld('ملاحظات التقييم',inp('notes',a.notes||'','placeholder="المرونة، التوازن، القوة، الأولويات"'),'full')+'</div>',
+  d=>{if(!p){p={id:uid('pt'),memberId:mid,trainerId:m.trainerId||(S.trainers[0]||{}).id||'',goal:'',height:0,started:TODAY(),sessions:{total:0,used:0},log:[],plan:[]};S.pt.push(p)}
+   p.goal=d.goal.trim();p.height=+d.height||p.height||0;p.assess={level:d.level,date:d.date,weight:+d.weight||null,hr:+d.hr||null,fat:+d.fat||null,injuries:d.injuries.trim(),medical:d.medical.trim(),notes:d.notes.trim()};
+   if(d.weight&&!p.log.length)p.log.push({date:d.date||TODAY(),weight:+d.weight,waist:null,fat:d.fat?+d.fat:null,note:'التقييم الأولي'});
+   save();render();toast('تم حفظ التقييم')},{ok:'حفظ',wide:true});
+}
+function ptPlanModal(mid){
+ const p=ptProfile(mid),m=memberById(mid);if(!p){toast('أضف التقييم الأولي أولاً');return}
+ const rows=(p.plan||[]).concat(Array(4).fill({})).slice(0,Math.max(8,(p.plan||[]).length+4));
+ const row=(e,i)=>'<div class="exrow pl"><input name="pd_'+i+'" value="'+esc(e.day||'')+'" placeholder="اليوم" aria-label="اليوم"><input name="pn_'+i+'" value="'+esc(e.name||'')+'" placeholder="التمرين" aria-label="التمرين"><input name="ps_'+i+'" value="'+esc(e.sets||'')+'" placeholder="مج" aria-label="المجموعات"><input name="pr_'+i+'" value="'+esc(e.reps||'')+'" placeholder="تكرار" aria-label="التكرارات"><input name="pw_'+i+'" value="'+esc(e.weight||'')+'" placeholder="وزن" aria-label="الوزن"><input name="pl_'+i+'" value="'+esc(e.link||'')+'" placeholder="رابط الشرح" dir="ltr" aria-label="رابط الشرح"></div>';
+ openModal('خطة التدريب · '+esc(m.name),'<div class="fm"><p class="note full">اكتب في «اليوم» اسماً يجمع التمارين، مثل: اليوم A أو الأحد. تظهر الخطة للمتدرب في حسابه.</p><div class="fld full"><div class="exhead pl"><b>اليوم</b><b>التمرين</b><b>مج</b><b>تكرار</b><b>وزن</b><b>رابط الشرح</b></div>'+rows.map(row).join('')+'</div></div>',
+  d=>{const out=[];for(let i=0;i<rows.length;i++){const n=(d['pn_'+i]||'').trim();if(n)out.push({day:(d['pd_'+i]||'').trim(),name:n,sets:(d['ps_'+i]||'').trim(),reps:(d['pr_'+i]||'').trim(),weight:(d['pw_'+i]||'').trim(),link:(d['pl_'+i]||'').trim()})}
+   p.plan=out;p.planAt=nowIso();save();render();toast('تم حفظ خطة التدريب')},{ok:'حفظ الخطة',wide:true});
+}
+function planHtml(plan){
+ if(!plan||!plan.length)return '<p class="empty">لا توجد خطة تدريب بعد.</p>';
+ const g={};plan.forEach(e=>{const k=e.day||'الخطة';(g[k]=g[k]||[]).push(e)});
+ return Object.keys(g).map(k=>'<div class="plday"><h4>'+esc(k)+'</h4>'+g[k].map(e=>'<div class="row"><div class="grow"><b>'+esc(e.name)+'</b><small>'+[e.sets?e.sets+' مجموعات':'',e.reps?e.reps+' تكرار':'',e.weight?e.weight:''].filter(Boolean).join(' · ')+'</small></div>'+(/^https?:\/\//.test(e.link||'')?'<a class="btn sm" href="'+esc(e.link)+'" target="_blank" rel="noopener">شرح</a>':'')+'</div>').join('')+'</div>').join('');
+}
+function ptProfileModal(mid){
+ const p=ptProfile(mid),m=memberById(mid);if(!m)return;
+ const a=(p&&p.assess)||{},packs=(S.ptPacks||[]).filter(k=>k.memberId===mid),sess=(S.ptSess||[]).filter(x=>x.memberId===mid).sort((x,y)=>(y.date+y.time).localeCompare(x.date+x.time)).slice(0,12);
+ const cur=p&&p.log&&p.log.length?p.log[p.log.length-1]:null;
+ openModal(esc(m.name)+' · التدريب الشخصي','<div class="sec" style="padding-top:16px;display:grid;gap:10px">'+
+  '<div class="chipline"><span>الهدف: '+esc(p&&p.goal||'-')+'</span>'+(a.level?'<span>المستوى: '+esc(a.level)+'</span>':'')+(p&&p.height?'<span>الطول: '+p.height+' سم</span>':'')+(cur?'<span>آخر وزن: '+cur.weight+' كغ</span>':'')+(a.injuries?'<span>إصابات: '+esc(a.injuries)+'</span>':'')+'</div>'+
+  (a.medical?'<p class="note">ملاحظات صحية: '+esc(a.medical)+'</p>':'')+
+  '<div class="acts">'+btn('ptAssess','التقييم والأهداف','sm','data-id="'+mid+'"')+(p?btn('ptMeasure','قياس جديد','sm','data-id="'+p.id+'"')+btn('ptPlanEdit','خطة التدريب','sm','data-id="'+mid+'"'):'')+(isOffice()?btn('ptSell','بيع باقة','sm pri','data-id="'+mid+'"'):'')+'</div></div>'+
+  (p&&p.log&&p.log.length>1?'<div class="sec"><h4>منحنى الوزن</h4>'+wChart(p.log)+'</div>':'')+
+  '<div class="sec"><h4>الباقات</h4>'+(packs.length?packs.map(k=>'<div class="row" style="padding-inline:0"><div class="grow"><b>'+esc(k.name)+'</b><small>متبقٍ '+packLeft(k)+' من '+k.sessions+' · تنتهي '+fdate(k.expires)+'</small></div><span class="pill '+PACK_ST[packState(k)][1]+'">'+PACK_ST[packState(k)][0]+'</span></div>').join(''):'<p class="note">لا توجد باقات.</p>')+'</div>'+
+  '<div class="sec"><h4>خطة التدريب</h4>'+planHtml(p&&p.plan)+'</div>'+
+  '<div class="sec"><h4>آخر الجلسات</h4>'+(sess.length?sess.map(x=>'<div class="row" style="padding-inline:0"><div class="grow"><b>'+dayLabel(x.date)+' · '+ft(x.time)+'</b><small>'+esc((trainerById(x.trainerId)||{}).name||'')+(x.perf?' · الأداء '+x.perf+'/5':'')+(x.note?' · '+esc(x.note):'')+'</small></div><span class="pill '+PT_ST[x.status][1]+'">'+PT_ST[x.status][0]+'</span></div>').join(''):'<p class="note">لا توجد جلسات.</p>')+'</div>',null,{noForm:true,wide:true,noFocus:true});
+}
+
+/* trainer availability (manager) */
+function availModal(tid){
+ const t=trainerById(tid);if(!t)return;const av=t.avail||[];
+ openModal('أوقات توفر '+esc(t.name),'<div class="fm"><p class="note full">تُستخدم لعرض الأوقات المتاحة عند حجز جلسات التدريب الشخصي.</p>'+DOW.map((n,d)=>{const a=av.find(x=>+x.d===d);return '<div class="avrow full"><label class="chk"><input type="checkbox" name="on_'+d+'"'+(a?' checked':'')+'> '+n+'</label><input type="time" name="f_'+d+'" value="'+(a?a.from:'16:00')+'" aria-label="من"><input type="time" name="t_'+d+'" value="'+(a?a.to:'22:00')+'" aria-label="إلى"></div>'}).join('')+'</div>',
+  d=>{const out=[];for(let i=0;i<7;i++){if(d['on_'+i]){if(d['f_'+i]>=d['t_'+i]){toast('وقت النهاية يجب أن يكون بعد البداية ('+DOW[i]+')');return false}out.push({d:i,from:d['f_'+i],to:d['t_'+i]})}}
+   t.avail=out;save();render();toast('تم حفظ أوقات التوفر')},{ok:'حفظ'});
+}
+
+/* PT sale plans (manager) */
+function ptPlanSaleModal(id){
+ const isNew=!id,p=isNew?{name:'',sessions:8,validDays:45,price:0,dur:60,intro:false}:ptPlanById(id);
+ openModal(isNew?'باقة تدريب جديدة':'تعديل باقة التدريب','<div class="fm">'+fld('اسم الباقة',inp('name',p.name,'required placeholder="مثال: 8 جلسات"'),'full')+
+  fld('عدد الجلسات',inp('sessions',p.sessions,'type="number" min="1" required'))+fld('الصلاحية (أيام)',inp('validDays',p.validDays,'type="number" min="1" required'))+
+  fld('السعر (ر.س)',inp('price',p.price,'type="number" min="0" step="1" required'))+fld('مدة الجلسة (دقيقة)',inp('dur',p.dur||60,'type="number" min="15" step="15" required'))+
+  '<label class="full chk"><input type="checkbox" name="intro"'+(p.intro?' checked':'')+'> باقة تعريفية (تُستخدم لقياس التحويل إلى باقات)</label>'+(isNew?'':'<label class="full chk"><input type="checkbox" name="archived"'+(p.archived?' checked':'')+'> إيقاف بيع هذه الباقة</label>')+'</div>',
+  d=>{const v={name:d.name.trim(),sessions:+d.sessions,validDays:+d.validDays,price:+d.price,dur:+d.dur,intro:!!d.intro,archived:!!d.archived};
+   if(isNew)S.ptPlans.push(Object.assign({id:uid('pp')},v));else Object.assign(p,v);save();render();toast('تم حفظ باقة التدريب')});
+}
+
+/* ===== commissions + PT indicators (manager) ===== */
+function ptCommission(ym){
+ const set=S.settings,type=set.ptCommType||'percent',val=+set.ptCommValue||0,pen=!!set.ptCommPenalty;
+ const rows={};
+ (S.ptSess||[]).forEach(x=>{
+  if(!x.date.startsWith(ym)||!x.charged)return;if(x.status!=='done'&&!pen)return;
+  const k=packById(x.packId);if(!k)return;const per=(+k.sessions?packValue(k)/k.sessions:0),c=type==='percent'?per*val/100:val;
+  const r=rows[x.trainerId]=rows[x.trainerId]||{n:0,done:0,value:0,comm:0};r.n++;if(x.status==='done')r.done++;r.value+=per;r.comm+=(type==='percent'||packValue(k)>0)?c:0;
+ });
+ return rows;
+}
+function ptKpis(){
+ const t=TODAY(),from=addDays(t,-90),P=S.ptPacks||[];
+ const intros=P.filter(k=>k.intro&&k.start>=from),conv=intros.filter(k=>P.some(o=>o.memberId===k.memberId&&!o.intro&&o.start>=k.start&&o.id!==k.id));
+ const ended=P.filter(k=>!k.intro&&['used','expired'].indexOf(packState(k))>=0&&k.start>=addDays(t,-180)),ren=ended.filter(k=>P.some(o=>o.memberId===k.memberId&&o.id!==k.id&&o.start>=k.start&&!o.intro));
+ const util=S.trainers.map(tr=>{let av=0,bk=0;for(let i=0;i<7;i++){const d=addDays(t,i),dow=parse(d).getDay();(tr.avail||[]).filter(a=>+a.d===dow).forEach(a=>av+=mins(a.to)-mins(a.from));(S.ptSess||[]).filter(x=>x.trainerId===tr.id&&x.date===d&&(x.status==='booked'||x.status==='done')).forEach(x=>bk+=+x.dur||60)}return {tr:tr,av:av,bk:bk,pc:av?Math.round(bk/av*100):null}});
+ const mk=t.slice(0,7),sold=P.filter(k=>k.start.startsWith(mk)),done=(S.ptSess||[]).filter(x=>x.date.startsWith(mk)&&x.status==='done').length;
+ return {intros:intros.length,conv:conv.length,ended:ended.length,ren:ren.length,util:util,sold:sold.length,soldVal:sold.reduce((a,k)=>a+packValue(k),0),done:done};
+}
+
+/* ===== PT workspace page ===== */
+function pagePT(){
+ const tab=U.ptTab||'sched',scope=myTrainerScope(),mgr=isManager();
+ const tabs=[['sched','جدول الجلسات'],['packs','الباقات المباعة'],['clients','ملفات المتدربين']].concat(mgr?[['comm','العمولات'],['kpi','المؤشرات'],['plans','باقات البيع']]:[]);
+ const T='<div class="seg ptseg" role="tablist">'+tabs.map(a=>'<button type="button" data-act="ptTab" data-k="'+a[0]+'" aria-pressed="'+(tab===a[0])+'">'+a[1]+'</button>').join('')+'</div>';
+ const packs=(S.ptPacks||[]).filter(k=>!scope||(k.trainerIds||[]).indexOf(scope)>=0),alerts=packs.filter(k=>packState(k)==='low');
+ let body='';
+ if(tab==='sched'){
+  const start=U.ptDay||TODAY(),days=[...Array(7)].map((_,i)=>addDays(start,i)),fTr=scope||U.ptTr||'';
+  const list=d=>(S.ptSess||[]).filter(x=>x.date===d&&(!fTr||x.trainerId===fTr)).sort((a,b)=>a.time.localeCompare(b.time));
+  body='<section class="card"><header class="card-h"><div class="ms-nav"><button type="button" class="ib sq" data-act="ptDay" data-k="-7" aria-label="الأسبوع السابق">'+ic('chev',16).replace('<svg','<svg style="transform:scaleX(-1)"')+'</button><h2>'+fdate(start,{day:'numeric',month:'short'})+' ← '+fdate(days[6],{day:'numeric',month:'short'})+'</h2><button type="button" class="ib sq" data-act="ptDay" data-k="7" aria-label="الأسبوع التالي">'+ic('chev',16)+'</button></div>'+
+   (scope?'':'<div class="chips"><button type="button" class="chip" aria-pressed="'+(!fTr)+'" data-act="ptTr" data-k="">كل المدربين</button>'+S.trainers.map(t=>'<button type="button" class="chip" aria-pressed="'+(fTr===t.id)+'" data-act="ptTr" data-k="'+t.id+'">'+esc(t.name.replace('كابتن ',''))+'</button>').join('')+'</div>')+'</header>'+
+   '<div class="ptweek">'+days.map(d=>{const L=list(d);return '<div class="ptday'+(d===TODAY()?' today':'')+'"><div class="ptdh"><b>'+DOW[parse(d).getDay()]+'</b><span>'+fdate(d,{day:'numeric',month:'short'})+'</span></div>'+(L.length?L.map(x=>{const m=memberById(x.memberId),tr=trainerById(x.trainerId);return '<div class="ptses st-'+x.status+'"><div class="ptst"><b class="num">'+ft(x.time)+'</b><span class="pill '+PT_ST[x.status][1]+'">'+PT_ST[x.status][0]+'</span></div><button type="button" class="link" data-act="ptProfile" data-id="'+x.memberId+'">'+esc(m?m.name:'')+'</button><small>'+esc(tr?tr.name:'')+' · '+x.dur+' د'+(x.charged&&x.status!=='done'?' · خُصمت':'')+'</small>'+(x.status==='booked'?'<div class="acts">'+btn('ptDoc','توثيق','sm pri','data-id="'+x.id+'"')+btn('ptCancel','إلغاء','sm','data-id="'+x.id+'"')+'</div>':(x.status==='done'||x.status==='noshow')?'<div class="acts">'+btn('ptDoc','عرض/تعديل','sm','data-id="'+x.id+'"')+'</div>':'')+'</div>'}).join(''):'<p class="note">لا جلسات</p>')+'</div>'}).join('')+'</div></section>';
+ }
+ if(tab==='packs'){
+  const f=U.ptPf||'open',rows=packs.filter(k=>f==='all'||(f==='open'?packOpen(k):packState(k)===f)).sort((a,b)=>(a.expires||'').localeCompare(b.expires||''));
+  body='<section class="card"><header class="card-h"><h2>الباقات المباعة</h2><div class="chips">'+[['open','السارية'],['low','قاربت على الانتهاء'],['used','المستهلكة'],['expired','المنتهية'],['all','الكل']].map(a=>'<button type="button" class="chip" aria-pressed="'+(f===a[0])+'" data-act="ptPf" data-k="'+a[0]+'">'+a[1]+'</button>').join('')+'</div></header><div class="tw"><table><thead><tr><th>المتدرب</th><th>الباقة</th><th>الرصيد</th><th>الصلاحية</th><th>المدربون</th><th>الحالة</th><th></th></tr></thead><tbody>'+
+  (rows.map(k=>{const m=memberById(k.memberId),left=packLeft(k),bk=packBooked(k),pc=Math.round(packUsed(k)/Math.max(1,k.sessions)*100),st=packState(k);
+   return '<tr><td><button type="button" class="link" data-act="ptProfile" data-id="'+k.memberId+'">'+esc(m?m.name:'')+'</button></td><td>'+esc(k.name)+(k.intro?' <span class="pill info">تعريفية</span>':'')+'</td><td style="min-width:130px"><span class="num">متبقٍ '+left+' من '+k.sessions+(bk?' · محجوز '+bk:'')+'</span><div class="bar'+(left<=2?' warn':'')+'" style="margin-top:4px"><i style="width:'+pc+'%"></i></div></td><td class="num">'+fdate(k.expires)+'</td><td>'+(k.trainerIds||[]).map(t=>esc(((trainerById(t)||{}).name||'').replace('كابتن ',''))).join('، ')+'</td><td><span class="pill '+PACK_ST[st][1]+'">'+PACK_ST[st][0]+'</span></td><td><div class="cell-acts">'+(packOpen(k)&&left-bk>0?btn('ptBook','حجز جلسة','sm pri','data-id="'+k.id+'"'):'')+(isOffice()?btn('ptAdj','تعديل يدوي','sm','data-id="'+k.id+'"'):'')+'</div></td></tr>'}).join('')||'<tr><td colspan="7" class="empty">لا توجد باقات هنا.</td></tr>')+'</tbody></table></div></section>';
+ }
+ if(tab==='clients'){
+  const ids=[...new Set(S.pt.filter(p=>!scope||p.trainerId===scope).map(p=>p.memberId).concat(packs.map(k=>k.memberId)))];
+  body='<section class="card"><header class="card-h"><h2>ملفات المتدربين</h2><span class="note">الأهداف والتقييم والقياسات والخطط سرية: تظهر للمدير والمدرب المسؤول فقط.</span></header><div class="tw"><table><thead><tr><th>المتدرب</th><th>الهدف</th><th>آخر قياس</th><th>الخطة</th><th>الرصيد</th><th></th></tr></thead><tbody>'+
+  (ids.map(id=>{const m=memberById(id);if(!m)return '';const p=ptProfile(id),cur=p&&p.log&&p.log.length?p.log[p.log.length-1]:null,open=(S.ptPacks||[]).filter(k=>k.memberId===id&&packOpen(k)),left=open.reduce((a,k)=>a+packLeft(k),0);
+   return '<tr><td><button type="button" class="link" data-act="ptProfile" data-id="'+id+'">'+esc(m.name)+'</button></td><td style="white-space:normal">'+esc(p&&p.goal||'-')+'</td><td class="num">'+(cur?cur.weight+' كغ · '+fdate(cur.date,{day:'numeric',month:'short'}):'-')+'</td><td>'+(p&&p.plan&&p.plan.length?p.plan.length+' تمرين':'<span class="mut">لا توجد</span>')+'</td><td class="num">'+(open.length?left+' جلسة':'<span class="mut">-</span>')+'</td><td><div class="cell-acts">'+btn('ptAssess','التقييم','sm','data-id="'+id+'"')+btn('ptPlanEdit','الخطة','sm','data-id="'+id+'"')+'</div></td></tr>'}).join('')||'<tr><td colspan="6" class="empty">لا يوجد متدربون في التدريب الشخصي بعد.</td></tr>')+'</tbody></table></div></section>';
+ }
+ if(tab==='comm'&&mgr){
+  const ym=U.ptCm||TODAY().slice(0,7),rows=ptCommission(ym),set=S.settings;
+  body='<section class="card"><header class="card-h"><div class="ms-nav"><button type="button" class="ib sq" data-act="ptCm" data-k="-1" aria-label="الشهر السابق">'+ic('chev',16).replace('<svg','<svg style="transform:scaleX(-1)"')+'</button><h2>عمولات '+monthLabel(ym)+'</h2><button type="button" class="ib sq" data-act="ptCm" data-k="1" aria-label="الشهر التالي">'+ic('chev',16)+'</button></div><span class="note">القاعدة: '+((set.ptCommType||'percent')==='percent'?(+set.ptCommValue||0)+'% من قيمة الجلسة':money(+set.ptCommValue||0)+' لكل جلسة')+(set.ptCommPenalty?' · تشمل الجلسات المخصومة بسبب الغياب أو الإلغاء المتأخر':' · الجلسات المنفذة فقط')+'. تُغيَّر من الإعدادات.</span></header><div class="tw"><table><thead><tr><th>المدرب</th><th>جلسات محتسبة</th><th>منها منفذة</th><th>قيمة الجلسات</th><th>العمولة</th></tr></thead><tbody>'+
+  (S.trainers.map(t=>{const r=rows[t.id];return r?'<tr><td>'+esc(t.name)+'</td><td class="num">'+r.n+'</td><td class="num">'+r.done+'</td><td class="num">'+money(r.value)+'</td><td class="num"><b>'+money(r.comm)+'</b></td></tr>':''}).join('')||'<tr><td colspan="5" class="empty">لا توجد جلسات محتسبة في هذا الشهر.</td></tr>')+'</tbody></table></div><p class="note" style="padding:0 20px 16px">قيمة الجلسة = قيمة الباقة بعد الخصم والاسترداد ÷ عدد جلساتها. الباقات الملغاة تُحتسب على ما بقي محصّلاً منها فقط.</p></section>';
+ }
+ if(tab==='kpi'&&mgr){
+  const k=ptKpis(),rate=(a,b)=>b?Math.round(a/b*100)+'%':'-';
+  body='<div class="stats"><div class="stat"><span>تحويل الجلسات التعريفية (90 يوماً)</span><div><b>'+rate(k.conv,k.intros)+'</b><span class="chg n">'+k.conv+' من '+k.intros+'</span></div></div><div class="stat"><span>تجديد الباقات</span><div><b>'+rate(k.ren,k.ended)+'</b><span class="chg n">'+k.ren+' من '+k.ended+' انتهت</span></div></div><div class="stat"><span>باقات مباعة هذا الشهر</span><div><b>'+k.sold+'</b><span class="chg n">'+money(k.soldVal)+'</span></div></div><div class="stat"><span>جلسات منفذة هذا الشهر</span><div><b>'+k.done+'</b></div></div></div>'+
+  '<section class="card" style="margin-top:16px"><header class="card-h"><h2>استغلال أوقات المدربين (الأيام السبعة القادمة)</h2></header><div class="pb" style="display:grid;gap:14px">'+k.util.map(u=>'<div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><b>'+esc(u.tr.name)+'</b><span class="num mut">'+(u.av?Math.round(u.bk/60*10)/10+' من '+Math.round(u.av/60*10)/10+' ساعة · '+u.pc+'%':'لم يُحدَّد جدول توفر')+'</span></div><div class="bar'+(u.pc>=85?' full':'')+'"><i style="width:'+Math.min(100,u.pc||0)+'%"></i></div></div>').join('')+'</div></section>';
+ }
+ if(tab==='plans'&&mgr){
+  body='<section class="card"><header class="card-h"><h2>باقات التدريب الشخصي المعروضة للبيع</h2>'+btn('ptPlanNew',ic('plus',15)+' باقة جديدة','sm pri')+'</header><div class="tw"><table><thead><tr><th>الباقة</th><th>الجلسات</th><th>الصلاحية</th><th>مدة الجلسة</th><th>السعر</th><th></th></tr></thead><tbody>'+
+  ((S.ptPlans||[]).map(p=>'<tr'+(p.archived?' style="opacity:.55"':'')+'><td><b>'+esc(p.name)+'</b>'+(p.intro?' <span class="pill info">تعريفية</span>':'')+(p.archived?' <span class="pill">موقوفة</span>':'')+'</td><td class="num">'+p.sessions+'</td><td class="num">'+p.validDays+' يوم</td><td class="num">'+(p.dur||60)+' د</td><td class="num">'+money(p.price)+'</td><td><div class="cell-acts">'+btn('ptPlanEditSale','تعديل','sm','data-id="'+p.id+'"')+'</div></td></tr>').join('')||'<tr><td colspan="6" class="empty">لا توجد باقات بعد. أضف أول باقة.</td></tr>')+'</tbody></table></div></section>'+
+  '<section class="card" style="margin-top:16px"><header class="card-h"><h2>أوقات توفر المدربين</h2></header>'+S.trainers.map(t=>'<div class="row"><div class="grow"><b>'+esc(t.name)+'</b><small>'+((t.avail||[]).map(a=>DOW[a.d]+' '+ft(a.from)+'–'+ft(a.to)).join(' · ')||'لم يُحدَّد')+'</small></div>'+btn('ptAvail','تعديل','sm','data-id="'+t.id+'"')+'</div>').join('')+'</section>';
+ }
+ const acts=(isOffice()?btn('ptSell',ic('plus',16)+' بيع باقة','pri'):'')+btn('ptBook','حجز جلسة');
+ return head('التدريب الشخصي',scope?'جلساتك ومتدربوك وخطط التدريب':'المبيعات والحجوزات وتوثيق الجلسات ومتابعة النتائج',acts)+
+  (alerts.length?'<div class="ptalert" role="status">'+ic('bell',16)+' '+alerts.length+' باقة قاربت على الانتهاء: '+alerts.slice(0,4).map(k=>esc((memberById(k.memberId)||{}).name||'')+' ('+packLeft(k)+' جلسة)').join('، ')+'</div>':'')+T+body;
+}
+
+/* ===== member home ===== */
+const offersList=()=>String(S.settings.offers||'').split('\n').map(l=>l.split('|').map(x=>x.trim())).filter(a=>a[0]).map(a=>({title:a[0],text:a[1]||'',until:/^\d{4}-\d{2}-\d{2}$/.test(a[2]||'')?a[2]:''})).concat(((S.settings.site||{}).offers||[]).filter(o=>o&&o.title).map(o=>({title:o.title,text:o.text||'',until:o.until||''}))).filter(o=>!o.until||o.until>=TODAY());
+const clubWa=txt=>S.settings.phone?waTo(S.settings.phone,txt):'';
+function classStartsAt(c,d){return new Date(d+'T'+c.time+':00')}
+function pageHome(){
+ const m=memberById(SESS.role==='trainee'?SESS.uid:(U.pm||(S.members[0]||{}).id));
+ if(!m)return head('الرئيسية','')+'<p class="empty panel">لا توجد بيانات.</p>';
+ const i=mInfo(m),s=i.sub,t=TODAY(),ok=i.st==='active'||i.st==='expiring',now=Date.now();
+ const total=s?diff(s.end,s.start)+1:0,el=s?Math.min(total,Math.max(0,diff(t,s.start)+1)):0;
+ const myBook=S.book.filter(b=>b.memberId===m.id&&b.date>=t).map(b=>({b:b,c:S.classes.find(c=>c.id===b.classId)})).filter(x=>x.c&&classStartsAt(x.c,x.b.date)>now).sort((a,b)=>(a.b.date+a.c.time).localeCompare(b.b.date+b.c.time));
+ const myPt=(S.ptSess||[]).filter(x=>x.memberId===m.id&&x.status==='booked'&&sessStart(x)>now).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+ const nextItems=myBook.map(x=>({at:x.b.date+x.c.time,html:'<b>'+esc(x.c.name)+'</b><small>'+dayLabel(x.b.date)+' · '+ft(x.c.time)+' · '+esc((trainerById(x.c.trainerId)||{}).name||'')+'</small>',act:btn('hmUnbook','إلغاء الحجز','sm','data-id="'+x.b.id+'"')})).concat(myPt.map(x=>({at:x.date+x.time,html:'<b>جلسة تدريب شخصي</b><small>'+dayLabel(x.date)+' · '+ft(x.time)+' · '+esc((trainerById(x.trainerId)||{}).name||'')+'</small>',act:btn('hmPtCancel','إلغاء','sm','data-id="'+x.id+'"')}))).sort((a,b)=>a.at.localeCompare(b.at));
+ const avail=[];for(let k=0;k<7;k++){const d=addDays(t,k);S.classes.filter(c=>c.days.indexOf(parse(d).getDay())>=0&&classStartsAt(c,d)>now).sort((a,b)=>a.time.localeCompare(b.time)).forEach(c=>avail.push({c:c,d:d}))}
+ const packs=(S.ptPacks||[]).filter(k=>k.memberId===m.id&&packOpen(k));
+ const subs=S.subs.filter(x=>x.memberId===m.id).sort((a,b)=>b.start.localeCompare(a.start)),debt=subs.reduce((a,x)=>a+dueOf(x),0);
+ const lateInst=subs.reduce((a,x)=>a.concat(instStatus(x).filter(y=>y.st==='late'||y.st==='soon').map(y=>Object.assign({s:x},y))),[]);
+ const al=[];
+ if(i.st==='expiring')al.push(['warn','bell','اشتراكك ينتهي '+(i.days===0?'اليوم':'خلال '+i.days+' يوم'),'جدّد الآن لتستمر دون انقطاع.',clubWa('مرحباً، أرغب في تجديد اشتراكي. الاسم: '+m.name+' · '+m.code)]);
+ if(i.st==='expired')al.push(['bad','bell','انتهى اشتراكك '+daysTxt(i.days),'تواصل معنا للتجديد والعودة للتمرين.',clubWa('مرحباً، أرغب في تجديد اشتراكي المنتهي. الاسم: '+m.name+' · '+m.code)]);
+ if(i.st==='frozen')al.push(['info','bell','اشتراكك مجمّد حالياً','تُضاف أيام التجميد إلى نهاية اشتراكك.','']);
+ lateInst.forEach(x=>al.push([x.st==='late'?'bad':'warn','bell','القسط '+x.n+' '+(x.st==='late'?'متأخر':'يستحق قريباً'),money(x.amount-x.paid)+' · تاريخ الاستحقاق '+fdate(x.due),'']));
+ if(debt>0&&!lateInst.length)al.push(['warn','bell','عليك مبلغ مستحق '+money(debt),'يمكنك السداد عند زيارتك القادمة.','']);
+ packs.filter(k=>packState(k)==='low').forEach(k=>al.push(['warn','dumbbell','باقة التدريب قاربت على الانتهاء','متبقٍ '+packLeft(k)+' جلسة · تنتهي '+fdate(k.expires),clubWa('مرحباً، أرغب في تجديد باقة التدريب الشخصي. الاسم: '+m.name)]));
+ const bd=bdayInfo(m);if(bd&&bd.days===0)al.push(['good','gift','كل عام وأنت بخير','أسرة '+S.settings.gym+' تهنئك بعيد ميلادك.','']);
+ offersList().forEach(o=>al.push(['offer','gift',o.title,o.text+(o.until?' · حتى '+fdate(o.until):''),clubWa('مرحباً، أرغب في الاستفادة من عرض: '+o.title)]));
+ const sec=(title,body,extra)=>'<section class="card mh-sec"><header class="card-h"><h2>'+title+'</h2>'+(extra||'')+'</header>'+body+'</section>';
+ return '<div class="mh">'+
+ '<div class="mh-hello"><div><h1>أهلاً، '+esc(m.name.split(' ')[0])+'</h1><p>'+fdate(t,{weekday:'long',day:'numeric',month:'long'})+'</p></div><div class="acts">'+btn('goPortal',ic('qr',16)+' بطاقتي','pri')+(SESS.role==='trainee'?btn('changePw','كلمة المرور','sm'):'')+'</div></div>'+
+ '<section class="mh-hero"><div class="mh-hero-main"><span class="mh-lbl">'+(s?esc(s.planName):'لا يوجد اشتراك')+'</span><div class="mh-big"><b class="num">'+(s&&ok?Math.max(0,i.days):0)+'</b><span>يوم متبقٍ</span></div>'+pill(i.st)+(s?'<span class="mh-sub">ينتهي '+fdate(i.end)+'</span>':'')+'</div>'+
+  (s?'<div class="mh-prog"><div class="bar"><i style="width:'+Math.round(el/Math.max(1,total)*100)+'%"></i></div><small>مضى '+el+' من '+total+' يوماً</small></div>':'')+
+  '<div class="mh-mini"><div><span>رصيد التدريب الشخصي</span><b class="num">'+packs.reduce((a,k)=>a+packLeft(k),0)+' <small>جلسة</small></b></div><div><span>المستحق عليك</span><b class="num'+(debt>0?' due':'')+'">'+num(debt)+' <small>ر.س</small></b></div><div><span>حجوزات قادمة</span><b class="num">'+nextItems.length+'</b></div></div></section>'+
+ (al.length?'<div class="mh-alerts">'+al.map(a=>'<div class="mh-al '+a[0]+'"><span class="ic">'+ic(a[1],18)+'</span><div class="grow"><b>'+esc(a[2])+'</b><small>'+esc(a[3])+'</small></div>'+(a[4]?'<a class="btn sm" target="_blank" rel="noopener" href="'+a[4]+'">'+(a[0]==='offer'?'أريد العرض':'تواصل معنا')+'</a>':'')+'</div>').join('')+'</div>':'')+
+ '<div class="mh-grid">'+
+ sec('حجزك القادم',nextItems.length?nextItems.slice(0,4).map(x=>'<div class="row"><div class="grow">'+x.html+'</div>'+x.act+'</div>').join(''):'<p class="empty">لا توجد حجوزات قادمة. احجز من الحصص المتاحة.</p>')+
+ sec('الحصص المتاحة',(ok?'':'<p class="note" style="padding:0 18px">الحجز متاح للاشتراكات السارية فقط.</p>')+(avail.length?avail.slice(0,10).map(x=>{const n=bookedCount(x.c.id,x.d),mine=S.book.find(b=>b.classId===x.c.id&&b.date===x.d&&b.memberId===m.id),full=n>=x.c.cap;
+   return '<div class="row"><div class="grow"><b>'+esc(x.c.name)+'</b><small>'+dayLabel(x.d)+' · '+ft(x.c.time)+' · '+esc((trainerById(x.c.trainerId)||{}).name||'')+' · '+(full?'مكتملة':'متبقٍ '+(x.c.cap-n)+' مقعد')+'</small></div>'+(mine?'<span class="pill good">محجوز</span>':ok&&!full?btn('hmBook','احجز','sm pri','data-id="'+x.c.id+'" data-k="'+x.d+'"'):'')+'</div>'}).join(''):'<p class="empty">لا توجد حصص خلال الأيام السبعة القادمة.</p>'))+
+ sec('التدريب الشخصي',(packs.length?packs.map(k=>'<div class="row"><div class="grow"><b>'+esc(k.name)+'</b><small>تنتهي '+fdate(k.expires)+' · المدرب: '+(k.trainerIds||[]).map(x=>esc((trainerById(x)||{}).name||'')).join('، ')+'</small><div class="bar" style="margin-top:6px"><i style="width:'+Math.round(packUsed(k)/Math.max(1,k.sessions)*100)+'%"></i></div></div><b class="num mh-left">'+packLeft(k)+'<small> / '+k.sessions+'</small></b></div>').join(''):'<p class="empty">لا توجد باقة تدريب شخصي سارية.</p>'),(ptProfile(m.id)&&(ptProfile(m.id).plan||[]).length?btn('hmPlan','خطة تدريبي','sm'):''))+
+ sec('المستحقات والفواتير',(subs.length?subs.slice(0,8).map(x=>{const due=dueOf(x),st=x.cancelled?['ملغاة','']:due<=0?['مسددة','good']:paidOf(x.id)>0?['مسددة جزئياً','warn']:['غير مسددة','bad'];
+   return '<div class="row"><div class="grow"><b>'+esc(x.planName)+'</b><small>'+x.inv+' · '+fdate(x.start,{day:'numeric',month:'short'})+' · '+money(x.total)+(due>0?' · متبقٍ '+money(due):'')+'</small>'+instBlock(x)+'</div><span class="pill '+st[1]+'">'+st[0]+'</span>'+btn('pdfDl',ic('file',14)+' PDF','sm','data-id="'+x.id+'"')+'</div>'}).join(''):'<p class="empty">لا توجد فواتير.</p>'))+
+ '</div></div>';
+}
+
+/* ===== PDF invoice with editable terms (drawn on canvas, then embedded in PDF) ===== */
+function wrapLines(x,text,maxW){
+ const out=[];String(text||'').split('\n').forEach(par=>{if(!par.trim()){out.push('');return}let line='';par.split(/\s+/).forEach(w=>{const tst=line?line+' '+w:w;if(x.measureText(tst).width>maxW&&line){out.push(line);line=w}else line=tst});if(line)out.push(line)});
+ return out;
+}
+async function invoicePages(s){
+ try{await document.fonts.ready}catch(e){}
+ const W=1240,H=1754,P=84,FD='"Readex Pro","IBM Plex Sans Arabic",Tahoma,sans-serif',FB='"IBM Plex Sans Arabic","Readex Pro",Tahoma,sans-serif';
+ const m=memberById(s.memberId)||{name:'',code:'',phone:''},set=S.settings,pays=S.pay.filter(p=>p.subId===s.id).sort((a,b)=>(a.date+(a.time||'')).localeCompare(b.date+(b.time||'')));
+ const pages=[],lg=await logoCanvas('#ECE8E5');
+ const newPage=first=>{const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');x.fillStyle='#FFFFFF';x.fillRect(0,0,W,H);x.direction='rtl';x.textBaseline='middle';pages.push(c);
+  const hh=first?210:110;x.fillStyle='#161312';x.fillRect(0,0,W,hh);x.save();x.beginPath();x.rect(0,0,W,hh);x.clip();x.fillStyle='#BE2F28';x.beginPath();x.moveTo(0,0);x.lineTo(first?360:260,0);x.lineTo(first?270:200,hh);x.lineTo(0,hh);x.fill();x.restore();
+  if(lg){const lh=first?96:60;x.drawImage(lg,W-P-lh*3,(hh-lh)/2,lh*3,lh)}
+  x.textAlign='center';x.fillStyle='#FFFFFF';x.font='700 '+(first?44:30)+'px '+FD;x.fillText(first?'فاتورة':s.inv,first?150:115,first?88:hh/2);if(first){x.font='600 26px '+FD;x.fillText(s.inv,150,140)}
+  return {x:x,y:hh+50}};
+ let pg=newPage(true),x=pg.x,y=pg.y;
+ const R=W-P,L=P,line=(t,f,c,xx,al)=>{x.font=f;x.fillStyle=c||'#161312';x.textAlign=al||'right';x.fillText(t,xx==null?R:xx,y)};
+ const club=[set.legalName||set.gym,set.crNo?'سجل تجاري '+set.crNo:'',set.vatNo?'الرقم الضريبي '+set.vatNo:'',set.address||'',set.phone?'هاتف '+set.phone:''].filter(Boolean);
+ line(club[0],'700 28px '+FD);y+=40;if(club.length>1){line(club.slice(1).join(' · '),'500 20px '+FB,'#625C58');y+=26}
+ y+=26;x.fillStyle='#F4F2F0';rr(x,L,y,W-2*P,150,16);x.fill();
+ const col=(W-2*P)/2,info=(lab,val,xx,yy)=>{x.textAlign='right';x.font='500 19px '+FB;x.fillStyle='#625C58';x.fillText(lab,xx,yy);x.font='600 23px '+FD;x.fillStyle='#161312';x.fillText(val,xx,yy+32)};
+ info('العميل',m.name,R-24,y+36);info('رقم العضوية · الجوال',(m.code||'')+' · '+(m.phone||''),R-24,y+104);
+ info('تاريخ الإصدار',fdate(s.start),R-col-24,y+36);info('حالة الفاتورة',s.cancelled?'ملغاة':dueOf(s)<=0?'مسددة':paidOf(s.id)>0?'مسددة جزئياً':'غير مسددة',R-col-24,y+104);
+ y+=200;
+ const c1=R,c2=R-560,c3=L+24;
+ x.fillStyle='#161312';rr(x,L,y-28,W-2*P,56,10);x.fill();line('البيان','600 21px '+FD,'#FFFFFF',c1-20);line('الفترة','600 21px '+FD,'#FFFFFF',c2);line('المبلغ (ر.س)','600 21px '+FD,'#FFFFFF',c3,'left');y+=64;
+ const row=(a,b,c,bold,color)=>{line(a,(bold?'700 ':'500 ')+'22px '+FB,color,c1-20);if(b)line(b,'500 20px '+FB,'#625C58',c2);line(c,(bold?'700 ':'500 ')+'22px '+FD,color,c3,'left');y+=22;x.strokeStyle='#E7E3DF';x.lineWidth=1;x.beginPath();x.moveTo(L,y);x.lineTo(R,y);x.stroke();y+=34};
+ const refunds=pays.filter(p=>p.amount<0),gross=s.total+(s.disc||0)+refunds.reduce((a,p)=>a-p.amount,0);
+ row(s.planName,fdate(s.start)+' ← '+fdate(s.end),num(gross));
+ if(s.disc)row('خصم','', '-'+num(s.disc),false,'#BE2F28');
+ refunds.forEach(p=>row('إشعار دائن '+(p.cn||'')+(p.reason?' · '+p.reason:''),fdate(p.date),'-'+num(-p.amount),false,'#BE2F28'));
+ y+=6;row('الإجمالي','',num(s.cancelled?Math.max(0,paidOf(s.id)):s.total),true);
+ row('المدفوع','',num(pays.filter(p=>p.amount>0).reduce((a,p)=>a+p.amount,0)),false,'#1B7F45');
+ row('المتبقي','',num(dueOf(s)),true,dueOf(s)>0?'#BE2F28':'#161312');
+ if(pays.length){y+=10;line('الدفعات','700 24px '+FD);y+=44;pays.forEach(p=>{line(fdate(p.date)+(p.time?' · '+ft(p.time):''),'500 20px '+FB,'#161312',c1-20);line(METH[p.method]||'','500 20px '+FB,'#625C58',c2);line(num(p.amount),'600 20px '+FD,p.amount<0?'#BE2F28':'#161312',c3,'left');y+=40})}
+ const ins=instStatus(s);if(ins.length){y+=10;line('جدول الأقساط','700 24px '+FD);y+=44;ins.forEach(z=>{line('القسط '+z.n+' · '+fdate(z.due),'500 20px '+FB,'#161312',c1-20);line(INST_ST[z.st][0],'500 20px '+FB,z.st==='late'?'#BE2F28':'#625C58',c2);line(num(z.amount),'600 20px '+FD,'#161312',c3,'left');y+=40})}
+ const terms=String(set.terms==null?DEFAULT_TERMS:set.terms).trim();
+ if(terms){
+  y+=24;if(y>H-260){pg=newPage(false);x=pg.x;y=pg.y}
+  line('الشروط والأحكام','700 26px '+FD);x.textAlign='left';x.font='500 17px '+FB;x.fillStyle='#8A837E';x.fillText('الإصدار '+(set.termsVer||1)+(set.termsDate?' · '+fdate(set.termsDate):''),L,y);y+=44;
+  x.font='500 20px '+FB;const ls=wrapLines(x,terms,W-2*P);
+  ls.forEach(l=>{if(y>H-110){pg=newPage(false);x=pg.x;y=pg.y;x.font='500 20px '+FB}x.textAlign='right';x.fillStyle='#3B3633';x.font='500 20px '+FB;if(l)x.fillText(l,R,y);y+=l?34:18});
+ }
+ pages.forEach((c,i)=>{const g=c.getContext('2d');g.direction='rtl';g.textBaseline='middle';g.textAlign='center';g.font='500 17px '+FB;g.fillStyle='#8A837E';g.fillText(S.settings.gym+' · '+s.inv+' · صفحة '+(i+1)+' من '+pages.length,W/2,H-40)});
+ return pages;
+}
+async function invoicePdfBlob(s){
+ const pages=await invoicePages(s),J=window.jspdf&&window.jspdf.jsPDF;
+ if(!J)return {pages:pages,blob:null};
+ const doc=new J({unit:'pt',format:'a4',compress:true});
+ pages.forEach((c,i)=>{if(i)doc.addPage();doc.addImage(c.toDataURL('image/jpeg',0.9),'JPEG',0,0,595.28,841.89)});
+ return {pages:pages,blob:doc.output('blob')};
+}
+async function sendInvoicePdf(sid,mode,el){
+ const s=S.subs.find(x=>x.id===sid);if(!s)return;const m=memberById(s.memberId);
+ if(el){el.disabled=true}
+ try{
+  const r=await invoicePdfBlob(s),name=s.inv+'.pdf';
+  if(!r.blob){openModal('فاتورة '+s.inv,'<div class="mcm">'+r.pages.map(c=>'<img src="'+c.toDataURL('image/png')+'" alt="صفحة من الفاتورة" style="width:100%;border:1px solid var(--line);border-radius:10px">').join('')+'<p class="note">تعذّر تحميل مكتبة PDF. اضغط مطولاً على الصورة لحفظها.</p></div>',null,{noForm:true,noFocus:true,wide:true});return}
+  const file=new File([r.blob],name,{type:'application/pdf'});
+  if(mode==='share'&&navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:'فاتورة '+s.inv,text:'فاتورتك من '+S.settings.gym});return}catch(e){if(e&&e.name==='AbortError')return}}
+  const url=URL.createObjectURL(r.blob),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),5000);
+  if(mode==='share'&&m&&m.phone){toast('نُزّلت الفاتورة. أرفقها في محادثة واتساب');window.open(waTo(m.phone,'مرحباً '+m.name+'، مرفق فاتورتك رقم '+s.inv+' من '+S.settings.gym+'. ويمكنك تحميلها من حسابك: '+portalLink()),'_blank')}
+ }catch(e){toast('تعذّر إنشاء الفاتورة')}
+ finally{if(el)el.disabled=false}
+}
+
+Object.assign(ACT,{
+ ptTab:d=>{U.ptTab=d.k;render()},ptTr:d=>{U.ptTr=d.k;render()},ptPf:d=>{U.ptPf=d.k;render()},
+ ptDay:d=>{U.ptDay=addDays(U.ptDay||TODAY(),+d.k);render()},ptCm:d=>{U.ptCm=monthShift(U.ptCm||TODAY().slice(0,7),+d.k);render()},
+ ptSell:d=>ptSellModal(d.id),ptBook:d=>ptBookModal(d.id),ptDoc:d=>ptDocModal(d.id),ptCancel:d=>ptCancelModal(d.id),ptAdj:d=>ptAdjModal(d.id),
+ ptProfile:d=>ptProfileModal(d.id),ptAssess:d=>ptAssessModal(d.id),ptPlanEdit:d=>ptPlanModal(d.id),ptAvail:d=>availModal(d.id),
+ ptPlanNew:()=>ptPlanSaleModal(),ptPlanEditSale:d=>ptPlanSaleModal(d.id),
+ goPortal:()=>goPage('portal'),
+ hmBook:d=>{const m=memberById(SESS.role==='trainee'?SESS.uid:U.pm),c=S.classes.find(x=>x.id===d.id);if(!m||!c)return;
+  if(bookedCount(c.id,d.k)>=c.cap){toast('اكتملت المقاعد');return}if(S.book.some(b=>b.classId===c.id&&b.date===d.k&&b.memberId===m.id)){toast('محجوز مسبقاً');return}
+  S.book.push({id:uid('b'),classId:c.id,date:d.k,memberId:m.id});save();render();toast('تم حجز '+c.name+' '+dayLabel(d.k))},
+ hmUnbook:d=>{const b=S.book.find(x=>x.id===d.id);if(!b)return;const c=S.classes.find(x=>x.id===b.classId),h=+S.settings.classCancelHours||0;
+  if(c&&(classStartsAt(c,b.date)-Date.now())/36e5<h){toast('لا يمكن الإلغاء قبل أقل من '+h+' ساعة من موعد الحصة');return}
+  confirmModal('إلغاء الحجز','سيُلغى حجزك في '+esc(c?c.name:'')+' '+dayLabel(b.date)+'.','إلغاء الحجز',()=>{S.book=S.book.filter(x=>x.id!==b.id);save();render();toast('أُلغي الحجز')},true)},
+ hmPtCancel:d=>{const x=(S.ptSess||[]).find(s=>s.id===d.id);if(!x)return;const late=hoursAway(x)<(+S.settings.ptCancelHours||0);
+  confirmModal('إلغاء جلسة التدريب',late?'الإلغاء قبل أقل من '+S.settings.ptCancelHours+' ساعة يُعد متأخراً'+(S.settings.ptLateCharge!==false?' وتُخصم الجلسة من رصيدك.':'.'):'سيُلغى الموعد دون خصم من رصيدك.','إلغاء الجلسة',()=>{x.status=late?'late_cancel':'cancelled';x.charged=late?S.settings.ptLateCharge!==false:false;save();render();toast('أُلغيت الجلسة')},true)},
+ hmPlan:()=>{const m=memberById(SESS.role==='trainee'?SESS.uid:U.pm),p=m&&ptProfile(m.id);openModal('خطة تدريبي','<div class="sec" style="padding-top:16px">'+planHtml(p&&p.plan)+'</div>',null,{noForm:true,noFocus:true,wide:true})},
+ pdfDl:(d,el)=>sendInvoicePdf(d.id,'download',el),pdfShare:(d,el)=>sendInvoicePdf(d.id,'share',el)
+});
+
+/* settings: invoice details, terms, offers, booking and PT policies */
+const DEFAULT_TERMS='1. الاشتراك شخصي ولا يجوز نقله أو مشاركته مع شخص آخر.\n2. يبدأ الاشتراك من تاريخ البداية المحدد في الفاتورة، ولا تُعوَّض الأيام غير المستخدمة إلا بتجميد معتمد.\n3. التجميد متاح ضمن الحد المحدد لكل باقة، ويحتاج موافقة الإدارة مسبقاً.\n4. المبالغ المدفوعة غير مستردة بعد بدء الاشتراك إلا وفق سياسة الاسترداد المعتمدة لدى النادي.\n5. جلسات التدريب الشخصي صالحة خلال مدة الباقة فقط، والإلغاء المتأخر أو الغياب قد يُخصم من الرصيد.\n6. يقر المشترك بأن حالته الصحية تسمح بممارسة التمارين، ويلتزم بإبلاغ المدرب بأي إصابة أو حالة صحية.\n7. يلتزم المشترك بأنظمة النادي وآداب استخدام الأجهزة والمرافق، ويحق للنادي إيقاف العضوية عند المخالفة.\n8. النادي غير مسؤول عن المقتنيات الشخصية المتروكة في المرافق.';
+function settingsExtra(s){
+ const yn=(n,v)=>'<select name="'+n+'" id="f-'+n+'"><option value="1"'+(v!==false?' selected':'')+'>نعم</option><option value="0"'+(v===false?' selected':'')+'>لا</option></select>';
+ const tx=(n,l,v,a)=>'<label class="fld"><span>'+l+'</span><input name="'+n+'" id="f-'+n+'" value="'+esc(v==null?'':v)+'" '+(a||'')+'></label>';
+ return '<h3 class="full sett-h">بيانات الفاتورة والتواصل</h3>'+
+  tx('legal','الاسم القانوني للنادي',s.legalName,'placeholder="يظهر في رأس الفاتورة"')+tx('cr','رقم السجل التجاري',s.crNo,'dir="ltr"')+tx('vat','الرقم الضريبي',s.vatNo,'dir="ltr"')+tx('cphone','جوال النادي (واتساب)',s.phone,'dir="ltr" placeholder="05XXXXXXXX"')+
+  '<label class="fld full"><span>العنوان</span><input name="addr" id="f-addr" value="'+esc(s.address||'')+'"></label>'+
+  '<label class="fld full"><span>الشروط والأحكام (تُطبع في الفاتورة PDF · الإصدار الحالي '+(s.termsVer||1)+')</span><textarea name="terms" id="f-terms" rows="9">'+esc(s.terms==null?DEFAULT_TERMS:s.terms)+'</textarea></label>'+
+  '<label class="fld full"><span>العروض التي تظهر للمتدربين (سطر لكل عرض: العنوان | الوصف | حتى YYYY-MM-DD)</span><textarea name="offers" id="f-offers" rows="3" placeholder="خصم التجديد | 15% عند التجديد قبل الانتهاء | 2026-11-30">'+esc(s.offers||'')+'</textarea></label>'+
+  '<h3 class="full sett-h">سياسات الحجز والتدريب الشخصي</h3>'+
+  tx('ccancel','إلغاء حجز الحصص مسموح حتى (ساعات قبل الموعد)',s.classCancelHours==null?2:s.classCancelHours,'type="number" min="0" max="72"')+
+  tx('pcancel','إلغاء جلسة التدريب دون خصم حتى (ساعات قبل الموعد)',s.ptCancelHours==null?12:s.ptCancelHours,'type="number" min="0" max="72"')+
+  '<label class="fld"><span>خصم الجلسة عند الإلغاء المتأخر</span>'+yn('plate',s.ptLateCharge)+'</label><label class="fld"><span>خصم الجلسة عند الغياب</span>'+yn('pnoshow',s.ptNoShowCharge)+'</label>'+
+  '<label class="fld"><span>طريقة عمولة المدرب</span><select name="pctype" id="f-pctype"><option value="percent"'+((s.ptCommType||'percent')==='percent'?' selected':'')+'>نسبة من قيمة الجلسة</option><option value="fixed"'+(s.ptCommType==='fixed'?' selected':'')+'>مبلغ ثابت لكل جلسة</option></select></label>'+
+  tx('pcval','قيمة العمولة (% أو ر.س)',s.ptCommValue==null?30:s.ptCommValue,'type="number" min="0" step="0.5"')+
+  '<label class="fld"><span>احتساب عمولة على الجلسات المخصومة بسبب الغياب أو الإلغاء المتأخر</span>'+yn('pcpen',!!s.ptCommPenalty)+'</label>';
+}
+function readSettingsExtra(f,s){
+ s.legalName=f.legal.value.trim();s.crNo=f.cr.value.trim();s.vatNo=f.vat.value.trim();s.phone=f.cphone.value.trim();s.address=f.addr.value.trim();
+ const terms=f.terms.value.trim();if(terms!==String(s.terms==null?DEFAULT_TERMS:s.terms).trim()||s.terms==null){if(s.terms!=null)s.termsVer=(+s.termsVer||1)+1;s.termsDate=TODAY()}s.terms=terms;if(!s.termsVer)s.termsVer=1;
+ s.offers=f.offers.value.trim();s.classCancelHours=Math.max(0,+f.ccancel.value||0);s.ptCancelHours=Math.max(0,+f.pcancel.value||0);
+ s.ptLateCharge=f.plate.value==='1';s.ptNoShowCharge=f.pnoshow.value==='1';s.ptCommType=f.pctype.value;s.ptCommValue=Math.max(0,+f.pcval.value||0);s.ptCommPenalty=f.pcpen.value==='1';
+}
+
+/* ---------- v7: public website content editor (manager) ---------- */
+Object.assign(ICON,{
+ globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/>',
+ image:'<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/>',
+ trash:'<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>',
+ eye:'<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>'
+});
+const SITE_SECS=[['hero','الشرائح الرئيسية'],['values','بطاقات المميزات'],['offers','العروض'],['programs','البرامج'],['pricing','الباقات والأسعار'],['schedule','جدول الحصص'],['trainers','المدربون'],['gallery','معرض الصور'],['reviews','آراء المشتركين'],['app','قسم حساب المشترك'],['join','نموذج الزيارة التجريبية'],['contact','التواصل والخريطة']];
+const SITE_ICONS=[['spark','نجمة'],['coach','مدرب'],['users','مجموعة'],['shield','درع'],['heart','قلب'],['clock','ساعة'],['trophy','كأس'],['dumbbell','دمبل']];
+const SITE_NEW={hero:{title:'',sub:'',btn:'احجز زيارة تجريبية',link:'#join',img:''},values:{icon:'spark',title:'',text:''},offers:{title:'',text:'',until:'',btn:'احصل على العرض',img:''},programs:{tag:'',title:'',text:'',img:''},reviews:{name:'',text:'',stars:5}};
+function siteMerge(def,v){if(!v||typeof v!=='object'||Array.isArray(def))return v===undefined?clone(def):v;const o=clone(def);Object.keys(v).forEach(k=>{o[k]=def&&def[k]&&typeof def[k]==='object'&&!Array.isArray(def[k])?siteMerge(def[k],v[k]):v[k]});return o}
+const siteDefaults=()=>window.SITE_DEFAULTS||{show:{},hero:[],values:[],offers:[],programs:[],pricing:{},trainerPhotos:{},gallery:[],reviews:[],app:{},join:{},contact:{}};
+function siteDraft(){if(!U.siteDraft){U.siteDraft=siteMerge(siteDefaults(),clone((S.settings&&S.settings.site)||{}));U.siteDirty=false}return U.siteDraft}
+function spGet(path){return path.split('.').reduce((o,k)=>o==null?o:o[k],siteDraft())}
+function spSet(path,val){const ks=path.split('.'),last=ks.pop();let o=siteDraft();ks.forEach(k=>{if(o[k]==null)o[k]={};o=o[k]});o[last]=val;U.siteDirty=true;const d=$('#sdirty');if(d)d.hidden=false}
+function pageSite(){
+ const c=siteDraft(),set=S.settings;
+ const tx=(path,label,a,cls)=>'<label class="fld '+(cls||'')+'"><span>'+label+'</span><input data-sp="'+path+'" value="'+esc(spGet(path)==null?'':spGet(path))+'" '+(a||'')+'></label>';
+ const ta=(path,label,rows,cls)=>'<label class="fld '+(cls||'full')+'"><span>'+label+'</span><textarea data-sp="'+path+'" rows="'+(rows||2)+'">'+esc(spGet(path)||'')+'</textarea></label>';
+ const img=(path,label,cls)=>{const u=spGet(path)||'';return '<div class="fld '+(cls||'')+'"><span>'+label+'</span><div class="simg">'+(u?'<img src="'+esc(u)+'" alt="">':'<i>'+ic('image',22)+'</i>')+'<div class="acts"><label class="btn sm">'+ic('plus',14)+' '+(u?'تغيير':'رفع صورة')+'<input type="file" accept="image/png,image/jpeg,image/webp" data-up="'+path+'" hidden></label>'+(u?btn('siteImgClear','إزالة','sm','data-path="'+path+'"'):'')+'</div></div></div>'};
+ const listTools=(key,i,n)=>'<div class="acts sl-tools">'+btn('siteMove',ic('up',14),'sm','data-k="'+key+'" data-i="'+i+'" data-d="-1" aria-label="تحريك لأعلى"'+(i===0?' disabled':''))+btn('siteMove',ic('down',14),'sm','data-k="'+key+'" data-i="'+i+'" data-d="1" aria-label="تحريك لأسفل"'+(i===n-1?' disabled':''))+btn('siteDel',ic('trash',14)+' حذف','sm','data-k="'+key+'" data-i="'+i+'"')+'</div>';
+ const list=(key,title,note,fields,max)=>{const L=c[key]||[];return sec(key,title,note,'<div class="sl">'+L.map((x,i)=>'<div class="sl-item"><div class="sl-h"><b>'+(i+1)+'. '+esc(x.title||x.name||'بدون عنوان')+'</b>'+listTools(key,i,L.length)+'</div><div class="fm">'+fields(key+'.'+i,x)+'</div></div>').join('')+(L.length<(max||12)?'<button type="button" class="btn sl-add" data-act="siteAdd" data-k="'+key+'">'+ic('plus',15)+' إضافة</button>':'')+'</div>')};
+ const sec=(key,title,note,body)=>'<section class="panel sitesec" id="ss-'+key+'"><header class="card-h"><div><h2>'+title+'</h2>'+(note?'<p class="note">'+note+'</p>':'')+'</div>'+(c.show&&key in c.show?'<label class="chk sw"><input type="checkbox" data-show="'+key+'"'+(c.show[key]!==false?' checked':'')+'> يظهر في الموقع</label>':'')+'</header><div class="sitebody">'+body+'</div></section>';
+ const plans=S.plans||[];
+ return head('الموقع الإلكتروني','حدّث محتوى صفحة النادي العامة بدون برمجة. الأسعار والجدول والمدربون تُسحب من النظام تلقائياً.','<span class="pill warn" id="sdirty"'+(U.siteDirty?'':' hidden')+'>تعديلات غير محفوظة</span><a class="btn" href="/" target="_blank" rel="noopener">'+ic('eye',15)+' معاينة الموقع</a>'+btn('siteReset','التراجع عن التعديلات')+btn('siteSave','حفظ ونشر','pri'))+
+ '<nav class="chips sitejump" aria-label="أقسام الموقع">'+[['general','عام']].concat(SITE_SECS).map(a=>'<a class="chip" href="#ss-'+a[0]+'" data-act="siteJump" data-k="'+a[0]+'">'+a[1]+'</a>').join('')+'</nav>'+
+ '<div class="sitegrid">'+
+ sec('general','معلومات عامة','بيانات الجوال والعنوان والسجل التجاري تُحدَّث من الإعدادات وتظهر في الموقع.','<div class="fm">'+tx('metaTitle','عنوان الصفحة في محركات البحث','maxlength="70"','full')+ta('metaDesc','وصف الصفحة في محركات البحث (حتى 160 حرفاً)',2)+tx('tagline','العبارة التعريفية في أسفل الموقع','','full')+
+  '<p class="note full">جوال النادي: <b class="ltr">'+esc(set.phone||'غير محدد')+'</b> · العنوان: '+esc(set.address||'غير محدد')+' · '+(isManager()?'<a href="#settings">تعديلها من الإعدادات</a>':'')+'</p></div>')+
+ list('hero','الشرائح الرئيسية','أول ما يراه الزائر. بدون صورة تظهر الشريحة بتصميم الهوية. الأفضل صورة عرضية 1920×1080.',(p,x)=>tx(p+'.title','العنوان الكبير','','full')+ta(p+'.sub','النص التوضيحي',2)+tx(p+'.btn','نص الزر')+'<label class="fld"><span>الزر ينقل إلى</span><select data-sp="'+p+'.link">'+[['#join','نموذج الزيارة التجريبية'],['#pricing','الباقات'],['#programs','البرامج'],['#schedule','جدول الحصص'],['#offers','العروض'],['#contact','التواصل'],['/app','تسجيل الدخول']].map(o=>'<option value="'+o[0]+'"'+(x.link===o[0]?' selected':'')+'>'+o[1]+'</option>').join('')+'</select></label>'+img(p+'.img','صورة الخلفية','full'),6)+
+ list('values','بطاقات المميزات','ثلاث بطاقات قصيرة تحت الشرائح.',(p,x)=>'<label class="fld"><span>الأيقونة</span><select data-sp="'+p+'.icon">'+SITE_ICONS.map(o=>'<option value="'+o[0]+'"'+(x.icon===o[0]?' selected':'')+'>'+o[1]+'</option>').join('')+'</select></label>'+tx(p+'.title','العنوان')+ta(p+'.text','النص',2),4)+
+ list('offers','العروض','تظهر في الموقع وفي صفحة المتدرب، وتختفي تلقائياً بعد تاريخ الانتهاء.',(p,x)=>tx(p+'.title','عنوان العرض')+tx(p+'.until','ينتهي في','type="date"')+ta(p+'.text','تفاصيل العرض',2)+tx(p+'.btn','نص الزر')+img(p+'.img','صورة العرض (اختياري)'),8)+
+ list('programs','البرامج','الخدمات التي يقدمها النادي.',(p,x)=>tx(p+'.title','اسم البرنامج')+tx(p+'.tag','الوسم','placeholder="للكبار، للأطفال، للجميع"')+ta(p+'.text','الوصف',2)+img(p+'.img','الصورة','full'),10)+
+ sec('pricing','الباقات والأسعار','الأسعار تُسحب من باقات الاشتراك في النظام. أي تعديل للسعر هناك يظهر في الموقع خلال دقيقة.','<div class="fm">'+tx('pricing.title','عنوان القسم','','full')+ta('pricing.note','ملاحظة أسفل الباقات (مثل التقسيط)',2)+
+  '<label class="fld"><span>الباقة المميزة («الأكثر طلباً»)</span><select data-sp="pricing.featured"><option value="">تلقائي</option>'+plans.map(p=>'<option value="'+p.id+'"'+(c.pricing.featured===p.id?' selected':'')+'>'+esc(p.name)+' · '+money(p.price)+'</option>').join('')+'</select></label>'+
+  '<label class="chk fld"><input type="checkbox" data-spb="pricing.showPT"'+(c.pricing.showPT!==false?' checked':'')+'> عرض باقات التدريب الشخصي</label></div>')+
+ sec('schedule','جدول الحصص','يُعرض الجدول الأسبوعي من صفحة «جدول الحصص» مباشرة.','<p class="note" style="padding:0 20px 16px">'+(S.classes||[]).length+' حصة أسبوعية في الجدول حالياً. <a href="#classes">إدارة الحصص</a></p>')+
+ sec('trainers','المدربون','الأسماء والتخصصات من صفحة المدربين. أضف صورة لكل مدرب (يُفضّل صورة طولية).','<div class="fm">'+((S.trainers||[]).map(t=>img('trainerPhotos.'+t.id,esc(t.name)+' · '+esc(t.spec||''))).join('')||'<p class="note full">لا يوجد مدربون بعد.</p>')+'</div>')+
+ sec('gallery','معرض الصور','حتى 7 صور من داخل النادي. الصورة الأولى تظهر بحجم أكبر.','<div class="fm">'+(c.gallery||[]).map((u,i)=>img('gallery.'+i,'صورة '+(i+1))).join('')+((c.gallery||[]).length<7?'<div class="fld"><span>إضافة صورة</span><label class="btn">'+ic('plus',15)+' رفع صورة<input type="file" accept="image/png,image/jpeg,image/webp" data-up="gallery.'+(c.gallery||[]).length+'" hidden></label></div>':'')+'</div>')+
+ list('reviews','آراء المشتركين','أضف آراء حقيقية فقط بموافقة أصحابها، مثل تقييمات خرائط Google. لا يظهر القسم إذا كان فارغاً.',(p,x)=>tx(p+'.name','اسم صاحب الرأي')+'<label class="fld"><span>التقييم</span><select data-sp="'+p+'.stars">'+[5,4,3].map(n=>'<option value="'+n+'"'+(+x.stars===n?' selected':'')+'>'+n+' نجوم</option>').join('')+'</select></label>'+ta(p+'.text','نص الرأي',2),9)+
+ sec('app','قسم حساب المشترك','يعرّف الزائر بالتطبيق: بطاقة QR والحجز والفواتير.','<div class="fm">'+tx('app.title','العنوان','','full')+ta('app.text','النص',2)+'</div>')+
+ sec('join','نموذج الزيارة التجريبية','الطلبات تصل إلى «العملاء المحتملون» بمصدر «الموقع الإلكتروني» مع موعد متابعة اليوم.','<div class="fm">'+tx('join.title','العنوان','','full')+ta('join.text','النص',2)+'</div>')+
+ sec('contact','التواصل والخريطة','اكتب اسم النادي والحي في حقل الخريطة، أو الإحداثيات، لتظهر خريطة Google.','<div class="fm">'+tx('contact.hours','أوقات العمل','placeholder="يومياً 6 ص – 12 م · الجمعة 2 م – 12 م"','full')+tx('contact.mapQuery','موقع الخريطة','placeholder="جولة اللياقة، حي ...، الرياض"','full')+tx('contact.email','البريد الإلكتروني','dir="ltr" type="email"')+tx('contact.instagram','إنستقرام','dir="ltr" placeholder="اسم الحساب"')+tx('contact.tiktok','تيك توك','dir="ltr" placeholder="اسم الحساب"')+tx('contact.snapchat','سناب شات','dir="ltr" placeholder="اسم الحساب"')+tx('contact.x','إكس','dir="ltr" placeholder="اسم الحساب"')+'</div>')+
+ '</div><div class="sitebar">'+btn('siteSave','حفظ ونشر','pri')+'</div>';
+}
+function resizeImage(file,max){
+ return new Promise((res,rej)=>{
+  const fr=new FileReader();fr.onerror=()=>rej(new Error('تعذّرت قراءة الصورة'));
+  fr.onload=()=>{const im=new Image();im.onerror=()=>rej(new Error('الملف ليس صورة صالحة'));im.onload=()=>{
+   const k=Math.min(1,max/Math.max(im.width,im.height)),w=Math.round(im.width*k),h=Math.round(im.height*k),cv=document.createElement('canvas');cv.width=w;cv.height=h;
+   const cx=cv.getContext('2d');cx.fillStyle='#fff';cx.fillRect(0,0,w,h);cx.drawImage(im,0,0,w,h);res(cv.toDataURL('image/jpeg',.85))};im.src=fr.result};
+  fr.readAsDataURL(file);
+ });
+}
+async function siteUpload(input){
+ const f=input.files&&input.files[0],path=input.dataset.up;if(!f)return;
+ if(f.size>20e6){toast('الصورة كبيرة جداً');return}
+ toast('جارٍ رفع الصورة…');
+ try{const data=await resizeImage(f,path.indexOf('trainerPhotos')===0?1000:1920);const r=await api('upload',{method:'POST',body:{data:data}});
+  spSet(path,r.url);render();toast('تم رفع الصورة. اضغط «حفظ ونشر» لتظهر في الموقع')}catch(e){toast(e.message||'تعذّر رفع الصورة')}
+}
+function siteCommit(){
+ const c=clone(siteDraft());
+ ['hero','values','offers','programs','reviews'].forEach(k=>{c[k]=(c[k]||[]).filter(x=>(x.title||x.name||x.text||'').trim())});
+ c.gallery=(c.gallery||[]).filter(Boolean);
+ Object.keys(c.trainerPhotos||{}).forEach(k=>{if(!c.trainerPhotos[k])delete c.trainerPhotos[k]});
+ S.settings.site=c;U.siteDraft=clone(c);U.siteDirty=false;save();render();toast('تم الحفظ. الموقع يتحدث خلال دقيقة');
+}
+Object.assign(ACT,{
+ siteSave:()=>siteCommit(),
+ siteReset:()=>{U.siteDraft=null;U.siteDirty=false;render();toast('تم التراجع عن التعديلات غير المحفوظة')},
+ siteAdd:d=>{const L=siteDraft()[d.k]=siteDraft()[d.k]||[];L.push(clone(SITE_NEW[d.k]));U.siteDirty=true;render();const it=document.querySelectorAll('#ss-'+d.k+' .sl-item');const last=it[it.length-1];if(last){last.scrollIntoView({block:'center'});const i=last.querySelector('input,textarea');if(i)i.focus()}},
+ siteDel:d=>{const L=siteDraft()[d.k];if(!L)return;L.splice(+d.i,1);U.siteDirty=true;render()},
+ siteMove:d=>{const L=siteDraft()[d.k],i=+d.i,j=i+ +d.d;if(!L||j<0||j>=L.length)return;const t=L[i];L[i]=L[j];L[j]=t;U.siteDirty=true;render()},
+ siteImgClear:d=>{const p=d.path;if(/^gallery\.\d+$/.test(p))siteDraft().gallery.splice(+p.split('.')[1],1);else spSet(p,'');U.siteDirty=true;render()},
+ siteJump:(d,b)=>{const el=$('#ss-'+d.k);if(el)el.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'})}
+});
+document.addEventListener('input',e=>{const t=e.target;if(t.dataset&&t.dataset.sp){const v=t.dataset.sp.slice(-6)==='.stars'?+t.value:t.value;spSet(t.dataset.sp,v)}});
+document.addEventListener('change',e=>{const t=e.target;if(!t.dataset)return;
+ if(t.dataset.sp&&t.tagName==='SELECT')spSet(t.dataset.sp,t.dataset.sp.slice(-6)==='.stars'?+t.value:t.value);
+ if(t.dataset.spb)spSet(t.dataset.spb,t.checked);
+ if(t.dataset.show){siteDraft().show[t.dataset.show]=t.checked;spSet('show.'+t.dataset.show,t.checked)}
+ if(t.dataset.up)siteUpload(t);
+});
+window.addEventListener('beforeunload',e=>{if(U.siteDirty){e.preventDefault();e.returnValue=''}});
+
 /* ---------- shell + router ---------- */
 const PAGES={
  dashboard:{t:'لوحة التحكم',icon:'dash',fn:pageDashboard2},members:{t:'الأعضاء',icon:'members',fn:pageMembers},subs:{t:'الاشتراكات',icon:'subs',fn:pageSubs},checkin:{t:'الحضور',icon:'checkin',fn:pageCheckin},
- finance:{t:'المالية',icon:'finance',fn:pageFinance},classes:{t:'جدول الحصص',icon:'classes',fn:pageClasses2},trainers:{t:'المدربون',icon:'trainers',fn:pageTrainers},reports:{t:'التقارير',icon:'reports',fn:pageReports},settings:{t:'الإعدادات',icon:'settings',fn:pageSettings},
- newmember:{t:'عضو جديد',icon:'plus',fn:pageNewMember},schedule:{t:'الجدول الشهري',icon:'classes',fn:pageSchedule},portal:{t:'بطاقة المتدرب',icon:'subs',fn:pagePortal},gate:{t:'بوابة QR',icon:'qr',fn:pageGate},requests:{t:'طلبات التجميد',icon:'warn',fn:pageRequests},trainer:{t:'لوحة المدرب',icon:'trainers',fn:pageTrainer},marketing:{t:'التسويق',icon:'msg',fn:pageMarketing},
+ finance:{t:'المالية',icon:'finance',fn:pageFinance2},shift:{t:'إغلاق الوردية',icon:'shift',fn:pageShift},pt:{t:'التدريب الشخصي',icon:'dumbbell',fn:pagePT},home:{t:'الرئيسية',icon:'home',fn:pageHome},audit:{t:'سجل العمليات',icon:'shield',fn:pageAudit},classes:{t:'جدول الحصص',icon:'classes',fn:pageClasses2},trainers:{t:'المدربون',icon:'trainers',fn:pageTrainers},reports:{t:'التقارير',icon:'reports',fn:pageReports},settings:{t:'الإعدادات',icon:'settings',fn:pageSettings},
+ newmember:{t:'عضو جديد',icon:'plus',fn:pageNewMember},schedule:{t:'الجدول الشهري',icon:'classes',fn:pageSchedule},portal:{t:'بطاقة المتدرب',icon:'subs',fn:pagePortal},gate:{t:'بوابة QR',icon:'qr',fn:pageGate},requests:{t:'طلبات التجميد',icon:'warn',fn:pageRequests},trainer:{t:'لوحة المدرب',icon:'trainers',fn:pageTrainer},marketing:{t:'التسويق',icon:'msg',fn:pageMarketing},site:{t:'الموقع الإلكتروني',icon:'globe',fn:pageSite},
  daily:{t:'العملاء اليوميون',icon:'day',fn:pageDaily},leads:{t:'العملاء المحتملون',icon:'lead',fn:pageLeads},cashbox:{t:'صندوق المال',icon:'box',fn:pageCashbox}
 };
-const NAV=[['الرئيسية',['dashboard']],['الأعضاء',['members','newmember','leads','subs','requests','schedule','portal']],['الدخول والحضور',['gate','checkin','daily']],['المالية',['cashbox','finance']],['التشغيل',['classes','trainers','trainer']],['التسويق',['marketing']],['التحليل',['reports','settings']]];
+const NAV=[['الرئيسية',['dashboard','home']],['الأعضاء',['members','newmember','leads','subs','requests','schedule','portal']],['الدخول والحضور',['gate','checkin','daily']],['المالية',['cashbox','finance','shift']],['التشغيل',['pt','classes','trainers']],['التسويق',['marketing','site']],['التحليل',['reports','audit','settings']]];
 function shell(){
- $('#app').innerHTML='<div class="shell"><aside class="rail" aria-label="القائمة الرئيسية"><div class="brand"><span class="brandlogo" role="img" aria-label="جولة اللياقة"><i class="t"></i><i class="m"></i></span><small id="gymname"></small></div>'+(can('finance')?'<button type="button" class="inc" data-act="incomeModal" id="incR" aria-label="دخل اليوم، اعرض التفاصيل"></button>':'')+'<nav class="nav">'+NAV.map(g=>[g[0],g[1].filter(can)]).filter(g=>g[1].length).map(g=>'<p class="grp">'+g[0]+'</p>'+g[1].map(k=>'<a href="#'+k+'" data-p="'+k+'">'+ic(PAGES[k].icon)+'<span>'+PAGES[k].t+'</span>'+(k==='requests'?'<em class="badge" id="b-req" hidden></em>':'')+(k==='leads'?'<em class="badge" id="b-lead" hidden></em>':'')+'</a>').join('')).join('')+'</nav><div class="rfoot"><div class="mode" id="mode"></div><button type="button" class="btn sm" data-act="toggleTheme">'+ic('moon',15)+' تبديل المظهر</button><p id="syncst" class="sync" role="status"></p></div></aside><div class="scrim" data-act="closeMenu"></div><main class="main"><div class="top"><button type="button" class="ib" data-act="openMenu" aria-label="فتح القائمة">'+ic('menu',22)+'</button><b class="tt" id="ttl"></b>'+(can('finance')?'<button type="button" class="btn sm inc-t" data-act="incomeModal" id="incT" aria-label="دخل اليوم"></button>':'')+(can('checkin')?'<button type="button" class="btn sm pri" data-act="goCheckin">'+ic('checkin',15)+' حضور</button>':'')+'</div><div id="view"></div></main></div><div id="toast" role="status" aria-live="polite"></div>';
+ $('#app').innerHTML='<div class="shell"><aside class="rail" aria-label="القائمة الرئيسية"><div class="brand"><span class="brandlogo" role="img" aria-label="جولة اللياقة"><i class="t"></i><i class="m"></i></span><small id="gymname"></small></div>'+(can('finance')?'<button type="button" class="inc" data-act="incomeModal" id="incR" aria-label="دخل اليوم، اعرض التفاصيل"></button>':'')+'<nav class="nav">'+NAV.map(g=>[g[0],g[1].filter(k=>can(k)&&(k!=='home'||SESS.role==='trainee'))]).filter(g=>g[1].length).map(g=>'<p class="grp">'+g[0]+'</p>'+g[1].map(k=>'<a href="#'+k+'" data-p="'+k+'">'+ic(PAGES[k].icon)+'<span>'+PAGES[k].t+'</span>'+(k==='requests'?'<em class="badge" id="b-req" hidden></em>':'')+(k==='leads'?'<em class="badge" id="b-lead" hidden></em>':'')+'</a>').join('')).join('')+'</nav><div class="rfoot"><div class="mode" id="mode"></div><button type="button" class="btn sm" data-act="toggleTheme">'+ic('moon',15)+' تبديل المظهر</button><p id="syncst" class="sync" role="status"></p></div></aside><div class="scrim" data-act="closeMenu"></div><main class="main"><div class="top"><button type="button" class="ib" data-act="openMenu" aria-label="فتح القائمة">'+ic('menu',22)+'</button><b class="tt" id="ttl"></b>'+(can('finance')?'<button type="button" class="btn sm inc-t" data-act="incomeModal" id="incT" aria-label="دخل اليوم"></button>':'')+(can('checkin')?'<button type="button" class="btn sm pri" data-act="goCheckin">'+ic('checkin',15)+' حضور</button>':'')+'</div><div id="view"></div></main></div><div id="toast" role="status" aria-live="polite"></div>';
 }
 function render(){
  if(!PAGES[U.page])U.page='dashboard';
@@ -2367,7 +3129,7 @@ document.addEventListener('submit',e=>{
  if(e.target.id==='cif'){e.preventDefault();const r=findMembers($('#ci').value);if(!r.length){toast('لم يُعثر على عضو مطابق');return}runCheckin(r[0])}
  if(e.target.id==='setf'){e.preventDefault();const f=e.target,s=S.settings;
   s.gym=f.gym.value.trim()||s.gym;s.pin=f.pin.value.trim()||s.pin;s.soonDays=Math.max(1,+f.soon.value||7);s.churnDays=Math.max(3,+f.churn.value||14);
-  ['expiring','expired','away','debt','invoice','lead','bday'].forEach(k=>{s.tpl[k]=f['tpl_'+k].value});s.dailyPrice=Math.max(0,+f.dprice.value||0);s.openingCash=+f.opening.value||0;s.portalLink=f.link.value.trim();save();render();toast('تم حفظ الإعدادات')}
+  ['expiring','expired','away','debt','invoice','lead','bday'].forEach(k=>{s.tpl[k]=f['tpl_'+k].value});s.dailyPrice=Math.max(0,+f.dprice.value||0);s.discLimit=Math.max(0,Math.min(100,+f.disclim.value||0));s.openingCash=+f.opening.value||0;s.portalLink=f.link.value.trim();readSettingsExtra(f,s);save();render();toast('تم حفظ الإعدادات')}
 });
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){if($('#modal'))closeModal();else if($('.shell'))$('.shell').classList.remove('open')}});
 window.addEventListener('hashchange',route);

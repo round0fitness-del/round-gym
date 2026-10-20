@@ -516,6 +516,9 @@ table.fs .num{text-align:left;font-variant-numeric:tabular-nums;white-space:nowr
 body.fs-open{overflow:hidden}
 @media print{body.fs-open>*:not(#fsprint){display:none!important}#fsprint{position:static;background:#fff;overflow:visible}.no-print{display:none!important}.fsdoc{padding:0;gap:0}.fspage{box-shadow:none;width:auto;min-height:auto;page-break-after:always;padding:0}}
 @media (max-width:760px){.replay{grid-template-columns:minmax(0,1fr)}.replist{grid-auto-flow:column;grid-auto-columns:max-content;overflow-x:auto}.steps4{grid-template-columns:repeat(2,minmax(0,1fr))}.fspage{padding:18px 14px;min-height:0}}
+.fbbtns{display:flex;gap:8px;flex-wrap:wrap;padding:4px 18px 12px}.fbbtns .btn{flex:1;min-width:140px;justify-content:center}
+.fbreply{margin-top:8px;background:var(--surface-2);border-radius:10px;padding:8px 10px;font-size:13.5px}.fbreply b{display:block;font-size:12px;color:var(--muted);font-weight:600}
+.fbrow{display:grid;gap:8px;padding:14px 18px;border-top:1px solid var(--line)}.fbrow.new{box-shadow:inset -4px 0 0 var(--warn)}.fbh{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.fbh a{text-decoration:none}.fbtext{margin:0;white-space:pre-wrap;line-height:1.7}
 .sett-h{font:600 15px var(--f-display);margin-top:10px;padding-top:12px;border-top:1px solid var(--line)}
 .slots{display:flex;flex-wrap:wrap;gap:6px}
 .slot{position:relative}.slot input{position:absolute;opacity:0;inset:0;width:100%;height:100%;cursor:pointer;margin:0}
@@ -1497,8 +1500,8 @@ const can=k=>{if(!SESS)return false;const r=ROLES[SESS.role];return !r.pages||r.
 const isManager=()=>!!SESS&&SESS.role==='manager';
 const isStaff=()=>!!SESS&&(SESS.role==='manager'||SESS.role==='reception');
 const landing=()=>SESS.role==='trainer'?'coach':SESS.role==='trainee'?'home':'dashboard';
-const SYNC_COLS=['members','subs','pay','exp','att','classes','book','freezeReq','pt','campaigns','daily','leads','cash','plans','trainers','shifts','ptPlans','ptPacks','ptSess','treq','ptTpl','comms','jrnl','periods','budget','coa','fsruns'];
-const STAMP_COLS=['pay','exp','cash','daily','shifts','subs','ptPacks','ptSess','treq','jrnl','comms'];
+const SYNC_COLS=['members','subs','pay','exp','att','classes','book','freezeReq','pt','campaigns','daily','leads','cash','plans','trainers','shifts','ptPlans','ptPacks','ptSess','treq','ptTpl','comms','jrnl','periods','budget','coa','fsruns','fb'];
+const STAMP_COLS=['pay','exp','cash','daily','shifts','subs','ptPacks','ptSess','treq','jrnl','comms','fb'];
 
 async function api(path,opt){
  opt=opt||{};
@@ -2154,6 +2157,7 @@ function incomeModal(){
 function incChrome(){
  const vw=$('#view');if(vw&&U.warn&&!$('#warnbar')){const w=document.createElement('div');w.id='warnbar';w.className='warnbar';w.setAttribute('role','alert');w.textContent=U.warn;vw.parentNode.insertBefore(w,vw)}
  const lb=$('#b-lead');if(lb){const n=leadsDue().length;lb.hidden=!n;lb.textContent=n}
+ const fbb=$('#b-fb');if(fbb){const n=fbNew();fbb.hidden=!n;fbb.textContent=n}
  if(!can('finance'))return;
  const v=incomeData(TODAY()).total;
  const r=$('#incR');if(r)r.innerHTML='<span class="ico">'+ic('coin',20)+'</span><span class="tx"><small>دخل اليوم</small><b>'+money(v)+'</b></span>';
@@ -2941,7 +2945,7 @@ function pageHome(){
  sec('باقات الجلسات',(packs.length?packs.map(k=>'<div class="row" style="align-items:flex-start"><div class="grow"><b>'+esc(k.name)+' · '+esc(k.service||'تدريب شخصي')+'</b><small>'+packExpTxt(k)+' · '+(k.trainerIds||[]).map(x=>esc((trainerById(x)||{}).name||'')).join('، ')+'</small>'+packBreak(k)+'</div>'+btn('ptLedger','السجل','sm','data-id="'+k.id+'"')+'</div>').join(''):'<p class="empty">لا توجد باقة جلسات سارية.</p>'),(ptProfile(m.id)&&(ptProfile(m.id).plan||[]).length?btn('hmPlan','خطة تدريبي','sm'):''))+
  sec('المستحقات والفواتير',(subs.length?subs.slice(0,8).map(x=>{const due=dueOf(x),st=x.cancelled?['ملغاة','']:due<=0?['مسددة','good']:paidOf(x.id)>0?['مسددة جزئياً','warn']:['غير مسددة','bad'];
    return '<div class="row"><div class="grow"><b>'+esc(x.planName)+'</b><small>'+x.inv+' · '+fdate(x.start,{day:'numeric',month:'short'})+' · '+money(x.total)+(due>0?' · متبقٍ '+money(due):'')+'</small>'+instBlock(x)+'</div><span class="pill '+st[1]+'">'+st[0]+'</span>'+btn('pdfDl',ic('file',14)+' PDF','sm','data-id="'+x.id+'"')+'</div>'}).join(''):'<p class="empty">لا توجد فواتير.</p>'))+
- '</div></div>';
+ (SESS.role==='trainee'||isManager()?fbHomeSec(m):'')+'</div></div>';
 }
 
 /* ===== PDF invoice with editable terms (drawn on canvas, then embedded in PDF) ===== */
@@ -4336,16 +4340,56 @@ document.addEventListener('submit',e=>{
  if(e.target.id==='acsetf'){e.preventDefault();if(!isManager())return;const f=e.target;S.settings.acct=Object.assign({},S.settings.acct||{},{vatRate:+f.vat.value,breakage:f.brk.value==='1',startDate:f.start.value});save();render();toast('حُفظت السياسات')}
 });
 
+/* ---------- v11: complaints and suggestions from members to the manager ---------- */
+const FB_T={complaint:['شكوى','bad'],suggestion:['اقتراح','info']};
+const FB_ST={new:['جديدة','warn'],progress:['قيد المعالجة','info'],closed:['مغلقة','good']};
+const FB_CAT=['الخدمة والاستقبال','النظافة','الأجهزة والمرافق','المدربات','الحصص والمواعيد','الاشتراكات والفواتير','التطبيق','أخرى'];
+const fbNew=()=>(S.fb||[]).filter(x=>x.status==='new').length;
+function fbModal(type){
+ const m=memberById(SESS.role==='trainee'?SESS.uid:U.pm);if(!m)return;
+ openModal(type==='complaint'?'تقديم شكوى':'إرسال اقتراح','<div class="fm">'+
+  '<div class="sumline full"><span>يصل للمدير مباشرة باسمك ورقم جوالك</span><b>'+esc(m.name)+' · <span dir="ltr">'+esc(m.phone||'')+'</span></b></div>'+
+  fld('الموضوع',sel('cat',FB_CAT.map(x=>[x,x]),FB_CAT[0]),'full')+
+  '<label class="fld full"><span>'+(type==='complaint'?'تفاصيل الشكوى':'اقتراحك')+'</span><textarea name="text" id="f-text" rows="5" required minlength="3" maxlength="2000" placeholder="'+(type==='complaint'?'ماذا حدث؟ ومتى؟':'ما الذي تقترحينه لتحسين تجربتك؟')+'"></textarea></label></div>',
+  d=>{const t=(d.text||'').trim();if(t.length<3){toast('اكتبي التفاصيل');return false}
+   S.fb=S.fb||[];S.fb.push({id:uid('fb'),memberId:m.id,type:type,cat:d.cat,text:t,status:'new',name:m.name,phone:m.phone,at:nowIso()});save();render();
+   toast(type==='complaint'?'وصلت شكواك للإدارة، وسنتابعها معك':'شكراً لاقتراحك، وصل للإدارة')},{ok:'إرسال'});
+}
+function fbHomeSec(m){
+ const L=(S.fb||[]).filter(x=>x.memberId===m.id).sort((a,b)=>String(b.at||'').localeCompare(String(a.at||'')));
+ return '<section class="card mh-sec"><header class="card-h"><h2>شكوى أو اقتراح</h2></header><div class="fbbtns">'+btn('fbNew',ic('warn',16)+' تقديم شكوى','','data-k="complaint"')+btn('fbNew',ic('msg',16)+' إرسال اقتراح','','data-k="suggestion"')+'</div>'+
+  (L.length?L.slice(0,5).map(x=>'<div class="row" style="align-items:flex-start"><div class="grow"><b>'+FB_T[x.type][0]+' · '+esc(x.cat||'')+'</b><small>'+esc(x.text.length>90?x.text.slice(0,90)+'…':x.text)+'</small>'+(x.reply?'<div class="fbreply"><b>رد الإدارة</b>'+esc(x.reply)+'</div>':'')+'</div><span class="pill '+FB_ST[x.status][1]+'">'+FB_ST[x.status][0]+'</span></div>').join(''):'<p class="note" style="padding:0 18px 14px">رأيك يهمنا. يصل للمدير مباشرة مع اسمك ورقم جوالك.</p>')+'</section>';
+}
+function pageFeedback(){
+ const f=U.fbf||'open',ty=U.fbt||'all',L=(S.fb||[]).filter(x=>(f==='all'||(f==='open'?x.status!=='closed':x.status===f))&&(ty==='all'||x.type===ty)).sort((a,b)=>(a.status==='new'?0:1)-(b.status==='new'?0:1)||String(b.at||'').localeCompare(String(a.at||'')));
+ const A=S.fb||[],cnt=k=>A.filter(x=>x.status===k).length;
+ return head('الشكاوى والاقتراحات','تصل من حسابات المشتركين مع الاسم ورقم الجوال تلقائياً')+
+ '<div class="strip s4"><div class="kpi'+(cnt('new')?' bad':'')+'"><span>جديدة</span><b>'+cnt('new')+'</b></div><div class="kpi"><span>قيد المعالجة</span><b>'+cnt('progress')+'</b></div><div class="kpi good"><span>مغلقة</span><b>'+cnt('closed')+'</b></div><div class="kpi"><span>شكاوى · اقتراحات</span><b>'+A.filter(x=>x.type==='complaint').length+' · '+A.filter(x=>x.type==='suggestion').length+'</b></div></div>'+
+ '<section class="card" style="margin-top:16px"><header class="card-h"><div class="chips">'+[['open','المفتوحة'],['new','الجديدة'],['progress','قيد المعالجة'],['closed','المغلقة'],['all','الكل']].map(a=>'<button type="button" class="chip" aria-pressed="'+(f===a[0])+'" data-act="fbf" data-k="'+a[0]+'">'+a[1]+'</button>').join('')+'</div><div class="seg" role="group">'+[['all','الكل'],['complaint','الشكاوى'],['suggestion','الاقتراحات']].map(a=>'<button type="button" data-act="fbt" data-k="'+a[0]+'" aria-pressed="'+(ty===a[0])+'">'+a[1]+'</button>').join('')+'</div></header>'+
+ (L.length?L.map(x=>'<div class="fbrow'+(x.status==='new'?' new':'')+'"><div class="fbh"><span class="pill '+FB_T[x.type][1]+'">'+FB_T[x.type][0]+'</span><b>'+esc(x.name||'')+'</b><a class="ltr mut" href="tel:'+esc(x.phone||'')+'">'+esc(x.phone||'')+'</a>'+(x.code?'<span class="mut mono">'+esc(x.code)+'</span>':'')+'<span class="mut">'+esc(x.cat||'')+' · '+fdt(x.at)+'</span><span class="pill '+FB_ST[x.status][1]+'" style="margin-inline-start:auto">'+FB_ST[x.status][0]+'</span></div>'+
+  '<p class="fbtext">'+esc(x.text)+'</p>'+(x.reply?'<div class="fbreply"><b>الرد'+(x.repliedBy?' · '+esc(x.repliedBy):'')+'</b>'+esc(x.reply)+'</div>':'')+
+  '<div class="acts">'+btn('fbReply',x.reply?'تعديل الرد':'رد ومتابعة','sm pri','data-id="'+x.id+'"')+(x.phone?'<a class="btn sm" target="_blank" rel="noopener" href="'+waTo(x.phone,'مرحباً '+String(x.name||'').split(' ')[0]+'، بخصوص '+(x.type==='complaint'?'شكواك':'اقتراحك')+' عن «'+(x.cat||'')+'»: ')+'">واتساب</a>':'')+(x.memberId&&memberById(x.memberId)?btn('openMember','ملف المشترك','sm','data-id="'+x.memberId+'"'):'')+'</div></div>').join(''):'<p class="empty">لا توجد شكاوى أو اقتراحات هنا.</p>')+'</section>';
+}
+function fbReplyModal(id){
+ const x=(S.fb||[]).find(y=>y.id===id);if(!x)return;
+ openModal((x.type==='complaint'?'شكوى':'اقتراح')+' · '+esc(x.name||''),'<div class="fm"><p class="full fbtext">'+esc(x.text)+'</p>'+
+  fld('الحالة',sel('status',Object.keys(FB_ST).map(k=>[k,FB_ST[k][0]]),x.status==='new'?'progress':x.status),'full')+
+  '<label class="fld full"><span>الرد (يظهر للمشترك في حسابه)</span><textarea name="reply" id="f-reply" rows="4" placeholder="اختياري">'+esc(x.reply||'')+'</textarea></label>'+
+  fld('ملاحظة داخلية (لا تظهر للمشترك)',inp('note',x.note||''),'full')+'</div>',
+  d=>{x.status=d.status;x.reply=d.reply.trim();x.note=d.note.trim();if(x.reply){x.repliedBy=SESS.name;x.repliedAt=nowIso()}if(d.status==='closed')x.closedAt=nowIso();save();render();toast('تم الحفظ')},{ok:'حفظ'});
+}
+Object.assign(ACT,{fbNew:d=>fbModal(d.k),fbReply:d=>fbReplyModal(d.id),fbf:d=>{U.fbf=d.k;render()},fbt:d=>{U.fbt=d.k;render()}});
+
 /* ---------- shell + router ---------- */
 const PAGES={
  dashboard:{t:'لوحة التحكم',icon:'dash',fn:pageDashboard2},members:{t:'الأعضاء',icon:'members',fn:pageMembers},subs:{t:'الاشتراكات',icon:'subs',fn:pageSubs},checkin:{t:'الحضور',icon:'checkin',fn:pageCheckin},
  finance:{t:'المالية',icon:'finance',fn:pageFinance2},shift:{t:'إغلاق الوردية',icon:'shift',fn:pageShift},pt:{t:'التدريب الشخصي',icon:'dumbbell',fn:pagePT},home:{t:'الرئيسية',icon:'home',fn:pageHome},audit:{t:'سجل العمليات',icon:'shield',fn:pageAudit},classes:{t:'جدول الحصص',icon:'classes',fn:()=>{const h=pageClasses2(),i=h.indexOf('</div></div>',h.indexOf('<div class="acts">'))+12;return h.slice(0,i)+unlinkedPanel()+h.slice(i)}},trainers:{t:'المدربون',icon:'trainers',fn:pageTrainers},reports:{t:'التقارير',icon:'reports',fn:pageReports},settings:{t:'الإعدادات',icon:'settings',fn:pageSettings},
- newmember:{t:'عضو جديد',icon:'plus',fn:pageNewMember},schedule:{t:'الجدول الشهري',icon:'classes',fn:pageSchedule},portal:{t:'بطاقة المتدرب',icon:'subs',fn:pagePortal},gate:{t:'بوابة QR',icon:'qr',fn:pageGate},requests:{t:'طلبات التجميد',icon:'warn',fn:pageRequests},trainer:{t:'لوحة المدرب',icon:'trainers',fn:pageTrainer},marketing:{t:'التسويق',icon:'msg',fn:pageMarketing},coach:{t:'لوحة المدربة',icon:'trainers',fn:pageCoach},acct:{t:'المحاسبة والقوائم',icon:'book',fn:pageAcct},site:{t:'الموقع الإلكتروني',icon:'globe',fn:pageSite},
+ newmember:{t:'عضو جديد',icon:'plus',fn:pageNewMember},schedule:{t:'الجدول الشهري',icon:'classes',fn:pageSchedule},portal:{t:'بطاقة المتدرب',icon:'subs',fn:pagePortal},gate:{t:'بوابة QR',icon:'qr',fn:pageGate},requests:{t:'طلبات التجميد',icon:'warn',fn:pageRequests},trainer:{t:'لوحة المدرب',icon:'trainers',fn:pageTrainer},marketing:{t:'التسويق',icon:'msg',fn:pageMarketing},coach:{t:'لوحة المدربة',icon:'trainers',fn:pageCoach},feedback:{t:'الشكاوى والاقتراحات',icon:'msg',fn:pageFeedback},acct:{t:'المحاسبة والقوائم',icon:'book',fn:pageAcct},site:{t:'الموقع الإلكتروني',icon:'globe',fn:pageSite},
  daily:{t:'العملاء اليوميون',icon:'day',fn:pageDaily},leads:{t:'العملاء المحتملون',icon:'lead',fn:pageLeads},cashbox:{t:'صندوق المال',icon:'box',fn:pageCashbox}
 };
-const NAV=[['الرئيسية',['dashboard','home']],['الأعضاء',['members','newmember','leads','subs','requests','schedule','portal']],['الدخول والحضور',['gate','checkin','daily']],['المالية',['cashbox','finance','acct','shift']],['التشغيل',['coach','pt','classes','trainers']],['التسويق',['marketing','site']],['التحليل',['reports','audit','settings']]];
+const NAV=[['الرئيسية',['dashboard','home']],['الأعضاء',['members','newmember','leads','subs','requests','feedback','schedule','portal']],['الدخول والحضور',['gate','checkin','daily']],['المالية',['cashbox','finance','acct','shift']],['التشغيل',['coach','pt','classes','trainers']],['التسويق',['marketing','site']],['التحليل',['reports','audit','settings']]];
 function shell(){
- $('#app').innerHTML='<div class="shell"><aside class="rail" aria-label="القائمة الرئيسية"><div class="brand"><span class="brandlogo" role="img" aria-label="جولة اللياقة"><i class="t"></i><i class="m"></i></span><small id="gymname"></small></div>'+(can('finance')?'<button type="button" class="inc" data-act="incomeModal" id="incR" aria-label="دخل اليوم، اعرض التفاصيل"></button>':'')+'<nav class="nav">'+NAV.map(g=>[g[0],g[1].filter(k=>can(k)&&(k!=='home'||SESS.role==='trainee'))]).filter(g=>g[1].length).map(g=>'<p class="grp">'+g[0]+'</p>'+g[1].map(k=>'<a href="#'+k+'" data-p="'+k+'">'+ic(PAGES[k].icon)+'<span>'+PAGES[k].t+'</span>'+(k==='requests'?'<em class="badge" id="b-req" hidden></em>':'')+(k==='leads'?'<em class="badge" id="b-lead" hidden></em>':'')+'</a>').join('')).join('')+'</nav><div class="rfoot"><div class="mode" id="mode"></div><button type="button" class="btn sm" data-act="toggleTheme">'+ic('moon',15)+' تبديل المظهر</button><p id="syncst" class="sync" role="status"></p></div></aside><div class="scrim" data-act="closeMenu"></div><main class="main"><div class="top"><button type="button" class="ib" data-act="openMenu" aria-label="فتح القائمة">'+ic('menu',22)+'</button><b class="tt" id="ttl"></b>'+(can('finance')?'<button type="button" class="btn sm inc-t" data-act="incomeModal" id="incT" aria-label="دخل اليوم"></button>':'')+(can('checkin')?'<button type="button" class="btn sm pri" data-act="goCheckin">'+ic('checkin',15)+' حضور</button>':'')+'</div><div id="view"></div></main></div><div id="toast" role="status" aria-live="polite"></div>';
+ $('#app').innerHTML='<div class="shell"><aside class="rail" aria-label="القائمة الرئيسية"><div class="brand"><span class="brandlogo" role="img" aria-label="جولة اللياقة"><i class="t"></i><i class="m"></i></span><small id="gymname"></small></div>'+(can('finance')?'<button type="button" class="inc" data-act="incomeModal" id="incR" aria-label="دخل اليوم، اعرض التفاصيل"></button>':'')+'<nav class="nav">'+NAV.map(g=>[g[0],g[1].filter(k=>can(k)&&(k!=='home'||SESS.role==='trainee'))]).filter(g=>g[1].length).map(g=>'<p class="grp">'+g[0]+'</p>'+g[1].map(k=>'<a href="#'+k+'" data-p="'+k+'">'+ic(PAGES[k].icon)+'<span>'+PAGES[k].t+'</span>'+(k==='requests'?'<em class="badge" id="b-req" hidden></em>':'')+(k==='leads'?'<em class="badge" id="b-lead" hidden></em>':'')+(k==='feedback'?'<em class="badge" id="b-fb" hidden></em>':'')+'</a>').join('')).join('')+'</nav><div class="rfoot"><div class="mode" id="mode"></div><button type="button" class="btn sm" data-act="toggleTheme">'+ic('moon',15)+' تبديل المظهر</button><p id="syncst" class="sync" role="status"></p></div></aside><div class="scrim" data-act="closeMenu"></div><main class="main"><div class="top"><button type="button" class="ib" data-act="openMenu" aria-label="فتح القائمة">'+ic('menu',22)+'</button><b class="tt" id="ttl"></b>'+(can('finance')?'<button type="button" class="btn sm inc-t" data-act="incomeModal" id="incT" aria-label="دخل اليوم"></button>':'')+(can('checkin')?'<button type="button" class="btn sm pri" data-act="goCheckin">'+ic('checkin',15)+' حضور</button>':'')+'</div><div id="view"></div></main></div><div id="toast" role="status" aria-live="polite"></div>';
 }
 function render(){
  if(!PAGES[U.page])U.page='dashboard';

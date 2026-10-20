@@ -22,14 +22,14 @@ if (NO_DISK) console.warn('\n!!! No persistent volume is attached. Data will be 
 const PUB = path.join(__dirname, 'public');
 const DBF = path.join(DATA, 'db.json');
 const BAK = path.join(DATA, 'backups');
-const COLS = ['members', 'subs', 'pay', 'exp', 'att', 'classes', 'book', 'freezeReq', 'pt', 'campaigns', 'daily', 'leads', 'cash', 'plans', 'trainers', 'shifts', 'ptPlans', 'ptPacks', 'ptSess', 'treq', 'ptTpl', 'comms', 'jrnl', 'periods', 'budget', 'coa', 'fsruns'];
+const COLS = ['members', 'subs', 'pay', 'exp', 'att', 'classes', 'book', 'freezeReq', 'pt', 'campaigns', 'daily', 'leads', 'cash', 'plans', 'trainers', 'shifts', 'ptPlans', 'ptPacks', 'ptSess', 'treq', 'ptTpl', 'comms', 'jrnl', 'periods', 'budget', 'coa', 'fsruns', 'fb'];
 const STAFF = ['manager', 'reception'];
 const OFFICE = ['manager', 'reception', 'accountant'];
 const META_KEYS = ['nextCode', 'nextInv', 'nextCn'];
-const STAMP = ['pay', 'exp', 'cash', 'daily', 'shifts', 'subs', 'ptPacks', 'ptSess', 'treq', 'jrnl', 'comms'];
+const STAMP = ['pay', 'exp', 'cash', 'daily', 'shifts', 'subs', 'ptPacks', 'ptSess', 'treq', 'jrnl', 'comms', 'fb'];
 const PT_PRIVATE = ['note', 'exercises', 'perf'];
 const AUDIT_MAX = 20000;
-const HIDDEN = { reception: ['exp', 'cash', 'pt', 'jrnl', 'budget', 'comms', 'ptTpl', 'treq', 'coa', 'fsruns'], accountant: ['pt', 'ptTpl', 'treq'] };
+const HIDDEN = { reception: ['exp', 'cash', 'pt', 'jrnl', 'budget', 'comms', 'ptTpl', 'treq', 'coa', 'fsruns', 'fb'], accountant: ['pt', 'ptTpl', 'treq', 'fb'] };
 const LOG_MAX = 3000;
 
 fs.mkdirSync(BAK, { recursive: true });
@@ -233,6 +233,7 @@ function auditOp(p, c, op, old, v) {
   }
   if (c === 'periods') return v ? audit(p, v.status === 'closed' ? 'إقفال فترة مالية' : 'إعادة فتح فترة مالية', v.id + (v.note ? ' · ' + v.note : ''), c, v.id) : null;
   if (c === 'comms') return v ? audit(p, v.status === 'paid' ? 'صرف عمولة مدربة' : 'اعتماد عمولة مدربة', mTr(v.trainerId) + ' · ' + v.ym + ' · ' + fmtMoney(v.amount), c, v.id) : null;
+  if (c === 'fb') { if (!old && v) return audit(p, v.type === 'complaint' ? 'شكوى جديدة' : 'اقتراح جديد', (v.name || '') + ' · ' + (v.cat || ''), c, v.id); if (old && v && (old.status !== v.status || old.reply !== v.reply)) return audit(p, 'متابعة شكوى أو اقتراح', (v.name || '') + ' · ' + ({ new: 'جديدة', progress: 'قيد المعالجة', closed: 'مغلقة' })[v.status], c, v.id); return; }
   if (c === 'fsruns') return v ? audit(p, 'اعتماد القوائم المالية', v.no + ' · ' + v.from + ' ← ' + v.to, c, v.id) : null;
   if (c === 'coa') return v ? audit(p, old ? 'تعديل حساب' : 'إضافة حساب', v.id + ' · ' + v.name, c, v.id) : null;
   if (c === 'budget') return v ? audit(p, 'تعديل الموازنة', v.id + ' · ' + fmtMoney(v.monthly), c, v.id) : null;
@@ -290,7 +291,7 @@ function viewFor(p) {
     settings: set, trainers, plans: s.plans || [], classes: s.classes || [],
     members: (s.members || []).filter(m => m.id === me),
     subs: own(s.subs), pay: own(s.pay), att: own(s.att), pt: own(s.pt), freezeReq: own(s.freezeReq),
-    ptPacks: own(s.ptPacks), ptSess: own(s.ptSess), ptPlans: s.ptPlans || [],
+    ptPacks: own(s.ptPacks), ptSess: own(s.ptSess), ptPlans: s.ptPlans || [], fb: own(s.fb).map(x => { const o = Object.assign({}, x); delete o.note; return o; }),
     book: (s.book || []).map(b => b.memberId === me ? b : { id: b.id, classId: b.classId, date: b.date })
   };
 }
@@ -300,7 +301,7 @@ function canWrite(p, c, oldV, newV) {
   const r = p.role;
   if (r === 'manager') return true;
   if (r === 'reception') {
-    if (['exp', 'cash', 'plans', 'trainers', 'pt', 'ptPlans', 'jrnl', 'periods', 'budget', 'comms', 'ptTpl', 'treq', 'coa', 'fsruns'].indexOf(c) >= 0) return false;
+    if (['exp', 'cash', 'plans', 'trainers', 'pt', 'ptPlans', 'jrnl', 'periods', 'budget', 'comms', 'ptTpl', 'treq', 'coa', 'fsruns', 'fb'].indexOf(c) >= 0) return false;
     if (c === 'pay') return !oldV && !!newV && +newV.amount > 0;   // collecting only: no refunds, edits or deletions
     if (c === 'shifts') return !oldV && !!newV;
     return true;
@@ -322,6 +323,7 @@ function canWrite(p, c, oldV, newV) {
   if (r === 'trainee') {
     if (c === 'book') return (!oldV || oldV.memberId === p.ref) && (!newV || newV.memberId === p.ref);
     if (c === 'freezeReq') return !oldV && newV && newV.memberId === p.ref && newV.status === 'pending';
+    if (c === 'fb') return !oldV && !!newV && newV.memberId === p.ref && ['complaint', 'suggestion'].indexOf(newV.type) >= 0 && String(newV.text || '').trim().length >= 3 && String(newV.text).length <= 2000;
     if (c === 'ptSess') return !!oldV && !!newV && oldV.memberId === p.ref && newV.memberId === p.ref && oldV.status === 'booked' && ['cancelled', 'late_cancel'].indexOf(newV.status) >= 0;
     return false;
   }
@@ -435,6 +437,11 @@ function applySync(p, ops) {
           Object.keys(v).forEach(k => delete v[k]); Object.assign(v, old);
           v.status = late ? 'late_cancel' : 'cancelled'; v.charged = late ? set.ptLateCharge !== false : false; v.cancelledBy = 'member'; v.cancelledAt = new Date().toISOString();
         }
+      }
+      if (op.c === 'fb' && !old && p.role === 'trainee') {
+        const mm = (s.members || []).find(x => x.id === p.ref) || {};
+        Object.assign(v, { memberId: p.ref, name: mm.name || '', phone: mm.phone || '', code: mm.code || '', status: 'new', reply: '', at: new Date().toISOString() });
+        v.text = String(v.text || '').trim().slice(0, 2000); v.cat = String(v.cat || '').slice(0, 40);
       }
       auditOp(p, op.c, 'put', old, v);
       if (i === undefined) {

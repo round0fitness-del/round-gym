@@ -36,9 +36,19 @@ jobs:
 
       - name: Create the iPhone project
         working-directory: mobile
+        shell: bash
         run: |
           rm -rf ios
-          npx cap add ios --packagemanager SPM
+          if npx cap add ios --packagemanager SPM > add.log 2>&1; then cat add.log; else
+            cat add.log
+            echo "::warning::SPM $(tail -c 800 add.log | tr '\n\r' '  ')"
+            rm -rf ios
+            if npx cap add ios > add2.log 2>&1; then cat add2.log; else
+              cat add2.log
+              echo "::error::ADD $(tail -c 800 add2.log | tr '\n\r' '  ')"
+              exit 1
+            fi
+          fi
 
       - name: App icon and splash screen
         working-directory: mobile
@@ -55,16 +65,25 @@ jobs:
 
       - name: Sync
         working-directory: mobile
-        run: npx cap sync ios
+        shell: bash
+        run: |
+          npx cap sync ios > sync.log 2>&1 || { cat sync.log; echo "::error::SYNC $(tail -c 800 sync.log | tr '\n\r' '  ')"; exit 1; }
+          cat sync.log
 
       - name: Build the app (unsigned)
         working-directory: mobile/ios/App
         shell: bash
         run: |
-          xcodebuild -project App.xcodeproj -scheme App -configuration Release -sdk iphoneos \
+          if [ -d App.xcworkspace ]; then T="-workspace App.xcworkspace"; else T="-project App.xcodeproj"; fi
+          xcodebuild $T -scheme App -configuration Release -sdk iphoneos \
             -destination 'generic/platform=iOS' -derivedDataPath "$GITHUB_WORKSPACE/ios-build" \
             MARKETING_VERSION=1.0.${GITHUB_RUN_NUMBER} CURRENT_PROJECT_VERSION=${GITHUB_RUN_NUMBER} \
-            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" -quiet build
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build > build.log 2>&1 || {
+              tail -120 build.log
+              echo "::error::BUILD $(grep -E 'error' build.log | head -6 | tr '\n\r' '  ' | cut -c1-900)"
+              exit 1
+            }
+          tail -5 build.log
 
       - name: Make the IPA file
         shell: bash

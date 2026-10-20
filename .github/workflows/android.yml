@@ -9,49 +9,70 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: android
+  cancel-in-progress: true
+
+env:
+  CI: 'true'
+  NPM_CONFIG_YES: 'true'
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
+
       - name: Install packages
         working-directory: mobile
         run: npm install --no-audit --no-fund
+
       - name: Create the Android project
         working-directory: mobile
         run: |
           rm -rf android
           npx cap add android
+
       - name: App icon and splash screen
         working-directory: mobile
         continue-on-error: true
-        run: npx capacitor-assets generate --android --iconBackgroundColor '#161312' --iconBackgroundColorDark '#161312' --splashBackgroundColor '#161312' --splashBackgroundColorDark '#161312'
+        timeout-minutes: 4
+        run: npx --no-install capacitor-assets generate --android --iconBackgroundColor '#161312' --iconBackgroundColorDark '#161312' --splashBackgroundColor '#161312' --splashBackgroundColorDark '#161312' < /dev/null
+
       - name: Camera permission and version number
         working-directory: mobile
         run: |
           sed -i 's#</manifest>#    <uses-permission android:name="android.permission.CAMERA" />\n</manifest>#' android/app/src/main/AndroidManifest.xml
           sed -i "s/versionCode 1$/versionCode ${GITHUB_RUN_NUMBER}/; s/versionName \"1.0\"/versionName \"1.0.${GITHUB_RUN_NUMBER}\"/" android/app/build.gradle
+
       - name: Sync
         working-directory: mobile
         run: npx cap sync android
+
       - name: Build the APK
         working-directory: mobile/android
         run: |
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
+
       - name: Name the file
         run: cp mobile/android/app/build/outputs/apk/debug/app-debug.apk round-fitness.apk
+
       - uses: actions/upload-artifact@v4
         with:
           name: round-fitness-apk
           path: round-fitness.apk
+
       - name: Publish the download link
         uses: softprops/action-gh-release@v2
         with:

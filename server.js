@@ -324,6 +324,7 @@ function canWrite(p, c, oldV, newV) {
     if (c === 'book') return (!oldV || oldV.memberId === p.ref) && (!newV || newV.memberId === p.ref);
     if (c === 'freezeReq') return !oldV && newV && newV.memberId === p.ref && newV.status === 'pending';
     if (c === 'fb') return !oldV && !!newV && newV.memberId === p.ref && ['complaint', 'suggestion'].indexOf(newV.type) >= 0 && String(newV.text || '').trim().length >= 3 && String(newV.text).length <= 2000;
+    if (c === 'ptSess' && !oldV) return !!newV && newV.memberId === p.ref && newV.kind === 'class' && newV.status === 'booked' && !newV.charged;
     if (c === 'ptSess') return !!oldV && !!newV && oldV.memberId === p.ref && newV.memberId === p.ref && oldV.status === 'booked' && ['cancelled', 'late_cancel'].indexOf(newV.status) >= 0;
     return false;
   }
@@ -405,9 +406,9 @@ function applySync(p, ops) {
         if (k && k.expires && v.date > k.expires) throw httpErr(409, 'موعد الجلسة بعد انتهاء صلاحية الباقة');
         const a0 = mins(v.time), a1 = a0 + (+v.dur || 60);
         const clash = sess.find(x => x.date === v.date && (x.status === 'booked' || x.status === 'done') && (x.trainerId === v.trainerId || x.memberId === v.memberId) && mins(x.time) < a1 && a0 < mins(x.time) + (+x.dur || 60)
-          && !(x.memberId !== v.memberId && GRP(x) && GRP(v) && x.time === v.time && (x.service || '') === (v.service || '')));
+          && !(x.memberId !== v.memberId && GRP(x) && GRP(v) && x.time === v.time && ((x.kind === 'class' && v.kind === 'class' && x.classId === v.classId) || (x.kind !== 'class' && v.kind !== 'class' && (x.service || '') === (v.service || '')))));
         if (clash) throw httpErr(409, clash.trainerId === v.trainerId ? 'المدرب لديه جلسة أخرى في هذا الوقت' : 'المتدرب لديه جلسة أخرى في هذا الوقت');
-        if (GRP(v)) {
+        if (GRP(v) && v.kind !== 'class') {
           const n = sess.filter(x => x.date === v.date && x.time === v.time && x.trainerId === v.trainerId && x.status === 'booked').length;
           if (n >= (+v.cap || (v.fmt === 'pair' ? 2 : 4))) throw httpErr(409, 'اكتمل عدد المشاركين في هذه الجلسة');
         }
@@ -433,7 +434,7 @@ function applySync(p, ops) {
       if (op.c === 'ptSess' && old) {
         if (p.role === 'reception') PT_PRIVATE.forEach(k => { if (old[k] !== undefined) v[k] = old[k]; else delete v[k]; });
         if (p.role === 'trainee') {
-          const set = s.settings || {}, late = sessHoursAway(old) < (+set.ptCancelHours || 0);
+          const set = s.settings || {}, late = sessHoursAway(old) < (+(old.kind === 'class' ? set.classCancelHours : set.ptCancelHours) || 0);
           Object.keys(v).forEach(k => delete v[k]); Object.assign(v, old);
           v.status = late ? 'late_cancel' : 'cancelled'; v.charged = late ? set.ptLateCharge !== false : false; v.cancelledBy = 'member'; v.cancelledAt = new Date().toISOString();
         }

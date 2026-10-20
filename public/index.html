@@ -520,6 +520,8 @@ body.fs-open{overflow:hidden}
 .fbreply{margin-top:8px;background:var(--surface-2);border-radius:10px;padding:8px 10px;font-size:13.5px}.fbreply b{display:block;font-size:12px;color:var(--muted);font-weight:600}
 .fbrow{display:grid;gap:8px;padding:14px 18px;border-top:1px solid var(--line)}.fbrow.new{box-shadow:inset -4px 0 0 var(--warn)}.fbh{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.fbh a{text-decoration:none}.fbtext{margin:0;white-space:pre-wrap;line-height:1.7}
 .pkused{color:var(--good);font-weight:600}
+.plcard{display:grid;gap:6px;align-content:start}.plcard.arch{opacity:.55}.plh{display:flex;justify-content:space-between;align-items:center;gap:8px}.plcard h3{font-size:16px;margin:0}.plcard>b{font:600 24px var(--f-display)}
+.plchoice{display:grid;gap:4px;text-align:start;border:1.5px solid var(--line);background:var(--surface);border-radius:14px;padding:14px 16px;cursor:pointer;font:inherit;color:inherit}.plchoice:hover{border-color:var(--accent)}.plchoice small{color:var(--muted)}
 .sett-h{font:600 15px var(--f-display);margin-top:10px;padding-top:12px;border-top:1px solid var(--line)}
 .slots{display:flex;flex-wrap:wrap;gap:6px}
 .slot{position:relative}.slot input{position:absolute;opacity:0;inset:0;width:100%;height:100%;cursor:pointer;margin:0}
@@ -967,11 +969,11 @@ function pageSubs(){
   if(canRefund()&&paidOf(s.id)>0)a+=btn('refund','استرداد','sm bad','data-id="'+s.id+'"');
   a+=btn('invoice','فاتورة','sm','data-id="'+s.id+'"');
   if(k!=='cancelled'&&k!=='expired')a+=btn('cancelSub','إلغاء','sm bad','data-id="'+s.id+'"');
-  return '<tr><td class="mono">'+s.inv+'</td><td>'+(m?'<button type="button" class="link" data-act="openMember" data-id="'+m.id+'">'+esc(m.name)+'</button>':'-')+'</td><td>'+esc(s.planName)+'</td><td class="num">'+fdate(s.start,{day:'numeric',month:'short'})+' ← '+fdate(s.end,{day:'numeric',month:'short',year:'numeric'})+'</td><td class="num">'+money(s.total)+'</td><td class="num">'+(due>0?'<span style="color:var(--bad)">'+money(due)+'</span>':'<span class="mut">0</span>')+'</td><td>'+pill(k)+'</td><td><div class="cell-acts">'+a+'</div></td></tr>';
+  return '<tr><td class="mono">'+s.inv+'</td><td>'+(m?'<button type="button" class="link" data-act="openMember" data-id="'+m.id+'">'+esc(m.name)+'</button>':'-')+'</td><td>'+esc(s.planName)+'</td><td class="num">'+fdate(s.start,{day:'numeric',month:'short'})+' ← '+(s.noExpiry?'بدون انتهاء':fdate(s.end,{day:'numeric',month:'short',year:'numeric'}))+'</td><td class="num">'+money(s.total)+'</td><td class="num">'+(due>0?'<span style="color:var(--bad)">'+money(due)+'</span>':'<span class="mut">0</span>')+'</td><td>'+pill(k)+'</td><td><div class="cell-acts">'+a+'</div></td></tr>';
  }).join('')||'<tr><td colspan="8" class="empty">لا توجد اشتراكات.</td></tr>';
  const plans=S.plans.map(p=>{const n=S.subs.filter(s=>s.planId===p.id&&!s.cancelled&&s.end>=TODAY()).length;return '<div class="panel pb" style="display:grid;gap:6px"><div style="display:flex;justify-content:space-between;align-items:center"><h3 style="font-size:16px">'+esc(p.name)+'</h3>'+(isManager()?btn('editPlan','تعديل','sm','data-id="'+p.id+'"'):'')+'</div><b class="num" style="font:600 24px var(--f-display)">'+money(p.price)+'</b><span class="note">'+p.days+' يوماً · '+n+' اشتراك ساري</span><span class="note">تجميد مسموح حتى '+(p.freeze||0)+' يوماً</span></div>'}).join('');
- return head('الاشتراكات والباقات','إدارة الباقات وتجديد الاشتراكات وتجميدها',(isManager()?btn('newPlan','باقة جديدة'):'')+btn('newSub',ic('plus',16)+' اشتراك جديد','pri'))+
- '<div class="grid g3" style="margin:0 0 16px">'+plans+'</div>'+
+ return head('الاشتراكات والباقات','إدارة الباقات وتجديد الاشتراكات وتجميدها',(isManager()?btn('newAnyPlan',ic('plus',16)+' باقة جديدة'):'')+btn('newSub',ic('plus',16)+' اشتراك أو باقة لعضو','pri'))+
+ '<div class="grid g3" style="margin:0 0 16px">'+planCardsAll()+'</div>'+
  '<section class="panel"><div class="tools"><div class="chips">'+chips+'</div></div><div class="tw"><table><thead><tr><th>الفاتورة</th><th>العضو</th><th>الباقة</th><th>الفترة</th><th>الإجمالي</th><th>المتبقي</th><th>الحالة</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div></section>';
 }
 
@@ -1329,7 +1331,7 @@ function pageNewMember(){
  if(U.nmDone&&memberById(U.nmDone)){
   const m=memberById(U.nmDone),i=mInfo(m);
   return head('تمت إضافة العضو','احفظ رمز الدخول أو أرسله للمتدرب',back)+
-  '<section class="panel pb" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:20px;align-items:center"><div style="display:grid;gap:10px"><h2 style="font-size:22px">'+esc(m.name)+'</h2><div class="chipline"><span class="mono">'+esc(m.code)+'</span><span class="ltr">'+esc(m.phone)+'</span>'+(i.sub?'<span>'+esc(i.sub.planName)+' · ينتهي '+fdate(i.end)+'</span>':'<span>بدون اشتراك</span>')+'</div><div>'+pill(i.st)+'</div><div class="acts">'+btn('openMember','فتح الملف','sm pri','data-id="'+m.id+'"')+btn('openSchedule','الجدول الشهري','sm','data-id="'+m.id+'"')+btn('nmAnother','إضافة عضو آخر','sm')+(i.sub?btn('invoice','إرسال الفاتورة واتساب','sm pri','data-id="'+i.sub.id+'"'):'')+'</div></div>'+memberCard(m,'nmqr')+'</section>';
+  '<section class="panel pb" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:20px;align-items:center"><div style="display:grid;gap:10px"><h2 style="font-size:22px">'+esc(m.name)+'</h2><div class="chipline"><span class="mono">'+esc(m.code)+'</span><span class="ltr">'+esc(m.phone)+'</span>'+(i.sub?'<span>'+esc(i.sub.planName)+' · ينتهي '+fdate(i.end)+'</span>':'')+((S.ptPacks||[]).filter(k=>k.memberId===m.id&&packOpen(k)).map(k=>'<span>'+esc(k.name)+' · '+fmtN(packAvail(k))+' جلسة متاحة</span>').join(''))+(!i.sub&&!(S.ptPacks||[]).some(k=>k.memberId===m.id)?'<span>بدون اشتراك</span>':'')+'</div><div>'+pill(i.st)+'</div><div class="acts">'+btn('openMember','فتح الملف','sm pri','data-id="'+m.id+'"')+btn('openSchedule','الجدول الشهري','sm','data-id="'+m.id+'"')+btn('nmAnother','إضافة عضو آخر','sm')+((()=>{const ls=S.subs.filter(x=>x.memberId===m.id).slice(-1)[0];return ls?btn('invoice','إرسال الفاتورة واتساب','sm pri','data-id="'+ls.id+'"'):''})())+'</div></div>'+memberCard(m,'nmqr')+'</section>';
  }
  const plans=S.plans.map(p=>[p.id,p.name+' - '+p.days+' يوم - '+num(p.price)+' ر.س']);
  return head('عضو جديد','سجّل بيانات المتدرب وأنشئ اشتراكه من صفحة واحدة',back)+
@@ -1342,9 +1344,9 @@ function pageNewMember(){
   fld('جوال للطوارئ',inp('emergency','','inputmode="tel" dir="ltr" placeholder="اختياري"'))+
   fld('المدرب المسؤول',sel('trainerId',trainerOpts(),''))+
   fld('ملاحظات صحية أو أهداف',inp('notes','','placeholder="إصابات، أمراض، أهداف"'),'full')+
-  '<h3 class="full" style="font-size:15px;margin-top:8px">الاشتراك</h3>'+
-  '<label class="full" style="display:flex;gap:8px;align-items:center"><input type="checkbox" name="mksub" id="f-mksub" checked style="width:auto;min-height:0"> إنشاء اشتراك الآن</label>'+
-  fld('الباقة',sel('planId',plans,S.plans[0]?S.plans[0].id:''),'full')+
+  '<h3 class="full" style="font-size:15px;margin-top:8px">الاشتراك أو الباقة</h3>'+
+  '<label class="full" style="display:flex;gap:8px;align-items:center"><input type="checkbox" name="mksub" id="f-mksub" checked style="width:auto;min-height:0"> إنشاء اشتراك شهري أو باقة جلسات الآن</label>'+
+  fld('الاشتراك أو الباقة',catSelect('planId',S.plans[0]?'t:'+S.plans[0].id:''),'full')+'<p class="note full" id="nm-info"></p>'+'<label class="fld full" id="nm-tr" hidden><span>المدربة</span><select name="trId" id="f-trId"></select></label>'+
   fld('تاريخ البداية',inp('start',TODAY(),'type="date" required'))+
   fld('خصم (ر.س)',inp('disc','0','type="number" min="0" step="1"'))+
   '<p class="note full">المدفوع الآن، ويمكن تقسيمه على أكثر من وسيلة:</p>'+payLines('npl')+
@@ -1883,13 +1885,13 @@ document.addEventListener('submit',e=>{
   if(S.members.some(x=>x.phone===phone)){toast('رقم الجوال مسجّل لعضو آخر');return}
   const un=(d.uname||'').trim().toLowerCase();if(!/^[a-z0-9._-]{3,30}$/.test(un)){toast('اسم المستخدم بالحروف الإنجليزية والأرقام فقط');return}
   if(S.members.some(x=>x.uname===un)){toast('اسم المستخدم مستخدم لعضو آخر');return}
-  const p=d.mksub?planById(d.planId):null,disc=Math.max(0,+d.disc||0),lines=readLines(d,'npl'),paid=lines.reduce((a,l)=>a+l.amount,0),n=+d.inst||0;
+  const ck=d.mksub?catPick(d.planId):null,p=ck&&ck.p,disc=Math.max(0,+d.disc||0),lines=readLines(d,'npl'),paid=lines.reduce((a,l)=>a+l.amount,0),n=+d.inst||0;
   if(d.mksub){if(!p){toast('اختر الباقة');return}if(paid>Math.max(0,p.price-disc)+0.001){toast('المدفوع أكبر من الإجمالي');return}
    if(!discOk(p.price,disc)&&!U.nmOk){requireManager(()=>{U.nmOk=true;f.requestSubmit()});return}}
   U.nmOk=false;
   const nm={id:uid('m'),code:'M-'+(S.nextCode++),name:name,phone:phone,uname:un,gender:d.gender,trainerId:d.trainerId||'',joined:TODAY(),birth:d.birth||'',emergency:(d.emergency||'').trim(),notes:(d.notes||'').trim()};
   S.members.push(nm);
-  if(d.mksub)createSub(nm.id,p.id,d.start||TODAY(),disc,paid,'cash',null,{lines:lines,n:n});
+  if(d.mksub){if(ck.k==='t')createSub(nm.id,p.id,d.start||TODAY(),disc,paid,'cash',null,{lines:lines,n:n});else sellPack(nm.id,p,d.start||TODAY(),disc,lines,n,trPick(d.trId,p),'')}
   save();U.nmDone=nm.id;render();toast('تمت إضافة '+name);window.scrollTo(0,0);Sync.flush().then(()=>setMemberPin(nm.id,true));
  }
 });
@@ -2865,7 +2867,7 @@ function ptKpis(){
 /* ===== PT workspace page ===== */
 function pagePT(){
  const tab=U.ptTab||'sched',scope=myTrainerScope(),mgr=isManager();
- const tabs=[['sched','جدول الجلسات'],['packs','باقات الجلسات'],['clients','ملفات المتدربين']].concat(mgr?[['comm','العمولات'],['kpi','المؤشرات'],['plans','باقات البيع']]:[]);
+ const tabs=[['sched','جدول الجلسات'],['packs','باقات الجلسات'],['clients','ملفات المتدربين']].concat(mgr?[['comm','العمولات'],['kpi','المؤشرات'],['plans','أوقات التوفر']]:[]);
  const T='<div class="seg ptseg" role="tablist">'+tabs.map(a=>'<button type="button" data-act="ptTab" data-k="'+a[0]+'" aria-pressed="'+(tab===a[0])+'">'+a[1]+'</button>').join('')+'</div>';
  const packs=(S.ptPacks||[]).filter(k=>!scope||(k.trainerIds||[]).indexOf(scope)>=0),alerts=packs.filter(k=>packState(k)==='low');
  let body='';
@@ -2899,7 +2901,7 @@ function pagePT(){
   '<section class="card" style="margin-top:16px"><header class="card-h"><h2>استغلال أوقات المدربين (الأيام السبعة القادمة)</h2></header><div class="pb" style="display:grid;gap:14px">'+k.util.map(u=>'<div><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><b>'+esc(u.tr.name)+'</b><span class="num mut">'+(u.av?Math.round(u.bk/60*10)/10+' من '+Math.round(u.av/60*10)/10+' ساعة · '+u.pc+'%':'لم يُحدَّد جدول توفر')+'</span></div><div class="bar'+(u.pc>=85?' full':'')+'"><i style="width:'+Math.min(100,u.pc||0)+'%"></i></div></div>').join('')+'</div></section>';
  }
  if(tab==='plans'&&mgr){
-  body='<section class="card"><header class="card-h"><h2>باقات الجلسات المعروضة للبيع</h2>'+btn('ptPlanNew',ic('plus',15)+' باقة جديدة','sm pri')+'</header><div class="tw"><table><thead><tr><th>الباقة</th><th>الجلسات</th><th>الصلاحية</th><th>مدة الجلسة</th><th>السعر</th><th></th></tr></thead><tbody>'+
+  body='<p class="ptalert" style="background:var(--surface-2);color:inherit">'+ic('subs',16)+' كل الباقات (الاشتراكات الزمنية وباقات الجلسات) تُضاف وتُعدّل من صفحة&nbsp;<a href="#subs">الاشتراكات والباقات</a>.</p>'+'<section class="card" hidden><header class="card-h"><h2>باقات الجلسات المعروضة للبيع</h2>'+btn('ptPlanNew',ic('plus',15)+' باقة جديدة','sm pri')+'</header><div class="tw"><table><thead><tr><th>الباقة</th><th>الجلسات</th><th>الصلاحية</th><th>مدة الجلسة</th><th>السعر</th><th></th></tr></thead><tbody>'+
   ((S.ptPlans||[]).map(p=>'<tr'+(p.archived?' style="opacity:.55"':'')+'><td><b>'+esc(p.name)+'</b>'+(p.intro?' <span class="pill info">تعريفية</span>':'')+(p.archived?' <span class="pill">موقوفة</span>':'')+'<br><span class="mut">'+esc(p.service||'تدريب شخصي')+' · '+(p.useFor==='classes'?'حضور حصص: '+esc(classNames(p.classIds)||'كل الحصص'):PT_FMT[p.fmt||'single']+(p.fmt==='group'?' حتى '+p.cap:''))+(p.half?' · نصف جلسة':'')+((p.trainerIds||[]).length?' · '+p.trainerIds.map(t=>esc(((trainerById(t)||{}).name||'').replace('كابتن ',''))).join('، '):'')+'</span></td><td class="num">'+p.sessions+'</td><td class="num">'+(+p.validDays?p.validDays+' يوم':'بدون انتهاء')+'</td><td class="num">'+(p.useFor==='classes'?'-':(p.dur||60)+' د')+'</td><td class="num">'+money(p.price)+'</td><td><div class="cell-acts">'+btn('ptPlanEditSale','تعديل','sm','data-id="'+p.id+'"')+'</div></td></tr>').join('')||'<tr><td colspan="6" class="empty">لا توجد باقات بعد. أضف أول باقة.</td></tr>')+'</tbody></table></div></section>'+
   '<section class="card" style="margin-top:16px"><header class="card-h"><h2>أوقات توفر المدربين</h2></header>'+S.trainers.map(t=>'<div class="row"><div class="grow"><b>'+esc(t.name)+'</b><small>'+((t.avail||[]).map(a=>DOW[a.d]+' '+ft(a.from)+'–'+ft(a.to)).join(' · ')||'لم يُحدَّد')+'</small></div>'+btn('ptAvail','تعديل','sm','data-id="'+t.id+'"')+'</div>').join('')+'</section>';
  }
@@ -4393,8 +4395,8 @@ function releaseClass(b,who){const ps=classSessFor(b);if(ps&&ps.status==='booked
 const classNames=ids=>(ids||[]).map(id=>(S.classes.find(c=>c.id===id)||{}).name).filter(Boolean).join('، ');
 
 /* package templates: personal training sessions or class attendance */
-function ptPlanSaleModal(id){
- const isNew=!id,p=isNew?{name:'',useFor:'pt',service:'تدريب شخصي',fmt:'single',cap:4,sessions:12,validDays:0,price:0,dur:60,half:false,renew:true,trainerIds:[],classIds:[],intro:false}:ptPlanById(id);
+function ptPlanSaleModal(id,pre){
+ const isNew=!id,p=isNew?Object.assign({name:'',useFor:'pt',service:'تدريب شخصي',fmt:'single',cap:4,sessions:12,validDays:0,price:0,dur:60,half:false,renew:true,trainerIds:[],classIds:[],intro:false},pre||{},pre&&pre.useFor==='classes'?{service:'فنون قتالية'}:{}):ptPlanById(id);
  const noExp=!(+p.validDays),cls=S.classes.slice().sort((a,b)=>a.name.localeCompare(b.name));
  openModal(isNew?'باقة جلسات جديدة':'تعديل باقة الجلسات','<div class="fm">'+
   fld('نوع الاشتراك',sel('useFor',[['pt','جلسات تدريب شخصي (حجز موعد مع مدربة)'],['classes','حضور حصص جماعية (مثل الفنون القتالية)']],p.useFor||'pt'),'full')+
@@ -4447,6 +4449,99 @@ function tryCheckin(m){
 }
 Object.assign(ACT,{
  bkAtt:d=>{const b=S.book.find(x=>x.id===d.id);if(!b)return;const nv=b.att===d.k?'':d.k,r=markClassAtt(b,nv);if(r===false)return;save();render();rosterModal(b.classId,b.date);if(r&&r.k&&nv==='present')toast('سُجّل الحضور وخُصمت جلسة · المتبقي '+fmtN(packLeft(r.k)))}
+});
+
+/* ---------- v13: one catalog for time subscriptions and session packages ---------- */
+function sellPack(memberId,pl,start,disc,lines,n,tids,prevId){
+ const total=Math.max(0,pl.price-disc),paid=lines.reduce((a,l)=>a+l.amount,0),noExp=!(+pl.validDays),expires=noExp?'':addDays(start,(+pl.validDays)-1),pid=uid('pk'),prev=prevId?packById(prevId):null;
+ const s={id:uid('s'),kind:'pt',packId:pid,inv:'INV-'+String(S.nextInv++).padStart(4,'0'),memberId:memberId,planId:pl.id,planName:(pl.service||'تدريب شخصي')+': '+pl.name,start:start,end:expires||start,noExpiry:noExp,total:total,disc:disc,freezeMax:0,freezes:[]};
+ if(n>=2){const ins=makeInst(total,paid,n,start);if(ins)s.inst=ins}
+ S.subs.push(s);if(lines.length)addPayments(s,lines);
+ const k={id:pid,memberId:memberId,planId:pl.id,name:pl.name,useFor:pl.useFor||'pt',classIds:pl.classIds||[],service:pl.service||'تدريب شخصي',fmt:pl.fmt||'single',cap:+pl.cap||1,half:!!pl.half,renew:pl.renew!==false,sessions:+pl.sessions,dur:+pl.dur||60,validDays:+pl.validDays||0,start:start,expires:expires,trainerIds:tids,subId:s.id,intro:!!pl.intro,status:'active',adj:[],topups:[],prevId:prev?prev.id:''};
+ S.ptPacks.push(k);if(prev)prev.nextId=pid;
+ if(k.useFor!=='classes'&&!ptProfile(memberId))S.pt.push({id:uid('pt'),memberId:memberId,trainerId:tids[0]||'',goal:'',height:0,started:start,sessions:{total:0,used:0},log:[],assess:null,plan:[]});
+ return {s:s,k:k};
+}
+const eligTr=pl=>pl.useFor==='classes'?[...new Set((pl.classIds&&pl.classIds.length?S.classes.filter(c=>pl.classIds.indexOf(c.id)>=0):S.classes).map(c=>c.trainerId).filter(t=>t&&trainerById(t)))]:((pl.trainerIds&&pl.trainerIds.length?pl.trainerIds:S.trainers.map(t=>t.id)).filter(t=>trainerById(t)));
+function catPick(key){const k=String(key||''),id=k.slice(2);if(k.startsWith('t:')){const p=planById(id);return p?{k:'t',p:p,price:p.price}:null}if(k.startsWith('s:')){const p=ptPlanById(id);return p?{k:'s',p:p,price:p.price}:null}return null}
+function catSelect(name,val,a){
+ const T=S.plans,P=(S.ptPlans||[]).filter(p=>!p.archived&&p.useFor!=='classes'),C=(S.ptPlans||[]).filter(p=>!p.archived&&p.useFor==='classes');
+ const o=(v,l)=>'<option value="'+v+'"'+(v===val?' selected':'')+'>'+esc(l)+'</option>';
+ return '<select name="'+name+'" id="f-'+name+'" '+(a||'')+'>'+
+  (T.length?'<optgroup label="اشتراكات زمنية">'+T.map(p=>o('t:'+p.id,p.name+' · '+p.days+' يوم · '+num(p.price)+' ر.س')).join('')+'</optgroup>':'')+
+  (P.length?'<optgroup label="باقات جلسات · تدريب شخصي">'+P.map(p=>o('s:'+p.id,p.name+' · '+p.sessions+' جلسة · '+(+p.validDays?p.validDays+' يوم':'بدون انتهاء')+' · '+num(p.price)+' ر.س')).join('')+'</optgroup>':'')+
+  (C.length?'<optgroup label="باقات جلسات · حصص جماعية">'+C.map(p=>o('s:'+p.id,p.name+' · '+p.sessions+' حصة · '+(+p.validDays?p.validDays+' يوم':'بدون انتهاء')+' · '+num(p.price)+' ر.س')).join('')+'</optgroup>':'')+'</select>';
+}
+function trOptions(pl,mid){const ids=eligTr(pl),m=mid&&memberById(mid),pre=m&&ids.indexOf(m.trainerId)>=0?m.trainerId:'';
+ return (ids.length>1?'<option value="*">كل المدربات المشمولات</option>':'')+ids.map(t=>'<option value="'+t+'"'+(t===pre?' selected':'')+'>'+esc(trainerById(t).name)+'</option>').join('')}
+const trPick=(v,pl)=>!v||v==='*'?eligTr(pl):[v];
+function catInfo(c){if(!c)return '';const p=c.p;if(c.k==='t')return p.days+' يوماً · تجميد حتى '+(p.freeze||0)+' يوماً';
+ return (p.useFor==='classes'?'تُخصم حصة عند كل حضور في: '+(classNames(p.classIds)||'كل الحصص'):'تُخصم جلسة عند كل جلسة تدريب منفذة')+' · '+p.sessions+' جلسة · '+(+p.validDays?'صالحة '+p.validDays+' يوماً':'بدون مدة انتهاء')}
+
+/* new member page: the subscription picker covers every plan */
+function nmCalc(){
+ const pl=$('#f-planId');if(!pl)return;const c=catPick(pl.value);if(!c)return;
+ const tot=Math.max(0,c.price-(+$('#f-disc').value||0));
+ $('#ntot').textContent=money(tot);if(!U.nmTouched){const x=$('#f-npl_cash');if(x)x.value=tot;['card','transfer'].forEach(k=>{const y=$('#f-npl_'+k);if(y)y.value=''})}
+ const box=$('#nm-tr'),inf=$('#nm-info');if(inf)inf.textContent=catInfo(c);
+ if(box){const show=c.k==='s'&&c.p.useFor!=='classes';box.hidden=!show;const s=$('#f-trId');if(show&&s.dataset.plan!==c.p.id){s.innerHTML=trOptions(c.p,'');s.dataset.plan=c.p.id;const t=$('#f-trainerId');if(t&&t.value&&[...s.options].some(o=>o.value===t.value))s.value=t.value}}
+}
+document.addEventListener('change',e=>{if(e.target.form&&e.target.form.id==='nmf'&&(e.target.name==='planId'||e.target.name==='trainerId'))nmCalc()});
+
+/* new subscription / package for an existing member */
+function subModal(memberId,pre){
+ if(!S.plans.length&&!(S.ptPlans||[]).some(p=>!p.archived)){toast('أضف باقة أولاً من صفحة الاشتراكات والباقات');return}
+ const first=pre||(S.plans[0]?'t:'+S.plans[0].id:'s:'+(S.ptPlans||[]).find(p=>!p.archived).id);
+ const memberField=memberId?'<input type="hidden" name="memberId" value="'+memberId+'">'+fld('العضو','<input value="'+esc(memberById(memberId).name)+'" readonly>','full'):fld('العضو',sel('memberId',[['','اختر العضو']].concat(S.members.map(m=>[m.id,m.name+' - '+m.code])),'','required'),'full');
+ openModal('اشتراك أو باقة جديدة','<div class="fm">'+memberField+
+  fld('الاشتراك أو الباقة',catSelect('planId',first),'full')+'<p class="note full" id="sm-info"></p>'+
+  '<label class="fld full" id="sm-tr" hidden><span>المدربة</span><select name="trId" id="f-trId"></select></label>'+
+  fld('تاريخ البداية',inp('start',memberId?startFor(memberId):TODAY(),'type="date" required'))+
+  fld('خصم (ر.س)',inp('disc','0','type="number" min="0" step="1"'))+
+  '<p class="note full">المدفوع الآن، ويمكن تقسيمه على أكثر من وسيلة:</p>'+payLines('pl')+
+  fld('تقسيط المتبقي',sel('inst',[['0','بدون تقسيط'],['2','على دفعتين شهريتين'],['3','على 3 دفعات شهرية'],['4','على 4 دفعات شهرية'],['6','على 6 دفعات شهرية']],'0'))+
+  fld('أيام التجميد المسموحة',inp('freezeMax',0,'type="number" min="0" max="365"'),'sm-fz')+
+  '<div class="sumline full"><span>الإجمالي بعد الخصم</span><b class="num" id="tot">0</b></div><div class="sumline full"><span>المتبقي بعد الدفع</span><b class="num" id="rem">0</b></div>'+
+  (isManager()?'':'<p class="note full">حد الخصم المسموح لك '+(+S.settings.discLimit||0)+'% من السعر. أكبر من ذلك يحتاج رمز المدير.</p>')+'</div>',
+  d=>{
+   if(!d.memberId){toast('اختر العضو');return false}
+   const c=catPick(d.planId);if(!c){toast('اختر الباقة');return false}
+   const p=c.p,disc=Math.max(0,+d.disc||0),total=Math.max(0,p.price-disc),lines=readLines(d,'pl'),paid=lines.reduce((a,l)=>a+l.amount,0),n=+d.inst||0;
+   if(paid>total+0.001){toast('المدفوع أكبر من الإجمالي');return false}
+   if(n>=2&&paid>=total){toast('لا يوجد مبلغ متبقٍ للتقسيط');return false}
+   const tids=c.k==='s'?trPick(d.trId,p):[];if(c.k==='s'&&p.useFor!=='classes'&&!tids.length){toast('لا توجد مدربة مشمولة في هذه الباقة');return false}
+   const go=()=>{if(c.k==='t'){createSub(d.memberId,p.id,d.start,disc,paid,'cash',Math.max(0,+d.freezeMax||0),{lines:lines,n:n});save();render();toast('تم إنشاء الاشتراك');cardModal(d.memberId,true)}
+    else{const r=sellPack(d.memberId,p,d.start||TODAY(),disc,lines,n,tids,'');save();render();closeModal();toast('تم بيع الباقة · '+r.s.inv);ptLedgerModal(r.k.id)}};
+   if(!discOk(p.price,disc)){requireManager(go);return 'keep'}
+   go();return 'keep';
+  },{ok:'حفظ',mount:f=>{
+   let touched=false,ftouch=false;
+   const calc=()=>{const c=catPick(f.planId.value);if(!c)return;const tot=Math.max(0,c.price-(+f.disc.value||0));if(!touched){f.pl_cash.value=tot;f.pl_card.value='';f.pl_transfer.value=''}
+    f.querySelector('.sm-fz').hidden=c.k!=='t';if(!ftouch&&c.k==='t')f.freezeMax.value=c.p.freeze||0;
+    const tr=f.querySelector('#sm-tr'),show=c.k==='s'&&c.p.useFor!=='classes';tr.hidden=!show;if(show&&f.trId.dataset.plan!==c.p.id){f.trId.innerHTML=trOptions(c.p,memberId||f.memberId.value);f.trId.dataset.plan=c.p.id}
+    f.querySelector('#sm-info').textContent=catInfo(c);
+    const paid=['pl_cash','pl_card','pl_transfer'].reduce((a,k)=>a+(+f[k].value||0),0);f.querySelector('#tot').textContent=money(tot);f.querySelector('#rem').textContent=money(Math.max(0,tot-paid))};
+   f.addEventListener('input',e=>{if(/^pl_/.test(e.target.name))touched=true;if(e.target.name==='freezeMax')ftouch=true;calc()});
+   f.addEventListener('change',e=>{if(e.target.name==='memberId')f.trId.dataset.plan='';calc()});calc();
+  }});
+}
+
+/* subscriptions page: every plan in one place */
+function planCardsAll(){
+ const mgr=isManager(),open=id=>(S.ptPacks||[]).filter(k=>k.planId===id&&packOpen(k)).length;
+ const card=(tag,cls,title,price,lines,edit,arch)=>'<div class="panel pb plcard'+(arch?' arch':'')+'"><div class="plh"><span class="pill '+cls+'">'+tag+'</span>'+(mgr?edit:'')+'</div><h3>'+esc(title)+'</h3><b class="num">'+money(price)+'</b>'+lines.map(l=>'<span class="note">'+l+'</span>').join('')+'</div>';
+ return S.plans.map(p=>card('اشتراك زمني','',p.name,p.price,[p.days+' يوماً · تجميد حتى '+(p.freeze||0)+' يوماً',S.subs.filter(s=>s.planId===p.id&&!s.cancelled&&s.end>=TODAY()).length+' اشتراك ساري'],btn('editPlan','تعديل','sm','data-id="'+p.id+'"'))).join('')+
+  (S.ptPlans||[]).map(p=>card(p.useFor==='classes'?'جلسات · حصص':'جلسات · تدريب شخصي',p.useFor==='classes'?'warn':'info',p.name,p.price,[p.sessions+' جلسة · '+(+p.validDays?'صالحة '+p.validDays+' يوماً':'بدون مدة انتهاء'),esc(p.service||(p.useFor==='classes'?'فنون قتالية':'تدريب شخصي'))+' · '+(p.useFor==='classes'?esc(classNames(p.classIds)||'كل الحصص'):PT_FMT[p.fmt||'single']),open(p.id)+' باقة سارية'+(p.archived?' · موقوفة عن البيع':'')],btn('ptPlanEditSale','تعديل','sm','data-id="'+p.id+'"'),p.archived)).join('');
+}
+function newAnyPlanModal(){
+ openModal('باقة جديدة','<div class="sec" style="padding-top:16px;display:grid;gap:10px">'+
+  [['t','اشتراك زمني','شهري، ربع سنوي، سنوي… يُحسب بالأيام'],['pt','باقة جلسات تدريب شخصي','عدد جلسات تُحجز مع مدربة، وتُخصم الجلسة عند تنفيذها'],['classes','باقة جلسات حصص جماعية','مثل الفنون القتالية: تُخصم حصة عند كل حضور']].map(x=>'<button type="button" class="plchoice" data-act="newPlanType" data-k="'+x[0]+'"><b>'+x[1]+'</b><small>'+x[2]+'</small></button>').join('')+'</div>',null,{noForm:true,noFocus:true});
+}
+Object.assign(ACT,{
+ newAnyPlan:()=>newAnyPlanModal(),
+ newPlanType:d=>{closeModal();if(d.k==='t')planModal();else ptPlanSaleModal(null,{useFor:d.k})},
+ ptSell:d=>subModal(d.id||'',(S.ptPlans||[]).find(p=>!p.archived)?'s:'+(S.ptPlans||[]).find(p=>!p.archived).id:''),
+ ptPlanNew:()=>newAnyPlanModal()
 });
 
 /* ---------- shell + router ---------- */

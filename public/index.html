@@ -5023,6 +5023,61 @@ document.addEventListener('change',e=>{const t=e.target;if(!t.dataset)return;
 window.addEventListener('beforeunload',e=>{if(U.postDirty){e.preventDefault();e.returnValue=''}});
 window.addEventListener('hashchange',()=>{if(location.hash!=='#news')U.newsId='';if(location.hash!=='#blog'&&U.postEd&&!U.postDirty){U.postEd='';U.postDraft=null}});
 
+/* ---------- v18: trainer phone app (same design as the trainee app) ---------- */
+function coachCard(a){
+ if(a.k==='cls'){const c=a.c,n=S.book.filter(b=>b.classId===c.id&&b.date===a.d&&!b.wait).length,w=S.book.filter(b=>b.classId===c.id&&b.date===a.d&&b.wait).length,end=hhmm(mins(c.time)+(+c.dur||60)),marked=S.book.some(b=>b.classId===c.id&&b.date===a.d&&b.att);
+  return '<article class="ac"><div class="ac-h"><div><b>'+esc(c.name)+'</b><small>حصة جماعية · '+n+'/'+c.cap+' مسجّلة'+(w?' · انتظار '+w:'')+'</small></div>'+btn('roster',ic('arr',18),'cbtn sm','data-id="'+c.id+'" data-k="'+a.d+'" aria-label="كشف حضور '+esc(c.name)+'"')+'</div>'+
+   '<span class="ac-tag'+(marked?' good':'')+'">'+(marked?'سُجّل الحضور':'كشف الحضور')+'</span>'+
+   '<div class="ac-t"><div><b>'+minsTo(c.time)+' <small>'+apM(c.time)+'</small></b><span>البداية</span></div><span class="ac-d">'+(+c.dur||60)+' د</span><div class="end"><b>'+minsTo(end)+' <small>'+apM(end)+'</small></b><span>النهاية</span></div></div></article>'}
+ const x=a.x,m=memberById(x.memberId),k=packById(x.packId),med=medNote(x.memberId),end=hhmm(mins(x.time)+(+x.dur||60));
+ const st={booked:['محجوزة',''],done:['تمت','good'],noshow:['غياب','warn'],late_cancel:['إلغاء متأخر','warn'],cancelled:['ملغاة',''],club_cancel:['ألغاها النادي','']}[x.status]||['',''];
+ return '<article class="ac"><div class="ac-h"><div><b>'+esc(m?m.name:'متدربة')+'</b><small>'+esc(k?k.service||'تدريب شخصي':'تدريب شخصي')+(x.fmt&&x.fmt!=='single'?' · '+PT_FMT[x.fmt]:'')+(k?' · متاح '+fmtN(packAvail(k)):'')+'</small></div>'+btn('ptRun',ic('arr',18),'cbtn sm','data-id="'+x.id+'" aria-label="فتح الجلسة"')+'</div>'+
+  '<div style="display:flex;gap:6px;flex-wrap:wrap"><span class="ac-tag '+st[1]+'">'+st[0]+'</span>'+(med?'<span class="ac-tag warn">ملاحظة صحية</span>':'')+'</div>'+
+  '<div class="ac-t"><div><b>'+minsTo(x.time)+' <small>'+apM(x.time)+'</small></b><span>البداية</span></div><span class="ac-d">'+(+x.dur||60)+' د</span><div class="end"><b>'+minsTo(end)+' <small>'+apM(end)+'</small></b><span>النهاية</span></div></div></article>';
+}
+function pageCoachApp(){
+ const tid=SESS.uid,tr=trainerById(tid);if(!tr)return pageCoach();
+ const t=TODAY(),d=U.cd&&U.cd>=t?U.cd:t,days=[...Array(7)].map((_,i)=>addDays(t,i));
+ const live=a=>a.k==='cls'||['cancelled','club_cancel'].indexOf(a.x.status)<0;
+ const today=agenda(tid,t).filter(live),doneT=today.filter(a=>a.k==='pt'&&a.x.status==='done').length+today.filter(a=>a.k==='cls'&&S.book.some(b=>b.classId===a.c.id&&b.date===t&&b.att)).length;
+ const ids=myTraineeIds(tid),al=coachAlerts(tid),ym=t.slice(0,7);
+ const mon=(S.ptSess||[]).filter(x=>x.trainerId===tid&&x.date.slice(0,7)===ym&&x.kind!=='class'),done=mon.filter(x=>x.status==='done').length,plan=done+mon.filter(x=>x.status==='booked').length+mon.filter(x=>x.status==='noshow').length;
+ const occ=mon.filter(x=>['done','noshow','late_cancel'].indexOf(x.status)>=0).length,rate=occ?Math.round(done/occ*100):0,lvl=!occ?[plan?'بداية الشهر':'لا جلسات بعد',plan?'جلسات هذا الشهر المنجزة من المجدولة':'احجزي جلسات لمتدرباتك هذا الشهر']:rate>=90?['ممتاز','نسبة الحضور '+rate+'% · استمري']:rate>=70?['جيد','نسبة الحضور '+rate+'% · تابعي المتغيّبات']:['يحتاج متابعة','نسبة الحضور '+rate+'% · تواصلي مع المتغيّبات'];
+ const acts=agenda(tid,d),onLeave=trOnLeave(tid,d),free=trainerSlots(tid,d,60,'','').length;
+ const card=(icn,title,big,small,chip,act,data)=>'<div class="st-card"><div class="st-h"><span class="st-ic">'+ic(icn,18)+'</span><span>'+title+'</span></div><b class="st-big">'+big+'<small>'+small+'</small></b><span class="st-chip">'+chip+'</span>'+(act?btn(act,ic('arr',16),'cbtn sm st-go',(data||'')+' aria-label="عرض"'):'')+'</div>';
+ const first=tr.name.replace(/^كابتن\s+/,'').split(' ')[0];
+ return '<div class="app-home">'+
+  '<div class="ah-top"><span class="ava">'+esc(initial(tr.name))+'</span><div class="ah-acts"><button type="button" class="cbtn" data-act="coAlerts" aria-label="التنبيهات">'+ic('bell',20)+(al.length?'<i class="dot"></i>':'')+'</button><button type="button" class="cbtn" data-act="openMenu" aria-label="القائمة">'+ic('gear',20)+'</button></div></div>'+
+  '<h1 class="ah-hi">أهلاً كابتن '+esc(first)+'،<br>'+(today.length?'عندك '+today.length+' '+(today.length===1?'موعد':today.length===2?'موعدان':'مواعيد')+' اليوم':'لا مواعيد لديك اليوم')+'</h1>'+
+  '<div class="st-row">'+
+   card('cal','مواعيد اليوم',doneT,'/'+today.length,today.length?(today.length-doneT?'باقي '+(today.length-doneT):'اكتملت ✓'):'يوم هادئ','coGo','data-k="sched"')+
+   card('members','متدرباتي',ids.length,' متدربة',al.length?al.length+' تنبيه':'لا تنبيهات','coGo','data-k="mine"')+
+  '</div>'+
+  '<section class="gauge"><div class="g-h"><span class="g-ic">'+ic('flame',18)+'</span><b>حضور جلساتك هذا الشهر</b>'+btn('coGo',ic('arr',16),'cbtn sm light','data-k="perf" aria-label="الأداء"')+'</div>'+gaugeSvg(done,Math.max(plan,1))+'<div class="g-v"><b>'+done+'<small style="font-size:15px;opacity:.7"> / '+plan+'</small></b><span>'+lvl[0]+'</span><small>'+lvl[1]+'</small></div></section>'+
+  '<section class="acts-sec" id="act"><div class="as-h"><h2>جدولي</h2><span>'+fdate(d,{weekday:'long',day:'numeric',month:'long'})+'</span></div>'+
+  '<div class="dchips" role="tablist">'+days.map(x=>'<button type="button" class="dchip" role="tab" aria-selected="'+(x===d)+'" data-act="cdDay" data-k="'+x+'">'+(x===t?'اليوم':x===addDays(t,1)?'غداً':fdate(x,{day:'numeric',month:'short'}))+'</button>').join('')+'</div>'+
+  (onLeave?'<p class="ac-empty">إجازة معتمدة في هذا اليوم.</p>':acts.length?acts.map(coachCard).join(''):'<p class="ac-empty">لا مواعيد في هذا اليوم.</p>')+
+  (!onLeave&&free?'<p class="note" style="margin:0;text-align:center">'+free+' '+(free===1?'موعد متاح':'مواعيد متاحة')+' للحجز في هذا اليوم</p>':'')+'</section>'+
+  (al.length?'<section class="acts-sec"><div class="as-h"><h2>المهام والتنبيهات</h2></div>'+al.slice(0,4).map(a=>'<div class="nt '+(a.cls==='good'?'good':a.cls==='bad'?'bad':'warn')+'"><span class="nt-ic">'+ic(a.ic,18)+'</span><div style="flex:1;min-width:0"><b>'+a.t+'</b><small>'+a.s+'</small></div>'+(a.act||'')+'</div>').join('')+(al.length>4?'<button type="button" class="btn sm" data-act="coAlerts" style="justify-self:center">عرض الكل ('+al.length+')</button>':'')+'</section>':'')+
+  '<div class="qa">'+btn('ptBook',ic('plus',18)+' حجز جلسة','')+btn('coGo',ic('dumbbell',18)+' البرامج','','data-k="prog"')+btn('coGo',ic('cal',18)+' إجازة أو توفر','','data-k="avail"')+btn('changePw',ic('lock',18)+' كلمة المرور','')+'</div>'+
+ '</div>';
+}
+const _pcoach=pageCoach;
+pageCoach=function(){
+ if(isPhone()&&SESS&&SESS.role==='trainer'&&(U.coTab||'today')==='today')return pageCoachApp();
+ const h=_pcoach.apply(this,arguments);
+ return isPhone()&&SESS&&SESS.role==='trainer'?btn('coGo',ic('chev',16)+' الرئيسية','sm nw-back','data-k="today"')+h:h;
+};
+TABS.trainer=[['coach','home','الرئيسية'],['#act','cal','جدولي'],['pt','dumbbell','التدريب']];
+Object.assign(ACT,{
+ cdDay:d=>{U.cd=d.k;render();const a=$('#act');if(a)a.scrollIntoView({block:'start'})},
+ coGo:d=>{U.coTab=d.k;if(U.page!=='coach'){location.hash='#coach';return}render();window.scrollTo(0,0)},
+ coAlerts:()=>{const al=coachAlerts(SESS.uid);openModal('المهام والتنبيهات','<div class="sec" style="padding-top:14px;display:grid;gap:8px">'+(al.length?al.map(a=>'<div class="nt '+(a.cls==='good'?'good':a.cls==='bad'?'bad':'warn')+'"><span class="nt-ic">'+ic(a.ic,18)+'</span><div style="flex:1;min-width:0"><b>'+a.t+'</b><small>'+a.s+'</small></div>'+(a.act||'')+'</div>').join(''):'<p class="note">لا توجد تنبيهات.</p>')+'</div>',null,{noForm:true,noFocus:true})}
+});
+document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('#tabbar a[data-p=coach],.nav a[data-p=coach]');if(a&&SESS&&SESS.role==='trainer'){U.coTab='today';if(U.page==='coach')setTimeout(()=>{render();window.scrollTo(0,0)},0)}},true);
+const _scrollAct=ACT.scrollAct;
+ACT.scrollAct=function(){if(!SESS||SESS.role!=='trainer')return _scrollAct.apply(this,arguments);U.coTab='today';if(U.page!=='coach'){location.hash='#coach';setTimeout(()=>{const a=$('#act');if(a)a.scrollIntoView({block:'start'})},300);return}render();const a=$('#act');if(a)a.scrollIntoView({block:'start',behavior:'smooth'})};
+
 /* ---------- shell + router ---------- */
 const PAGES={
  dashboard:{t:'لوحة التحكم',icon:'dash',fn:pageDashboard2},members:{t:'الأعضاء',icon:'members',fn:pageMembers},subs:{t:'الاشتراكات',icon:'subs',fn:pageSubs},checkin:{t:'الحضور',icon:'checkin',fn:pageCheckin},

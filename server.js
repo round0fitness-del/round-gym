@@ -260,7 +260,7 @@ function viewFor(p) {
   if (p.role === 'manager') return s;
   if (p.role === 'reception' || p.role === 'accountant') {
     const o = Object.assign({}, s);
-    HIDDEN[p.role].forEach(k => delete o[k]);
+    HIDDEN[p.role].forEach(k => delete o[k]); delete o.clock;
     o.settings = Object.assign({}, s.settings || {}); delete o.settings.pin;
     if (p.role === 'accountant') o.members = (s.members || []).map(m => pick(m, ['id', 'code', 'name', 'phone', 'gender', 'trainerId', 'joined']));
     if (o.ptSess) o.ptSess = o.ptSess.map(stripPt);
@@ -339,6 +339,24 @@ function blogMeta(html, req, post) {
     .replace(/(<meta property="og:title" content=")[^"]*/, '$1' + e(post ? post.title : title))
     .replace(/(<meta property="og:description" content=")[^"]*/, '$1' + e(desc))
     .replace(/(<meta property="og:image" content=")[^"]*/, '$1' + e(img));
+}
+
+/* ---------------- staff attendance by location ---------------- */
+const CLOCK_ROLES = ['manager', 'reception', 'accountant', 'trainer'];
+const ksaDate = () => new Date(Date.now() + 3 * 3600e3).toISOString().slice(0, 10);
+function geoDist(a, b) {
+  const R = 6371000, rad = x => x * Math.PI / 180, dLat = rad(b.lat - a.lat), dLng = rad(b.lng - a.lng);
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dLng / 2) ** 2;
+  return Math.round(2 * R * Math.asin(Math.sqrt(h)));
+}
+function clockList() { const s = st(); s.clock = s.clock || []; return s.clock; }
+function clockSummary(p) {
+  const L = clockList(), t = ksaDate(), today = L.filter(x => x.date === t);
+  const lastIn = today.slice().sort((a, b) => String(b.in).localeCompare(String(a.in)))[0];
+  const mine = L.filter(x => x.pk === p.key);
+  return { date: t, geo: !!((st().settings || {}).geo || {}).lat, inToday: today.length, outToday: today.filter(x => x.out).length,
+    lastIn: lastIn ? { name: lastIn.name, at: lastIn.in } : null, open: mine.find(x => x.date === t && !x.out) || null,
+    todayMine: mine.filter(x => x.date === t) };
 }
 
 /* ---------------- sync ---------------- */
@@ -680,6 +698,57 @@ async function api(req, res, route) {
   }
   if (route === 'push/unsub' && method === 'POST') { need(); const b = await readBody(req, 4096); db.push = db.push.filter(x => !(x.pk === p.key && x.sub.endpoint === b.endpoint)); persist(); return send(res, 200, { ok: true }); }
   if (route === 'push/test' && method === 'POST') { need(); if (limited('pt:' + p.key, 5, 3600e3)) throw httpErr(429, 'حاول لاحقاً'); await notify([p.key], { title: 'الإشعارات تعمل ✓', body: 'ستصلك تذكيرات المواعيد والردود من ' + ((st().settings || {}).gym || 'النادي'), url: '/app', tag: 'test' }); return send(res, 200, { ok: true, n: db.push.filter(x => x.pk === p.key).length }); }
+  if (route === 'clock' && method === 'GET') {
+    need(CLOCK_ROLES);
+    const q = new URL(req.url, 'http://x').searchParams, from = q.get('from') || '0000', to = q.get('to') || '9999';
+    const all = p.role === 'manager' || p.role === 'accountant';
+    const rows = clockList().filter(x => (all || x.pk === p.key) && x.date >= from && x.date <= to).sort((a, b) => (b.date + b.in).localeCompare(a.date + a.in));
+    const staff = all ? db.users.map(u => ({ pk: 'u:' + u.id, name: u.name || u.username, role: u.role })).concat((st().trainers || []).filter(t => db.creds['t:' + t.id]).map(t => ({ pk: 't:' + t.id, name: t.name, role: 'trainer' }))) : [];
+    return send(res, 200, Object.assign(clockSummary(p), { rows: rows.slice(0, 3000), staff, all }), { 'Cache-Control': 'no-store' });
+  }
+  if (route === 'clock' && method === 'POST') {
+    need(CLOCK_ROLES);
+    if (limited('clock:' + p.key, 20, 3600e3)) throw httpErr(429, 'محاولات كثيرة. حاول بعد قليل');
+    const b = await readBody(req, 4096), geo = (st().settings || {}).geo || {};
+    if (!geo.lat || !geo.lng) throw httpErr(409, 'لم يحدد المدير موقع النادي بعد. اطلب منه تحديده من صفحة الحضور والانصراف');
+    const lat = +b.lat, lng = +b.lng, acc = Math.round(+b.acc || 0);
+    if (!isFinite(lat) || !isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) throw httpErr(400, 'تعذّر قراءة موقعك');
+    if (acc > 500) throw httpErr(422, 'دقة الموقع ضعيفة (' + acc + ' م). فعّل الموقع الدقيق في الجوال وحاول مرة أخرى');
+    const radius = +geo.radius || 150, dist = geoDist({ lat: +geo.lat, lng: +geo.lng }, { lat, lng });
+    if (dist - Math.min(acc, 75) > radius) throw httpErr(403, 'أنت خارج نطاق النادي (تبعد ' + dist + ' م والمسموح ' + radius + ' م). سجّل من داخل النادي');
+    const L = clockList(), t = ksaDate(), now = new Date().toISOString(), open = L.find(x => x.pk === p.key && x.date === t && !x.out);
+    let rec;
+    if (b.act === 'in') {
+      if (open) throw httpErr(409, 'حضورك مسجّل اليوم منذ ' + new Date(Date.parse(open.in) + 3 * 3600e3).toISOString().slice(11, 16) + '. سجّل الانصراف أولاً');
+      rec = { id: 'ck' + Date.now().toString(36) + crypto.randomBytes(3).toString('hex'), pk: p.key, name: p.name, role: p.role, date: t, in: now, inDist: dist, inAcc: acc, out: '', outDist: null, outAcc: null };
+      L.push(rec);
+    } else if (b.act === 'out') {
+      if (!open) throw httpErr(409, 'لا يوجد تسجيل حضور مفتوح لك اليوم');
+      Object.assign(open, { out: now, outDist: dist, outAcc: acc }); rec = open;
+    } else throw httpErr(400, 'طلب غير صالح');
+    if (L.length > 60000) L.splice(0, L.length - 60000);
+    persist();
+    return send(res, 200, Object.assign(clockSummary(p), { rec }));
+  }
+  if (route === 'clock/edit' && method === 'POST') {
+    need(['manager']);
+    const b = await readBody(req, 4096), L = clockList(), iso = v => { if (!v) return ''; const d = Date.parse(v); if (!isFinite(d)) throw httpErr(400, 'وقت غير صالح'); return new Date(d).toISOString(); };
+    if (b.del) { const i = L.findIndex(x => x.id === b.id); if (i < 0) throw httpErr(404, 'السجل غير موجود'); const x = L.splice(i, 1)[0]; audit(p, 'حذف سجل حضور موظف', x.name + ' · ' + x.date, 'clock', x.id); persist(); return send(res, 200, { ok: true }); }
+    let x = L.find(y => y.id === b.id);
+    const inT = iso(b.in), outT = iso(b.out);
+    if (!inT) throw httpErr(400, 'وقت الحضور مطلوب');
+    if (outT && outT <= inT) throw httpErr(400, 'وقت الانصراف يجب أن يكون بعد الحضور');
+    if (!x) {
+      const who = String(b.pk || ''), u = who.startsWith('u:') ? db.users.find(y => 'u:' + y.id === who) : null, tr = who.startsWith('t:') ? (st().trainers || []).find(y => 't:' + y.id === who) : null;
+      if (!u && !tr) throw httpErr(400, 'اختر الموظف');
+      x = { id: 'ck' + Date.now().toString(36) + crypto.randomBytes(3).toString('hex'), pk: who, name: u ? (u.name || u.username) : tr.name, role: u ? u.role : 'trainer', date: new Date(Date.parse(inT) + 3 * 3600e3).toISOString().slice(0, 10), in: inT, out: outT, inDist: null, outDist: null, manual: true };
+      L.push(x); audit(p, 'إضافة سجل حضور يدوي', x.name + ' · ' + x.date, 'clock', x.id);
+    } else {
+      Object.assign(x, { in: inT, out: outT, date: new Date(Date.parse(inT) + 3 * 3600e3).toISOString().slice(0, 10), edited: true, note: String(b.note || '').slice(0, 200) });
+      audit(p, 'تعديل سجل حضور موظف', x.name + ' · ' + x.date + (x.note ? ' · ' + x.note : ''), 'clock', x.id);
+    }
+    persist(); return send(res, 200, { ok: true, rec: x });
+  }
   if (route === 'logout' && method === 'POST') return send(res, 200, { ok: true }, { 'Set-Cookie': sessCookie(req, '', 0) });
   if (route === 'me') { need(); return send(res, 200, { role: p.role, ref: p.ref, name: p.name, key: p.key, rev: db.rev }); }
   if (route === 'rev') { need(); return send(res, 200, { rev: db.rev }); }

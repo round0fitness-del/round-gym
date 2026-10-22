@@ -57,11 +57,8 @@ jobs:
         run: npx --no-install capacitor-assets generate --ios --iconBackgroundColor '#161312' --iconBackgroundColorDark '#161312' --splashBackgroundColor '#161312' --splashBackgroundColorDark '#161312' < /dev/null
 
       - name: Permissions text
-        working-directory: mobile/ios/App/App
-        run: |
-          /usr/libexec/PlistBuddy -c "Add :NSCameraUsageDescription string 'لمسح رمز QR عند الدخول'" Info.plist || true
-          /usr/libexec/PlistBuddy -c "Add :NSPhotoLibraryUsageDescription string 'لاختيار صورة'" Info.plist || true
-          /usr/libexec/PlistBuddy -c "Add :NSPhotoLibraryAddUsageDescription string 'لحفظ الفواتير والملفات'" Info.plist || true
+        working-directory: mobile
+        run: bash scripts/ios-setup.sh
 
       - name: Sync
         working-directory: mobile

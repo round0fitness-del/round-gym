@@ -49,11 +49,9 @@ jobs:
         timeout-minutes: 4
         run: npx --no-install capacitor-assets generate --android --iconBackgroundColor '#161312' --iconBackgroundColorDark '#161312' --splashBackgroundColor '#161312' --splashBackgroundColorDark '#161312' < /dev/null
 
-      - name: Camera permission and version number
+      - name: Permissions and version number
         working-directory: mobile
-        run: |
-          sed -i 's#</manifest>#    <uses-permission android:name="android.permission.CAMERA" />\n</manifest>#' android/app/src/main/AndroidManifest.xml
-          sed -i "s/versionCode 1$/versionCode ${GITHUB_RUN_NUMBER}/; s/versionName \"1.0\"/versionName \"1.0.${GITHUB_RUN_NUMBER}\"/" android/app/build.gradle
+        run: bash scripts/android-setup.sh
 
       - name: Sync
         working-directory: mobile
@@ -82,4 +80,3 @@ jobs:
           make_latest: false
           files: round-fitness.apk
           body: |
-            نسخة تجريبية لأندرويد. حمّل round-fitness.apk من الجوال وثبّته، ووافق على «التثبيت من مصادر غير معروفة» عند السؤال.

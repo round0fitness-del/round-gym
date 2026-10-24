@@ -1107,7 +1107,7 @@ function memberRows(){
 function pageMembers(){
  const cnt=k=>S.members.filter(m=>k==='all'||mInfo(m).st===k).length;
  const chips=[['all','الكل'],['active','نشط'],['expiring','ينتهي قريباً'],['expired','منتهي'],['frozen','مجمّد'],['none','بدون اشتراك']].map(a=>'<button type="button" class="chip" aria-pressed="'+(U.mf===a[0])+'" data-act="mf" data-k="'+a[0]+'">'+a[1]+'<em>'+cnt(a[0])+'</em></button>').join('');
- return head('الأعضاء',S.members.length+' عضواً مسجّلاً',(isManager()?btn('openImport',ic('file',16)+' استيراد من النظام السابق'):'')+btn('copyMembers','نسخ القائمة (CSV)')+btn('newMember',ic('plus',16)+' عضو جديد','pri'))+
+ return head('الأعضاء',S.members.length+' عضواً مسجّلاً',(isManager()?btn('openImport',ic('file',16)+' استيراد من النظام السابق')+btn('bulkApp',ic('lock',16)+' تفعيل دخول التطبيق'):'')+btn('copyMembers','نسخ القائمة (CSV)')+btn('newMember',ic('plus',16)+' عضو جديد','pri'))+
  '<section class="panel"><div class="tools"><input type="search" id="mq" placeholder="ابحث بالاسم أو الجوال أو الكود" value="'+esc(U.q)+'" data-in="mq" aria-label="بحث في الأعضاء"><div class="chips">'+chips+'</div></div><div class="tw"><table><thead><tr><th>الكود</th><th>العضو</th><th>الباقة</th><th>ينتهي</th><th>الحالة</th><th>آخر حضور</th><th></th></tr></thead><tbody id="mtbl">'+memberRows()+'</tbody></table></div></section>';
 }
 
@@ -5199,7 +5199,7 @@ function pageImport(){
 }
 function impDoneHtml(){
  const r=U.imp.done;
- return '<section class="card empty-big"><span class="eic">'+ic('ok',34)+'</span><h2>تم نقل '+r.members+' مشترك</h2><p class="note">'+r.subs+' اشتراك بالمدة · '+r.packs+' باقة جلسات · '+r.plans+' باقة قديمة (موقوفة عن البيع إلا ما اخترته)</p>'+btn('impShowMembers','عرض الأعضاء','pri')+'</section>'+
+ return '<section class="card empty-big"><span class="eic">'+ic('ok',34)+'</span><h2>تم نقل '+r.members+' مشترك</h2><p class="note">'+r.subs+' اشتراك بالمدة · '+r.packs+' باقة جلسات · '+r.plans+' باقة قديمة (موقوفة عن البيع إلا ما اخترته)</p>'+btn('bulkApp',ic('lock',16)+' تفعيل دخول المشتركين للتطبيق','pri')+btn('impShowMembers','عرض الأعضاء')+'</section>'+
  (r.badPhones.length?'<section class="card"><header class="card-h"><div><h2>أرقام جوال تحتاج تصحيحاً ('+r.badPhones.length+')</h2><p class="note">نُقلت كما هي. صحّحها من ملف العضو ليستطيع صاحبها الدخول برقم جواله واستلام الرسائل.</p></div></header><div class="tw"><table><thead><tr><th>الكود</th><th>الاسم</th><th>الرقم في النظام السابق</th><th></th></tr></thead><tbody>'+
   r.badPhones.map(m=>'<tr><td class="num">'+esc(m.code)+'</td><td>'+esc(m.name)+'</td><td class="num">'+esc(m.phone)+'</td><td>'+btn('openMember','فتح','sm','data-id="'+m.id+'"')+'</td></tr>').join('')+'</tbody></table></div></section>':'');
 }
@@ -5444,11 +5444,46 @@ function pageAccHub(){
 }
 Object.assign(ACT,{hubGo:d=>{if(d.p==='acct'){if(d.k==='fs'){location.hash='#acct';setTimeout(()=>ACT.fsExtract&&ACT.fsExtract({}),350);return}U.acTab=d.k||'rep'}location.hash='#'+d.p}});
 
+/* ---------- v22: bulk app access for members (after import) ---------- */
+function bulkAppModal(){
+ const t=TODAY(),act=S.members.filter(m=>{const s=mInfo(m).st;return (s==='active'||s==='expiring'||s==='frozen'||(S.ptPacks||[]).some(k=>k.memberId===m.id&&packOpen(k)))});
+ const pend=act.filter(m=>!m.appAt),all=S.members.filter(m=>!m.appAt);
+ openModal('تفعيل دخول المشتركين للتطبيق','<div class="fm"><p class="full note">يُنشئ النظام كلمة مرور من 6 أرقام لكل مشترك لم يُفعَّل دخوله بعد، ثم تظهر لك قائمة بها مع زر واتساب لكل مشترك. كلمات المرور تظهر مرة واحدة فقط.</p>'+
+  '<label class="chk full"><input type="radio" name="grp" value="act" checked> المشتركون الساريون فقط ('+pend.length+')</label>'+
+  '<label class="chk full"><input type="radio" name="grp" value="all"> كل المشتركين بمن فيهم المنتهية اشتراكاتهم ('+all.length+')</label></div>',
+  d=>{const L=d.grp==='all'?all:pend;if(!L.length){toast('كل المشتركين في هذه المجموعة مفعّلون');return false}bulkAppRun(L);},{ok:'إنشاء كلمات المرور'});
+}
+async function bulkAppRun(L){
+ await Sync.flush();U.bulk={rows:[],total:L.length,done:0,fail:0};location.hash='#bulkapp';render();
+ for(const m of L){const pin=await setMemberPin(m.id,true);if(pin){m.appAt=nowIso();U.bulk.rows.push({id:m.id,pin:pin})}else U.bulk.fail++;U.bulk.done++;
+  if(U.bulk.done%10===0||U.bulk.done===L.length){const p=$('#bk-prog');if(p)p.textContent=U.bulk.done+' / '+L.length}}
+ save();U.bulk.finished=true;render();toast('تم إنشاء '+U.bulk.rows.length+' كلمة مرور');
+}
+function appMsg(m,pin){const okPh=/^05\d{8}$/.test(m.phone||'');return 'مرحباً '+m.name+'، تم تفعيل حسابك في تطبيق '+S.settings.gym+'.\nالرابط: '+portalLink()+'\nاسم الدخول: '+(okPh?m.phone:(m.uname||m.code))+'\nكلمة المرور: '+pin+'\n\nمن التطبيق تحجز حصصك وتعرض بطاقة الدخول واشتراكك. يمكنك تغيير كلمة المرور بعد الدخول.'}
+function pageBulkApp(){
+ const B=U.bulk;if(!B)return head('تفعيل دخول المشتركين','')+'<section class="card empty-big"><p class="note">ابدأ من صفحة الأعضاء ← «تفعيل دخول التطبيق».</p>'+btn('bulkApp','بدء التفعيل','pri')+'</section>';
+ if(!B.finished)return head('تفعيل دخول المشتركين','')+'<section class="card empty-big"><span class="eic">'+ic('lock',30)+'</span><h2>جارٍ إنشاء كلمات المرور…</h2><p class="num" id="bk-prog">'+B.done+' / '+B.total+'</p><p class="note">لا تغلق الصفحة حتى تنتهي.</p></section>';
+ const sent=U.bulkSent||{};
+ return head('تفعيل دخول المشتركين',B.rows.length+' مشترك · أرسل لكل مشترك بياناته من زر واتساب',btn('bulkCsv',ic('dl',15)+' تنزيل القائمة (Excel)','sm')+btn('bulkDone','إنهاء وإخفاء كلمات المرور','sm bad'))+
+ '<p class="ptalert">'+ic('warn',16)+' كلمات المرور تظهر الآن فقط. أرسلها أو نزّل القائمة قبل الإنهاء، واحذف ملف القائمة بعد التوزيع.</p>'+(B.fail?'<p class="ptalert">تعذّر إنشاء '+B.fail+' كلمة مرور. أعد المحاولة لهم لاحقاً من ملف كل مشترك.</p>':'')+
+ '<section class="card"><div class="tw"><table><thead><tr><th>المشترك</th><th>اسم الدخول</th><th>كلمة المرور</th><th>الاشتراك</th><th></th></tr></thead><tbody>'+B.rows.map(r=>{const m=memberById(r.id);if(!m)return '';const okPh=/^05\d{8}$/.test(m.phone||''),i=mInfo(m);
+  return '<tr><td><b>'+esc(m.name)+'</b><br><small class="mut">'+esc(m.code)+'</small></td><td class="ltr num">'+esc(okPh?m.phone:(m.uname||m.code))+(okPh?'':' <span class="pill warn">الجوال يحتاج تصحيح</span>')+'</td><td class="num ltr"><b>'+r.pin+'</b></td><td>'+pill(i.st)+'</td><td>'+(okPh?'<a class="btn sm'+(sent[r.id]?'':' pri')+'" target="_blank" rel="noopener" data-sent="'+r.id+'" href="'+waTo(m.phone,appMsg(m,r.pin))+'">'+ic('msg',14)+(sent[r.id]?' أُرسل ✓':' واتساب')+'</a>':'')+'</td></tr>'}).join('')+'</tbody></table></div></section>';
+}
+Object.assign(ACT,{
+ bulkApp:()=>bulkAppModal(),
+ bulkCsv:()=>{const q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';const L=[['الاسم','الكود','الجوال','اسم الدخول','كلمة المرور'].map(q).join(',')].concat(U.bulk.rows.map(r=>{const m=memberById(r.id)||{};const okPh=/^05\d{8}$/.test(m.phone||'');return [m.name,m.code,m.phone,okPh?m.phone:(m.uname||m.code),r.pin].map(q).join(',')}));
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['﻿'+L.join('\n')],{type:'text/csv;charset=utf-8'}));a.download='بيانات-دخول-المشتركين.csv';document.body.appendChild(a);a.click();a.remove()},
+ bulkDone:()=>{if(!window.confirm('ستُخفى كلمات المرور نهائياً من الشاشة. هل أرسلتها أو نزّلت القائمة؟'))return;U.bulk=null;U.bulkSent=null;location.hash='#members'}
+});
+document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('a[data-sent]');if(!a)return;U.bulkSent=U.bulkSent||{};U.bulkSent[a.dataset.sent]=true;setTimeout(()=>{if(U.page==='bulkapp')render()},500)});
+const _setPin=setMemberPin;
+setMemberPin=async function(mid,quiet){const pin=await _setPin.apply(this,arguments);if(pin){const m=memberById(mid);if(m&&!m.appAt){m.appAt=nowIso();if(!U.bulk||U.bulk.finished)save()}}return pin};
+
 /* ---------- shell + router ---------- */
 const PAGES={
  dashboard:{t:'لوحة التحكم',icon:'dash',fn:pageDashboard2},members:{t:'الأعضاء',icon:'members',fn:pageMembers},subs:{t:'الاشتراكات',icon:'subs',fn:pageSubs},checkin:{t:'الحضور',icon:'checkin',fn:pageCheckin},
  finance:{t:'المالية',icon:'finance',fn:pageFinance2},shift:{t:'إغلاق الوردية',icon:'shift',fn:pageShift},pt:{t:'التدريب الشخصي',icon:'dumbbell',fn:pagePT},home:{t:'الرئيسية',icon:'home',fn:()=>isPhone()&&SESS&&SESS.role==='trainee'?pageHomeApp():pageHome()},audit:{t:'سجل العمليات',icon:'shield',fn:pageAudit},classes:{t:'جدول الحصص',icon:'classes',fn:()=>{const h=pageClasses2(),i=h.indexOf('</div></div>',h.indexOf('<div class="acts">'))+12;return h.slice(0,i)+unlinkedPanel()+h.slice(i)}},trainers:{t:'المدربون',icon:'trainers',fn:pageTrainers},reports:{t:'التقارير',icon:'reports',fn:pageReports},settings:{t:'الإعدادات',icon:'settings',fn:pageSettings},
- newmember:{t:'عضو جديد',icon:'plus',fn:pageNewMember},schedule:{t:'الجدول الشهري',icon:'classes',fn:pageSchedule},portal:{t:'بطاقة المتدرب',icon:'subs',fn:pagePortal},gate:{t:'بوابة QR',icon:'qr',fn:pageGate},requests:{t:'طلبات التجميد',icon:'warn',fn:pageRequests},trainer:{t:'لوحة المدرب',icon:'trainers',fn:pageTrainer},marketing:{t:'التسويق',icon:'msg',fn:pageMarketing},coach:{t:'لوحة المدربة',icon:'trainers',fn:pageCoach},feedback:{t:'الشكاوى والاقتراحات',icon:'msg',fn:pageFeedback},acct:{t:'المحاسبة والقوائم',icon:'book',fn:pageAcct},site:{t:'الموقع الإلكتروني',icon:'globe',fn:pageSite},blog:{t:'المدونة',icon:'news',fn:pageBlog},imp:{t:'استيراد من النظام السابق',icon:'file',fn:pageImport},clock:{t:'حضور الموظفين',icon:'pinpt',fn:pageClock},acchub:{t:'مركز المحاسب',icon:'calc',fn:pageAccHub},news:{t:'المدونة',icon:'news',fn:pageNews},
+ newmember:{t:'عضو جديد',icon:'plus',fn:pageNewMember},schedule:{t:'الجدول الشهري',icon:'classes',fn:pageSchedule},portal:{t:'بطاقة المتدرب',icon:'subs',fn:pagePortal},gate:{t:'بوابة QR',icon:'qr',fn:pageGate},requests:{t:'طلبات التجميد',icon:'warn',fn:pageRequests},trainer:{t:'لوحة المدرب',icon:'trainers',fn:pageTrainer},marketing:{t:'التسويق',icon:'msg',fn:pageMarketing},coach:{t:'لوحة المدربة',icon:'trainers',fn:pageCoach},feedback:{t:'الشكاوى والاقتراحات',icon:'msg',fn:pageFeedback},acct:{t:'المحاسبة والقوائم',icon:'book',fn:pageAcct},site:{t:'الموقع الإلكتروني',icon:'globe',fn:pageSite},blog:{t:'المدونة',icon:'news',fn:pageBlog},imp:{t:'استيراد من النظام السابق',icon:'file',fn:pageImport},clock:{t:'حضور الموظفين',icon:'pinpt',fn:pageClock},bulkapp:{t:'تفعيل دخول المشتركين',icon:'lock',fn:pageBulkApp},acchub:{t:'مركز المحاسب',icon:'calc',fn:pageAccHub},news:{t:'المدونة',icon:'news',fn:pageNews},
  daily:{t:'العملاء اليوميون',icon:'day',fn:pageDaily},leads:{t:'العملاء المحتملون',icon:'lead',fn:pageLeads},cashbox:{t:'صندوق المال',icon:'box',fn:pageCashbox}
 };
 const NAV=[['الرئيسية',['dashboard','home','news']],['الأعضاء',['members','newmember','leads','subs','requests','feedback','schedule','portal']],['الدخول والحضور',['gate','checkin','daily','clock']],['المالية',['acchub','cashbox','finance','acct','shift']],['التشغيل',['coach','pt','classes','trainers']],['التسويق',['marketing','site','blog']],['التحليل',['reports','audit','settings']]];

@@ -4227,12 +4227,25 @@ function eqData(f,t){
 }
 
 /* ---- the 11 financial reports ---- */
-const REPORTS=[['sales','المبيعات والتحصيل'],['rev','الإيرادات حسب الخدمة'],['exp','المصروفات مقابل الموازنة'],['ptp','ربحية التدريب الشخصي'],['unused','أرصدة الجلسات غير المستخدمة'],['prepaid','الاشتراكات المدفوعة مقدماً'],['ar','المتأخرات والأقساط'],['cash','الصندوق والبنوك'],['disc','الخصومات والاستردادات'],['pay','مستحقات المدربات والموردين'],['bva','الموازنة مقابل الفعلي']];
+const REPORTS=[['daily','الإيرادات اليومية'],['sales','المبيعات والتحصيل'],['rev','الإيرادات حسب الخدمة'],['exp','المصروفات مقابل الموازنة'],['ptp','ربحية التدريب الشخصي'],['unused','أرصدة الجلسات غير المستخدمة'],['prepaid','الاشتراكات المدفوعة مقدماً'],['ar','المتأخرات والأقساط'],['cash','الصندوق والبنوك'],['disc','الخصومات والاستردادات'],['pay','مستحقات المدربات والموردين'],['bva','الموازنة مقابل الفعلي']];
 function tbl(head,rows,foot){return '<div class="tw"><table class="fin"><thead><tr>'+head.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+(rows.length?rows.join(''):'<tr><td colspan="'+head.length+'" class="empty">لا توجد بيانات في هذه الفترة.</td></tr>')+'</tbody>'+(foot?'<tfoot>'+foot+'</tfoot>':'')+'</table></div>'}
 const tr=(cells,cls)=>'<tr'+(cls?' class="'+cls+'"':'')+'>'+cells.map((c,i)=>'<td'+(typeof c==='number'?' class="num"':'')+'>'+(typeof c==='number'?num2(c):c)+'</td>').join('')+'</tr>';
 const num2=n=>{n=r2(n);const s=Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});return n<0?'('+s+')':s};
 function reportHtml(k,f,t){
  const A=accounts(),k_=vatK();
+ if(k==='daily'){
+  const days=[];for(let d=f;d<=t&&days.length<400;d=addDays(d,1))days.push(d);
+  const M=Object.keys(METH),tot={n:0,ref:0,net:0,sales:0};M.forEach(m=>tot[m]=0);
+  const rows=days.map(d=>{const P=S.pay.filter(p=>p.date===d),o={n:P.filter(p=>p.amount>0).length,ref:-P.filter(p=>p.amount<0).reduce((a,p)=>a+p.amount,0)};
+   M.forEach(m=>o[m]=P.filter(p=>p.amount>0&&p.method===m).reduce((a,p)=>a+p.amount,0));o.net=P.reduce((a,p)=>a+p.amount,0);
+   o.sales=S.subs.filter(x=>!x.legacy&&saleDate(x)===d).reduce((a,x)=>a+grossOf(x),0)+P.filter(p=>!p.subId&&p.amount>0).reduce((a,p)=>a+p.amount,0);
+   Object.keys(tot).forEach(k2=>tot[k2]+=o[k2]||0);
+   const wd=parse(d).getDay();return tr([fdate(d,{weekday:'long',day:'numeric',month:'short'}),String(o.n)].concat(M.map(m=>o[m])).concat([o.ref,o.net,o.sales]),wd===5?'muted':'')});
+  const best=days.length?days.map(d=>[d,S.pay.filter(p=>p.date===d).reduce((a,p)=>a+p.amount,0)]).sort((a,b)=>b[1]-a[1])[0]:null,act=days.filter(d=>S.pay.some(p=>p.date===d)).length;
+  return '<p class="note">صافي المحصّل = كل ما استُلم في اليوم بكل طرق الدفع ناقص الاستردادات. المبيعات = قيمة الفواتير الصادرة في اليوم والدخول اليومي، سواء حُصّلت أم لا.</p>'+
+   '<div class="strip s4" style="margin-bottom:12px"><div class="kpi"><span>إجمالي المحصّل</span><b>'+num(tot.net)+' <small>ر.س</small></b></div><div class="kpi"><span>متوسط اليوم</span><b>'+num(act?tot.net/act:0)+' <small>ر.س</small></b></div><div class="kpi"><span>أعلى يوم</span><b>'+(best&&best[1]>0?num(best[1]):'0')+' <small>'+(best&&best[1]>0?fdate(best[0],{day:'numeric',month:'short'}):'')+'</small></b></div><div class="kpi"><span>أيام فيها تحصيل</span><b>'+act+' <small>/ '+days.length+'</small></b></div></div>'+
+   tbl(['اليوم','العمليات'].concat(M.map(m=>METH[m])).concat(['الاستردادات','صافي المحصّل','المبيعات']),rows.reverse(),tr(['الإجمالي',String(tot.n)].concat(M.map(m=>tot[m])).concat([tot.ref,tot.net,tot.sales]),'tot'));
+ }
  if(k==='sales'){
   const L=S.subs.filter(s=>saleDate(s)>=f&&saleDate(s)<=t),pays=S.pay.filter(p=>p.date>=f&&p.date<=t);
   const grp={mem:['العضويات',s=>s.kind!=='pt'],pt:['باقات الجلسات',s=>s.kind==='pt']};
@@ -4408,7 +4421,7 @@ function pageAcct(){
  const T='<div class="seg ptseg" role="tablist">'+tabs.map(a=>'<button type="button" data-act="acTab" data-k="'+a[0]+'" aria-pressed="'+(tab===a[0])+'">'+a[1]+'</button>').join('')+'</div>';
  const per='<div class="perbar"><div class="chips">'+PRESETS.filter(p=>p[0]!=='custom').map(p=>'<button type="button" class="chip" aria-pressed="'+((U.acP||'month')===p[0]&&!U.acCustom)+'" data-act="acP" data-k="'+p[0]+'">'+p[1]+'</button>').join('')+'</div><div class="dr2"><input type="date" id="ac-from" value="'+f+'" aria-label="من"><span>←</span><input type="date" id="ac-to" value="'+t+'" aria-label="إلى"></div></div>';
  let body='';
- if(tab==='rep'){const k=U.acRep||'sales';
+ if(tab==='rep'){const k=U.acRep||'daily';
   const E=gl(t,[addDays(f,-1)]),b=balances(E,f,t),A=accounts(),rv=-Object.keys(b).filter(c=>A[c]&&A[c].type==='rev').reduce((a,c)=>a+b[c],0),ex=Object.keys(b).filter(c=>A[c]&&A[c].type==='exp').reduce((a,c)=>a+b[c],0),col=S.pay.filter(p=>p.date>=f&&p.date<=t).reduce((a,p)=>a+p.amount,0),sales=S.subs.filter(s=>saleDate(s)>=f&&saleDate(s)<=t).reduce((a,s)=>a+grossOf(s),0)+S.pay.filter(p=>!p.subId&&p.date>=f&&p.date<=t).reduce((a,p)=>a+p.amount,0);
   const all=balances(E,'0000-01-01',t);
   body=per+'<div class="strip s4"><div class="kpi"><span>المبيعات</span><b>'+num(sales)+'</b></div><div class="kpi good"><span>المحصّل</span><b>'+num(col)+'</b></div><div class="kpi"><span>الإيراد المكتسب</span><b>'+num(rv)+'</b></div><div class="kpi'+(rv-ex<0?' bad':' good')+'"><span>'+(rv-ex<0?'صافي الخسارة':'صافي الربح')+'</span><b>'+num(Math.abs(rv-ex))+'</b></div><div class="kpi"><span>إيرادات مؤجلة</span><b>'+num(-bal(all,'2100')-bal(all,'2110'))+'</b></div><div class="kpi"><span>ذمم المشتركين</span><b>'+num(bal(all,'1200'))+'</b></div></div>'+
@@ -5414,7 +5427,7 @@ const ACC_FEATURES=[
   ['subs','','الاشتراكات والفواتير','كل فواتير الاشتراكات وباقات الجلسات، تصحيح الفاتورة، والاسترداد مع إشعار دائن. (بيع الاشتراك الجديد من صلاحية الاستقبال والمدير).','تعديل الفواتير والاسترداد'],
   ['reports','','التقارير التشغيلية','الإيرادات والمصروفات لآخر 6 أشهر، التجديد والانقطاع، الباقات الأكثر مبيعاً، وساعات الازدحام.','عرض']]],
  ['المحاسبة والقوائم المالية',[
-  ['acct','rep','التقارير المالية (11 تقريراً)','المبيعات والتحصيل، الإيرادات حسب الخدمة، المصروفات مقابل الموازنة، ربحية التدريب الشخصي، أرصدة الجلسات غير المستخدمة، الاشتراكات المدفوعة مقدماً، المتأخرات والأقساط، الصندوق والبنوك، الخصومات والاستردادات، مستحقات المدربات والموردين، الموازنة مقابل الفعلي.','عرض وتصدير'],
+  ['acct','rep','التقارير المالية (12 تقريراً)','الإيرادات اليومية لكل يوم في الشهر، المبيعات والتحصيل، الإيرادات حسب الخدمة، المصروفات مقابل الموازنة، ربحية التدريب الشخصي، أرصدة الجلسات غير المستخدمة، الاشتراكات المدفوعة مقدماً، المتأخرات والأقساط، الصندوق والبنوك، الخصومات والاستردادات، مستحقات المدربات والموردين، الموازنة مقابل الفعلي.','عرض وتصدير'],
   ['acct','jr','قيود اليومية','قيد مزدوج يدوي (مدين = دائن) كمسودة ثم ترحيل، والقيد العكسي للتصحيح. القيود الآلية تُنشأ من البيع والتحصيل والمصروفات تلقائياً.','إنشاء وترحيل وعكس'],
   ['acct','coa','دليل الحسابات وميزان المراجعة','شجرة الحسابات (أصول، خصوم، حقوق ملكية، إيرادات، مصروفات) مع إضافة حسابات وإدخال الأرصدة الافتتاحية، وميزان المراجعة في أي تاريخ.','إضافة وتعديل'],
   ['acct','bud','الموازنة','الموازنة الشهرية لكل بند مصروف، ومقارنتها بالفعلي.','إعداد وتعديل'],

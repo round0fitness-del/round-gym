@@ -23,7 +23,7 @@ if (NO_DISK) console.warn('\n!!! No persistent volume is attached. Data will be 
 const PUB = path.join(__dirname, 'public');
 const DBF = path.join(DATA, 'db.json');
 const BAK = path.join(DATA, 'backups');
-const COLS = ['members', 'subs', 'pay', 'exp', 'att', 'classes', 'book', 'freezeReq', 'pt', 'campaigns', 'daily', 'leads', 'cash', 'plans', 'trainers', 'shifts', 'ptPlans', 'ptPacks', 'ptSess', 'treq', 'ptTpl', 'comms', 'jrnl', 'periods', 'budget', 'coa', 'fsruns', 'fb', 'posts'];
+const COLS = ['members', 'subs', 'pay', 'exp', 'att', 'classes', 'book', 'freezeReq', 'pt', 'campaigns', 'daily', 'leads', 'cash', 'plans', 'trainers', 'shifts', 'ptPlans', 'ptPacks', 'ptSess', 'treq', 'ptTpl', 'comms', 'jrnl', 'periods', 'budget', 'coa', 'fsruns', 'fb', 'posts', 'incomeLog'];
 const STAFF = ['manager', 'reception'];
 const OFFICE = ['manager', 'reception', 'accountant'];
 const META_KEYS = ['nextCode', 'nextInv', 'nextCn'];
@@ -160,6 +160,12 @@ function auditSettings(p, old, v) {
 }
 function auditOp(p, c, op, old, v) {
   const del = op === 'del';
+  if (c === 'incomeLog') {
+    if (del) return old && audit(p, 'حذف المبلغ الفعلي لملف الدخل', old.date + ' · ' + fmtMoney(old.actual), c, old.id);
+    if (old && String(old.note || '') !== String(v.note || '') && +old.actual === +v.actual) return audit(p, 'تعديل ملاحظة ملف الدخل', v.date + ' · ' + String(v.note || '').slice(0, 80), c, v.id);
+    if (!old || +old.actual !== +v.actual) return audit(p, old ? 'تعديل المبلغ الفعلي لملف الدخل' : 'إدخال المبلغ الفعلي لملف الدخل', v.date + ' · ' + (old ? fmtMoney(old.actual) + ' ← ' : '') + fmtMoney(v.actual), c, v.id);
+    return;
+  }
   if (c === 'plans') {
     if (del) return old && audit(p, 'حذف باقة', old.name, c, old.id);
     if (!old) return audit(p, 'إضافة باقة', v.name + ' · ' + fmtMoney(v.price), c, v.id);
@@ -370,7 +376,7 @@ function canWrite(p, c, oldV, newV) {
     return true;
   }
   if (r === 'accountant') {
-    if (['pay', 'exp', 'cash', 'daily', 'budget', 'coa'].indexOf(c) >= 0) return true;
+    if (['pay', 'exp', 'cash', 'daily', 'budget', 'coa', 'incomeLog'].indexOf(c) >= 0) return true;
     if (c === 'jrnl') return !(oldV && oldV.status === 'posted' && (!newV || newV.status !== 'posted' || JSON.stringify(newV.lines) !== JSON.stringify(oldV.lines)));
     if (c === 'subs') return !!oldV && !!newV;                   // refunds and invoice corrections, not new sales
     if (c === 'shifts') return !oldV && !!newV;
@@ -394,7 +400,7 @@ function canWrite(p, c, oldV, newV) {
   return false;
 }
 const elev = new Map();
-const PDATE = { pay: 'date', exp: 'date', cash: 'date', daily: 'date', jrnl: 'date', ptSess: 'date' };
+const PDATE = { incomeLog: 'date', pay: 'date', exp: 'date', cash: 'date', daily: 'date', jrnl: 'date', ptSess: 'date' };
 function lockCheck(s, op, old) {
   const closed = new Set((s.periods || []).filter(x => x.status === 'closed').map(x => x.id));
   if (!closed.size) return;
@@ -441,6 +447,7 @@ function applySync(p, ops) {
     if (op.c === 'periods' && p.role !== 'manager') throw httpErr(403, 'إقفال الفترات وإعادة فتحها للمدير فقط');
     if (op.c === 'comms' && p.role !== 'manager') throw httpErr(403, 'اعتماد العمولات للمدير فقط');
     if (op.c === 'jrnl' && op.op === 'put') { const L = op.v.lines || []; const d = L.reduce((a, x) => a + (+x.dr || 0), 0), cr = L.reduce((a, x) => a + (+x.cr || 0), 0); if (op.v.status === 'posted' && (Math.abs(d - cr) > 0.005 || d <= 0)) throw httpErr(400, 'القيد غير متوازن: مجموع المدين يجب أن يساوي مجموع الدائن'); }
+    if (op.c === 'incomeLog' && op.op === 'put') { const v = op.v; if (!/^\d{4}-\d{2}-\d{2}$/.test(v.date || '') || v.id !== 'il' + v.date) throw httpErr(400, 'تاريخ غير صالح'); if (v.actual === '' || v.actual == null) v.actual = null; else { v.actual = Math.round(+v.actual * 100) / 100; if (!isFinite(v.actual) || v.actual < 0 || v.actual > 10000000) throw httpErr(400, 'مبلغ غير صالح'); } v.note = String(v.note || '').slice(0, 300); if (old && old.leg) v.leg = old.leg; else delete v.leg; }
     lockCheck(s, op, old);
     if (op.c === 'posts' && op.op === 'put') { cleanPost(op.v); if (op.v.status === 'published' && (!old || old.status !== 'published' || !old.pubAt) && !op.v.pubAt) op.v.pubAt = new Date().toISOString(); }
     if (op.op === 'put' && op.c === 'book' && !old) {
@@ -495,6 +502,7 @@ function applySync(p, ops) {
         if (old && old.by) { v.by = old.by; v.byName = old.byName; v.at = old.at; }
         else if (!old) { v.by = p.key; v.byName = p.name; v.at = new Date().toISOString(); }
       }
+      if (op.c === 'incomeLog') { v.by = p.key; v.byName = p.name; v.updated = new Date().toISOString(); }
       if (op.c === 'ptSess' && old) {
         if (p.role === 'reception') PT_PRIVATE.forEach(k => { if (old[k] !== undefined) v[k] = old[k]; else delete v[k]; });
         if (p.role === 'trainee') {
@@ -903,4 +911,21 @@ function reminderTick() {
 }
 setInterval(() => { try { reminderTick(); } catch (e) { console.error('reminders', e.message); } }, +process.env.REMINDER_MS || 5 * 60e3).unref();
 
+/* one-time import of the club's previous Excel income file (kept in the INCOME_SEED variable, not in the code) */
+(function seedIncome() {
+  let D; try { D = JSON.parse(process.env.INCOME_SEED || 'null'); } catch (e) { console.log('INCOME_SEED غير صالح'); return; }
+  if (!D || typeof D !== 'object') return;
+  const mt = {}; Object.keys(D).forEach(d => { const k = d.slice(0, 7); mt[k] = (mt[k] || 0) + (D[d] || []).slice(1, 6).reduce((a, x) => a + (+x || 0), 0); });
+  console.log('INCOME_SEED: ' + Object.keys(D).length + ' يوم · ' + Object.keys(mt).sort().map(k => k + '=' + Math.round(mt[k])).join(' '));
+  const s = st(); s.incomeLog = s.incomeLog || []; let n = 0;
+  Object.keys(D).forEach(d => {
+    const e = D[d]; if (!/^\d{4}-\d{2}-\d{2}$/.test(d) || !Array.isArray(e)) return;
+    const leg = e.slice(0, 6).map(x => +x || 0), id = 'il' + d;
+    let x = s.incomeLog.find(y => y.id === id);
+    if (x && JSON.stringify(x.leg) === JSON.stringify(leg)) return;
+    if (!x) { x = { id, date: d, actual: null, note: '' }; s.incomeLog.push(x); }
+    x.leg = leg; if (!x.note && e[6]) x.note = String(e[6]).slice(0, 300); n++;
+  });
+  if (n) { db.rev++; audit({ key: 'system', name: 'النظام', role: 'manager' }, 'استيراد ملف الدخل السابق (Excel)', n + ' يوم', 'incomeLog'); persist(); console.log('ملف الدخل: استُورد ' + n + ' يوم'); }
+})();
 server.listen(PORT, () => console.log('نظام جولة اللياقة يعمل على المنفذ ' + PORT + ' · البيانات في ' + DATA));

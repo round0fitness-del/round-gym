@@ -283,6 +283,16 @@ button.cls:hover{border-color:var(--accent)}
 .inc b{display:block;font:600 18px/1.25 var(--f-display);font-variant-numeric:tabular-nums;white-space:nowrap}
 .inc-t{color:var(--good);border-color:var(--good-soft);background:var(--good-soft)}
 .inc-t b{font-variant-numeric:tabular-nums}
+.inc-top{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin:0 0 12px}
+.inc-months{margin:0 0 14px}
+.inctbl td,.inctbl th{white-space:nowrap}
+.inctbl tr.fut td{opacity:.4}
+.inctbl tr.today td{background:var(--good-soft)}
+.inctbl tr.click{cursor:pointer}.inctbl tr.click:hover td{background:var(--surface-2)}
+.inctbl tfoot td{font-weight:700;border-top:2px solid var(--line);background:var(--surface-2)}
+.inctbl .inc-tot{background:var(--surface-2)}
+.inc-note{width:120px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:12.5px;background:var(--surface);color:var(--ink)}
+.inc-in{width:110px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;font:inherit;font-variant-numeric:tabular-nums;background:var(--surface);color:var(--ink);direction:ltr;text-align:right}
 .inq{display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:13.5px;font-weight:500}
 .inq input{width:18px;height:18px;min-height:0;accent-color:var(--accent)}
 .res.info{border-color:var(--info);background:var(--info-soft)}
@@ -766,7 +776,7 @@ const money=n=>{n=Number(n||0);return (Number.isInteger(n)?n.toLocaleString('en-
 const ft=s=>{const p=s.split(':').map(Number);const ap=p[0]<12?'ص':'م';return ((p[0]%12)||12)+':'+pad(p[1])+' '+ap};
 const fh=h=>h===0?'12ص':h<12?h+'ص':h===12?'12م':(h-12)+'م';
 const DOW=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
-const METH={cash:'نقداً',card:'شبكة / بطاقة',transfer:'تحويل بنكي'};
+const METH={cash:'نقدي',tamara:'تمارا',transfer:'تحويل',card:'إلكتروني (شبكة)'};
 const uid=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const daysTxt=d=>d>1?d+' يوم':d===1?'غداً':d===0?'اليوم':d===-1?'أمس':'منذ '+(-d)+' يوم';
 const rel=d=>{const n=diff(TODAY(),d);return n===0?'اليوم':n===1?'أمس':'قبل '+n+' يوم'};
@@ -1659,7 +1669,7 @@ const can=k=>{if(!SESS)return false;const r=ROLES[SESS.role];return !r.pages||r.
 const isManager=()=>!!SESS&&SESS.role==='manager';
 const isStaff=()=>!!SESS&&(SESS.role==='manager'||SESS.role==='reception');
 const landing=()=>SESS.role==='trainer'?'coach':SESS.role==='trainee'?'home':SESS.role==='accountant'?'acchub':'dashboard';
-const SYNC_COLS=['members','subs','pay','exp','att','classes','book','freezeReq','pt','campaigns','daily','leads','cash','plans','trainers','shifts','ptPlans','ptPacks','ptSess','treq','ptTpl','comms','jrnl','periods','budget','coa','fsruns','fb','posts'];
+const SYNC_COLS=['members','subs','pay','exp','att','classes','book','freezeReq','pt','campaigns','daily','leads','cash','plans','trainers','shifts','ptPlans','ptPacks','ptSess','treq','ptTpl','comms','jrnl','periods','budget','coa','fsruns','fb','posts','incomeLog'];
 const STAMP_COLS=['pay','exp','cash','daily','shifts','subs','ptPacks','ptSess','treq','jrnl','comms','fb'];
 
 async function api(path,opt){
@@ -1858,11 +1868,11 @@ async function loadAccounts(){
  }catch(e){box.innerHTML='<p class="empty">'+esc(e.message)+'</p>'}
 }
 function accountsPanel(){
- return '<section class="panel" style="margin-top:16px"><header><h2>حسابات الموظفين</h2>'+btn('accNew',ic('plus',15)+' حساب جديد','sm pri')+'</header><div id="accts"><p class="empty">جارٍ التحميل…</p></div></section>'+
+ return '<section class="panel" style="margin-top:16px"><header><h2>حسابات الموظفين</h2>'+btn('staffNew',ic('plus',15)+' حساب جديد','sm pri')+'</header><div id="accts"><p class="empty">جارٍ التحميل…</p></div></section>'+
  '<section class="panel" style="margin-top:16px"><header><h2>البيانات</h2></header><div class="pb" style="display:grid;gap:12px"><p class="note">البيانات محفوظة على خادم النادي، ويأخذ الخادم نسخة احتياطية تلقائية كل يوم ويحتفظ بآخر 30 نسخة. يمكنك أيضاً تنزيل نسخة كاملة واحتفاظها عندك.</p><div class="acts"><a class="btn" href="/api/backup">'+ic('dl',15)+' تنزيل نسخة احتياطية</a></div></div></section>';
 }
 Object.assign(ACT,{
- accNew:()=>openModal('حساب موظف جديد','<div class="fm">'+fld('الاسم',inp('name','','required placeholder="مثال: موظف الاستقبال المسائي"'),'full')+fld('اسم المستخدم (إنجليزي)',inp('username','','required dir="ltr" pattern="[A-Za-z0-9._-]{3,32}" placeholder="desk1"'))+fld('الصلاحية',sel('role',[['reception','استقبال'],['accountant','محاسبة'],['manager','مدير']],'reception'))+fld('كلمة المرور',inp('password',genPin()+genPin().slice(0,2),'required minlength="6" dir="ltr"'),'full')+'<p class="note full">الاستقبال: الأعضاء والحضور والاشتراكات والتحصيل، دون الاسترداد والمصروفات والصندوق والإعدادات وبيانات التدريب الشخصي. المحاسبة: الفواتير والتحصيل والاسترداد والمصروفات والصندوق والتقارير، دون البيانات الصحية.</p></div>',
+ staffNew:()=>openModal('حساب موظف جديد','<div class="fm">'+fld('الاسم',inp('name','','required placeholder="مثال: موظف الاستقبال المسائي"'),'full')+fld('اسم المستخدم (إنجليزي)',inp('username','','required dir="ltr" pattern="[A-Za-z0-9._-]{3,32}" placeholder="desk1"'))+fld('الصلاحية',sel('role',[['reception','استقبال'],['accountant','محاسبة'],['manager','مدير']],'reception'))+fld('كلمة المرور',inp('password',genPin()+genPin().slice(0,2),'required minlength="6" dir="ltr"'),'full')+'<p class="note full">الاستقبال: الأعضاء والحضور والاشتراكات والتحصيل وإغلاق الوردية وملف الدخل، دون الاسترداد والمصروفات والصندوق والإعدادات وبيانات التدريب الشخصي. المحاسبة: الفواتير والتحصيل والاسترداد والمصروفات والصندوق والتقارير، دون البيانات الصحية.</p></div>',
   d=>{api('users',{method:'POST',body:{action:'create',name:d.name,username:d.username,role:d.role,password:d.password}}).then(()=>{closeModal();toast('تم إنشاء الحساب');loadAccounts()}).catch(e=>toast(e.message));return 'keep'},{ok:'إنشاء'}),
  accPw:d=>openModal('كلمة مرور جديدة','<div class="fm">'+fld('كلمة المرور',inp('password','','required minlength="6" dir="ltr"'),'full')+'</div>',x=>{api('users',{method:'POST',body:{action:'password',id:d.id,password:x.password}}).then(()=>{closeModal();toast('تم تغيير كلمة المرور')}).catch(e=>toast(e.message));return 'keep'},{ok:'حفظ'}),
  accDel:d=>confirmModal('حذف الحساب','لن يستطيع هذا الموظف الدخول بعد الآن.','حذف',()=>{api('users',{method:'POST',body:{action:'delete',id:d.id}}).then(()=>{toast('تم حذف الحساب');loadAccounts()}).catch(e=>toast(e.message))},true)
@@ -2707,7 +2717,7 @@ function myShiftData(){
 }
 function pageShift(){
  const d=myShiftData(),fin=can('finance');
- const label=p=>p.kind==='daily'?'زائر يومي: '+esc(p.name||''):p.kind==='refund'?'استرداد '+esc(p.cn||''):esc((memberById(p.memberId)||{}).name||'')+((S.subs.find(x=>x.id===p.subId)||{}).inv?' · '+S.subs.find(x=>x.id===p.subId).inv:'');
+ const label=p=>p.kind==='daily'?'زائر يومي: '+esc(p.name||''):p.kind==='other'?esc(p.name||'إيراد آخر'):p.kind==='refund'?'استرداد '+esc(p.cn||''):esc((memberById(p.memberId)||{}).name||'')+((S.subs.find(x=>x.id===p.subId)||{}).inv?' · '+S.subs.find(x=>x.id===p.subId).inv:'');
  const rows=d.pays.map(p=>'<tr><td class="num">'+fdt(p.at)+'</td><td>'+label(p)+'</td><td>'+esc(METH[p.method]||'')+'</td><td class="num r'+(p.amount<0?' out':' in')+'">'+num(p.amount)+'</td></tr>').join('')||'<tr><td colspan="4" class="empty">لا توجد عمليات تحصيل منذ آخر إغلاق.</td></tr>';
  const hist=(fin?(S.shifts||[]):d.mine).slice().sort((a,b)=>(b.closedAt||'').localeCompare(a.closedAt||'')).slice(0,40);
  const ffilter=U.shf||'all',people=[...new Set((S.shifts||[]).map(x=>x.byName))];
@@ -4076,8 +4086,8 @@ const accName=c=>{const a=accounts()[c];return a?c+' · '+a.name:c};
 const debitNormal=a=>(a.type==='asset'||a.type==='exp')!==!!a.contra;
 const EXP_ACC={'إيجار':'5200','كهرباء وماء':'5300','رواتب':'5100','صيانة':'5500','تسويق':'5400','نظافة':'5600','معدات':'5700','أخرى':'5900','عمولات المدربات':'5110','تكاليف التدريب':'5120','رسوم بنكية':'5850','أصول ثابتة':'1500','مصروف مدفوع مقدماً':'1300'};
 const EXP_CATS=['إيجار','كهرباء وماء','رواتب','صيانة','تسويق','نظافة','معدات','تكاليف التدريب','عمولات المدربات','رسوم بنكية','أصول ثابتة','مصروف مدفوع مقدماً','أخرى'];
-const METH_ACC={cash:'1100',card:'1120',transfer:'1110'};
-const OTHER_INC={classes:['حصص منفردة','4300'],events:['فعاليات','4400'],products:['منتجات','4500'],other:['أخرى','4900']};
+const METH_ACC={cash:'1100',card:'1120',tamara:'1120',transfer:'1110'};
+const OTHER_INC={classes:['حصص منفردة','4300'],events:['فعاليات','4400'],products:['منتجات','4500'],water:['مبيعات المياه','4500'],other:['أخرى','4900']};
 const r2=n=>Math.round((+n||0)*100)/100;
 const acctSet=()=>Object.assign({vatRate:0,breakage:true,startDate:''},S.settings.acct||{});
 const vatK=()=>{const r=+acctSet().vatRate||0;return r>0?r/(100+r):0};
@@ -5479,14 +5489,95 @@ document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest
 const _setPin=setMemberPin;
 setMemberPin=async function(mid,quiet){const pin=await _setPin.apply(this,arguments);if(pin){const m=memberById(mid);if(m&&!m.appAt){m.appAt=nowIso();if(!U.bulk||U.bulk.finished)save()}}return pin};
 
+/* ---------- v23: income ledger, same layout as the club's Excel income file ---------- */
+['reception','accountant'].forEach(r=>{if(ROLES[r].pages.indexOf('income')<0)ROLES[r].pages.push('income')});
+const AR_MONTHS=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+const INC_COLS=[['cash','نقدي'],['tamara','تمارا'],['transfer','تحويل'],['card','إلكتروني'],['water','مبيعات المياه']];
+const isWater=p=>p.kind==='other'&&p.cat==='water';
+const r2i=v=>Math.round(v*100)/100;
+function incCut(){if(U.incCutC!=null&&U.incCutRev===S.pay.length)return U.incCutC;let c='';S.pay.forEach(p=>{if(p.amount>0&&p.date&&(!c||p.date<c))c=p.date});U.incCutC=c||'9999-99-99';U.incCutRev=S.pay.length;return U.incCutC}
+function incSys(d){const P=S.pay.filter(p=>p.date===d),o={bonds:P.filter(p=>p.amount>0&&!isWater(p)).length,cash:0,tamara:0,transfer:0,card:0,water:0};
+ P.forEach(p=>{if(isWater(p))o.water+=p.amount;else if(o[p.method]!=null)o[p.method]+=p.amount;else o.cash+=p.amount});return o}
+function incHasLeg(ym){U.incLegC=U.incLegC||{};const k=ym+':'+(S.incomeLog||[]).length;if(U.incLegC[k]==null)U.incLegC[k]=(S.incomeLog||[]).some(x=>x.leg&&String(x.date).slice(0,7)===ym);return U.incLegC[k]}
+function incDay(d){
+ const L=(S.incomeLog||[]).find(x=>x.date===d)||null,leg0=L&&Array.isArray(L.leg)?L.leg:null,useLeg=d<incCut()&&(!!leg0||incHasLeg(d.slice(0,7))),leg=leg0||(useLeg?[0,0,0,0,0,0]:null);
+ const o=useLeg?{bonds:leg[0],cash:leg[1],tamara:leg[2],transfer:leg[3],card:leg[4],water:leg[5]}:incSys(d);
+ INC_COLS.forEach(c=>o[c[0]]=r2i(o[c[0]]||0));
+ o.total=r2i(INC_COLS.reduce((a,c)=>a+o[c[0]],0));o.log=L;o.src=useLeg?'xls':'sys';o.note=L&&L.note||'';
+ const legT=leg?r2i(leg.slice(1,6).reduce((a,x)=>a+(+x||0),0)):null;
+ o.actual=L&&L.actual!=null&&L.actual!==''?+L.actual:(!useLeg&&leg?legT:null);o.actFromXls=!!(L&&(L.actual==null||L.actual==='')&&!useLeg&&leg);
+ o.diff=o.actual==null||useLeg?null:r2i(o.actual-o.total);return o;
+}
+function incStatus(o){if(o.src==='xls')return '<span class="pill info">من ملف Excel</span>';if(o.actual==null)return o.total?'<span class="pill">لم يُدخل</span>':'';return Math.abs(o.diff)<0.01?'<span class="pill good">✓ صحيح</span>':'<span class="pill bad">✗ غلط '+(o.diff>0?'+':'')+num(o.diff)+'</span>'}
+const incDateTxt=ds=>ds.slice(5,7)+'-'+ds.slice(8,10)+'-'+ds.slice(2,4);
+const incDays=(y,mo)=>{const n=new Date(y,mo+1,0).getDate(),a=[];for(let d=1;d<=n;d++)a.push(y+'-'+String(mo+1).padStart(2,'0')+'-'+String(d).padStart(2,'0'));return a};
+function incMonth(y,mo,t){const T={bonds:0,total:0,act:0,ok:0,bad:0,xls:0};INC_COLS.forEach(c=>T[c[0]]=0);
+ incDays(y,mo).forEach(ds=>{if(ds>t)return;const o=incDay(ds);T.bonds+=o.bonds;T.total+=o.total;INC_COLS.forEach(c=>T[c[0]]+=o[c[0]]);if(o.src==='xls')T.xls++;else if(o.actual!=null){T.act+=o.actual;if(Math.abs(o.diff)<0.01)T.ok++;else T.bad++}});return T}
+function pageIncome(){
+ const t=TODAY(),y=+(U.incY||t.slice(0,4)),mo=U.incM!=null?U.incM:(+t.slice(5,7)-1),view=U.incV||'month';
+ const yrs=[...new Set([t.slice(0,4)].concat(S.pay.map(p=>(p.date||'').slice(0,4))).concat((S.incomeLog||[]).map(x=>(x.date||'').slice(0,4))).filter(Boolean))].sort();
+ const top='<div class="inc-top"><label class="fld" style="min-width:110px"><span>السنة</span><select data-incy="1">'+yrs.map(v=>'<option'+(+v===y?' selected':'')+'>'+v+'</option>').join('')+'</select></label>'+
+  '<div class="seg" role="tablist"><button type="button" data-act="incV" data-k="month" aria-pressed="'+(view==='month')+'">شهري</button><button type="button" data-act="incV" data-k="year" aria-pressed="'+(view==='year')+'">السنة كاملة</button></div>'+
+  btn('incWater',ic('plus',15)+' بيع مياه','sm')+btn('incCsv',ic('dl',15)+' Excel','sm','data-k="'+view+'"')+'</div>';
+ const H=INC_COLS.map(c=>'<th>'+c[1]+'</th>').join('');
+ if(view==='year'){
+  const R=AR_MONTHS.map((n,i)=>Object.assign({n:n,i:i},incMonth(y,i,t)));
+  const T={bonds:0,total:0};INC_COLS.forEach(c=>T[c[0]]=0);R.forEach(r=>{T.bonds+=r.bonds;T.total+=r.total;INC_COLS.forEach(c=>T[c[0]]+=r[c[0]])});
+  return head('ملف الدخل','دخل كل شهر في سنة '+y+' · اضغط أي شهر لعرض أيامه')+top+
+  '<section class="card"><div class="tw"><table class="inctbl"><thead><tr><th>الشهر</th><th>عدد السندات</th>'+H+'<th>الإجمالي</th><th>المطابقة</th></tr></thead><tbody>'+
+  R.map(r=>'<tr class="click" data-act="incGo" data-k="'+r.i+'"><td><b>'+r.n+'</b></td><td class="num">'+(r.bonds||'-')+'</td>'+INC_COLS.map(c=>'<td class="num">'+(r[c[0]]?num(r[c[0]]):'-')+'</td>').join('')+'<td class="num inc-tot"><b>'+num(r.total)+'</b></td><td>'+(r.bad?'<span class="pill bad">'+r.bad+' يوم فيه فرق</span>':r.ok?'<span class="pill good">'+r.ok+' يوم صحيح</span>':r.xls?'<span class="pill info">من ملف Excel</span>':'')+'</td></tr>').join('')+
+  '</tbody><tfoot><tr class="tot"><td>المجموع</td><td class="num">'+T.bonds+'</td>'+INC_COLS.map(c=>'<td class="num">'+num(T[c[0]])+'</td>').join('')+'<td class="num"><b>'+num(T.total)+' ر.س</b></td><td></td></tr></tfoot></table></div></section>';
+ }
+ const T=incMonth(y,mo,t);
+ const rows=incDays(y,mo).map(ds=>{const fut=ds>t,dn=parse(ds).toLocaleDateString(LOC,{weekday:'long'});
+  if(fut)return '<tr class="fut"><td>'+dn+'</td><td class="num ltr">'+incDateTxt(ds)+'</td>'+'<td></td>'.repeat(INC_COLS.length+5)+'</tr>';
+  const o=incDay(ds),xls=o.src==='xls';
+  return '<tr'+(ds===t?' class="today"':'')+'><td>'+dn+'</td><td class="num ltr">'+incDateTxt(ds)+'</td><td class="num">'+o.bonds+'</td>'+INC_COLS.map(c=>'<td class="num">'+num(o[c[0]])+'</td>').join('')+'<td class="num inc-tot"><b>'+num(o.total)+'</b></td>'+
+   '<td><input class="inc-note" data-incn="'+ds+'" value="'+esc(o.note)+'" maxlength="300" aria-label="ملاحظات يوم '+ds+'"></td>'+
+   '<td>'+(xls?'':'<input class="inc-in" type="number" step="0.01" min="0" inputmode="decimal" data-incd="'+ds+'" value="'+(o.actual==null?'':o.actual)+'" placeholder="المعدود" aria-label="المبلغ الفعلي ليوم '+ds+'">'+(o.actFromXls?'<br><small class="mut">من ملف Excel</small>':''))+'</td>'+
+   '<td>'+incStatus(o)+(o.log&&o.log.byName&&!xls?'<br><small class="mut">'+esc(o.log.byName)+'</small>':'')+'</td></tr>'});
+ const months='<nav class="chips inc-months" aria-label="الأشهر">'+AR_MONTHS.map((n,i)=>'<button type="button" class="chip" aria-pressed="'+(i===mo)+'" data-act="incGo" data-k="'+i+'">'+n+'</button>').join('')+'</nav>';
+ return head('ملف الدخل','دخل '+AR_MONTHS[mo]+' '+y+' يوماً بيوم. اكتب المبلغ المعدود فعلياً لكل يوم ليظهر إن كان صحيحاً أو فيه فرق.')+top+months+
+ '<div class="strip s4" style="margin:0 0 14px"><div class="kpi"><span>إجمالي الشهر</span><b>'+num(T.total)+' <small>ر.س</small></b></div><div class="kpi"><span>عدد السندات</span><b>'+T.bonds+'</b></div><div class="kpi"><span>أيام صحيحة</span><b style="color:var(--good)">'+T.ok+'</b></div><div class="kpi"><span>أيام فيها فرق</span><b style="color:'+(T.bad?'var(--bad)':'inherit')+'">'+T.bad+'</b></div></div>'+
+ '<section class="card"><div class="tw"><table class="inctbl"><thead><tr><th>اليوم</th><th>التاريخ</th><th>عدد السندات</th>'+H+'<th>الإجمالي</th><th>ملاحظات</th><th>المبلغ الفعلي</th><th>الحالة</th></tr></thead><tbody>'+rows.join('')+'</tbody>'+
+ '<tfoot><tr class="tot"><td colspan="2">المجموع</td><td class="num">'+T.bonds+'</td>'+INC_COLS.map(c=>'<td class="num">'+num(T[c[0]])+'</td>').join('')+'<td class="num"><b>'+num(T.total)+' ر.س</b></td><td></td><td class="num">'+(T.act?num(T.act):'')+'</td><td></td></tr></tfoot></table></div></section>'+
+ '<p class="note">الإجمالي = نقدي + تمارا + تحويل + إلكتروني + مبيعات المياه، بعد خصم أي استرداد. عدد السندات = عدد سندات القبض في اليوم (دون المياه). الأيام السابقة لبدء العمل بالنظام معروضة من ملف Excel السابق كما هي.</p>';
+}
+function incPut(ds,f){
+ S.incomeLog=S.incomeLog||[];let L=S.incomeLog.find(x=>x.date===ds);
+ if(!L){L={id:'il'+ds,date:ds,actual:null,note:''};S.incomeLog.push(L)}
+ f(L);L.byName=SESS.name;L.updated=nowIso();save();render();
+}
+function incSave(ds,val){
+ const v=String(val).trim(),n=v===''?null:r2i(+v);
+ if(n!=null&&(!isFinite(n)||n<0)){toast('اكتب مبلغاً صحيحاً');return}
+ incPut(ds,L=>{L.actual=n});
+ const o=incDay(ds);if(o.actual!=null)toast(Math.abs(o.diff)<0.01?'✓ المبلغ صحيح':'✗ يوجد فرق '+(o.diff>0?'+':'')+num(o.diff)+' ر.س');
+}
+Object.assign(ACT,{
+ incV:d=>{U.incV=d.k;render()},
+ incGo:d=>{U.incM=+d.k;U.incV='month';render()},
+ incWater:()=>openModal('بيع مياه','<div class="fm">'+fld('المبلغ (ر.س)',inp('amount','','type="number" min="0.01" step="0.01" required inputmode="decimal"'))+fld('طريقة الدفع',sel('method',Object.keys(METH).map(k=>[k,METH[k]]),'cash'))+'</div>',
+  d=>{const a=r2i(+d.amount);if(!(a>0)){toast('المبلغ غير صحيح');return false}S.pay.push({id:uid('p'),kind:'other',cat:'water',subId:'',memberId:'',name:'مبيعات المياه',date:TODAY(),time:nowTime(),amount:a,method:d.method});save();render();toast('سُجّلت مبيعات المياه')},{ok:'تسجيل'}),
+ incCsv:d=>{const t=TODAY(),y=+(U.incY||t.slice(0,4)),mo=U.incM!=null?U.incM:(+t.slice(5,7)-1),q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"',L=[];
+  if(d.k==='year'){L.push(['الشهر','عدد السندات'].concat(INC_COLS.map(c=>c[1])).concat(['الإجمالي']).map(q).join(','));AR_MONTHS.forEach((n,i)=>{const T=incMonth(y,i,t);L.push([n,T.bonds].concat(INC_COLS.map(c=>r2i(T[c[0]]))).concat([r2i(T.total)]).map(q).join(','))})}
+  else{L.push(['اليوم','التاريخ','عدد السندات'].concat(INC_COLS.map(c=>c[1])).concat(['الإجمالي','ملاحظات','المبلغ الفعلي','الفرق']).map(q).join(','));incDays(y,mo).forEach(ds=>{if(ds>t)return;const o=incDay(ds);L.push([parse(ds).toLocaleDateString(LOC,{weekday:'long'}),incDateTxt(ds),o.bonds].concat(INC_COLS.map(c=>o[c[0]])).concat([o.total,o.note,o.actual==null?'':o.actual,o.diff==null?'':o.diff]).map(q).join(','))})}
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['﻿'+L.join('\n')],{type:'text/csv;charset=utf-8'}));a.download='ملف-الدخل-'+(d.k==='year'?y:y+'-'+String(mo+1).padStart(2,'0'))+'.csv';document.body.appendChild(a);a.click();a.remove()}
+});
+document.addEventListener('change',e=>{const t=e.target;if(!t.dataset)return;
+ if(t.dataset.incd)incSave(t.dataset.incd,t.value);
+ if(t.dataset.incn)incPut(t.dataset.incn,L=>{L.note=t.value.trim().slice(0,300)});
+ if(t.dataset.incy){U.incY=t.value;render()}
+});
+
 /* ---------- shell + router ---------- */
 const PAGES={
  dashboard:{t:'لوحة التحكم',icon:'dash',fn:pageDashboard2},members:{t:'الأعضاء',icon:'members',fn:pageMembers},subs:{t:'الاشتراكات',icon:'subs',fn:pageSubs},checkin:{t:'الحضور',icon:'checkin',fn:pageCheckin},
  finance:{t:'المالية',icon:'finance',fn:pageFinance2},shift:{t:'إغلاق الوردية',icon:'shift',fn:pageShift},pt:{t:'التدريب الشخصي',icon:'dumbbell',fn:pagePT},home:{t:'الرئيسية',icon:'home',fn:()=>isPhone()&&SESS&&SESS.role==='trainee'?pageHomeApp():pageHome()},audit:{t:'سجل العمليات',icon:'shield',fn:pageAudit},classes:{t:'جدول الحصص',icon:'classes',fn:()=>{const h=pageClasses2(),i=h.indexOf('</div></div>',h.indexOf('<div class="acts">'))+12;return h.slice(0,i)+unlinkedPanel()+h.slice(i)}},trainers:{t:'المدربون',icon:'trainers',fn:pageTrainers},reports:{t:'التقارير',icon:'reports',fn:pageReports},settings:{t:'الإعدادات',icon:'settings',fn:pageSettings},
- newmember:{t:'عضو جديد',icon:'plus',fn:pageNewMember},schedule:{t:'الجدول الشهري',icon:'classes',fn:pageSchedule},portal:{t:'بطاقة المتدرب',icon:'subs',fn:pagePortal},gate:{t:'بوابة QR',icon:'qr',fn:pageGate},requests:{t:'طلبات التجميد',icon:'warn',fn:pageRequests},trainer:{t:'لوحة المدرب',icon:'trainers',fn:pageTrainer},marketing:{t:'التسويق',icon:'msg',fn:pageMarketing},coach:{t:'لوحة المدربة',icon:'trainers',fn:pageCoach},feedback:{t:'الشكاوى والاقتراحات',icon:'msg',fn:pageFeedback},acct:{t:'المحاسبة والقوائم',icon:'book',fn:pageAcct},site:{t:'الموقع الإلكتروني',icon:'globe',fn:pageSite},blog:{t:'المدونة',icon:'news',fn:pageBlog},imp:{t:'استيراد من النظام السابق',icon:'file',fn:pageImport},clock:{t:'حضور الموظفين',icon:'pinpt',fn:pageClock},bulkapp:{t:'تفعيل دخول المشتركين',icon:'lock',fn:pageBulkApp},acchub:{t:'مركز المحاسب',icon:'calc',fn:pageAccHub},news:{t:'المدونة',icon:'news',fn:pageNews},
+ newmember:{t:'عضو جديد',icon:'plus',fn:pageNewMember},schedule:{t:'الجدول الشهري',icon:'classes',fn:pageSchedule},portal:{t:'بطاقة المتدرب',icon:'subs',fn:pagePortal},gate:{t:'بوابة QR',icon:'qr',fn:pageGate},requests:{t:'طلبات التجميد',icon:'warn',fn:pageRequests},trainer:{t:'لوحة المدرب',icon:'trainers',fn:pageTrainer},marketing:{t:'التسويق',icon:'msg',fn:pageMarketing},coach:{t:'لوحة المدربة',icon:'trainers',fn:pageCoach},feedback:{t:'الشكاوى والاقتراحات',icon:'msg',fn:pageFeedback},acct:{t:'المحاسبة والقوائم',icon:'book',fn:pageAcct},site:{t:'الموقع الإلكتروني',icon:'globe',fn:pageSite},blog:{t:'المدونة',icon:'news',fn:pageBlog},imp:{t:'استيراد من النظام السابق',icon:'file',fn:pageImport},clock:{t:'حضور الموظفين',icon:'pinpt',fn:pageClock},bulkapp:{t:'تفعيل دخول المشتركين',icon:'lock',fn:pageBulkApp},acchub:{t:'مركز المحاسب',icon:'calc',fn:pageAccHub},income:{t:'ملف الدخل',icon:'finance',fn:pageIncome},news:{t:'المدونة',icon:'news',fn:pageNews},
  daily:{t:'العملاء اليوميون',icon:'day',fn:pageDaily},leads:{t:'العملاء المحتملون',icon:'lead',fn:pageLeads},cashbox:{t:'صندوق المال',icon:'box',fn:pageCashbox}
 };
-const NAV=[['الرئيسية',['dashboard','home','news']],['الأعضاء',['members','newmember','leads','subs','requests','feedback','schedule','portal']],['الدخول والحضور',['gate','checkin','daily','clock']],['المالية',['acchub','cashbox','finance','acct','shift']],['التشغيل',['coach','pt','classes','trainers']],['التسويق',['marketing','site','blog']],['التحليل',['reports','audit','settings']]];
+const NAV=[['الرئيسية',['dashboard','home','news','income']],['الأعضاء',['members','newmember','leads','subs','requests','feedback','schedule','portal']],['الدخول والحضور',['gate','checkin','daily','clock']],['المالية',['acchub','cashbox','finance','acct','shift']],['التشغيل',['coach','pt','classes','trainers']],['التسويق',['marketing','site','blog']],['التحليل',['reports','audit','settings']]];
 function shell(){
  $('#app').innerHTML='<div class="shell"><aside class="rail" aria-label="القائمة الرئيسية"><div class="brand"><span class="brandlogo" role="img" aria-label="جولة اللياقة"><i class="t"></i><i class="m"></i></span><small id="gymname"></small></div>'+(can('finance')?'<button type="button" class="inc" data-act="incomeModal" id="incR" aria-label="دخل اليوم، اعرض التفاصيل"></button>':'')+'<nav class="nav">'+NAV.map(g=>[g[0],g[1].filter(k=>can(k)&&(k!=='home'||SESS.role==='trainee')&&(k!=='news'||SESS.role==='trainee'||SESS.role==='trainer'))]).filter(g=>g[1].length).map(g=>'<p class="grp">'+g[0]+'</p>'+g[1].map(k=>'<a href="#'+k+'" data-p="'+k+'">'+ic(PAGES[k].icon)+'<span>'+PAGES[k].t+'</span>'+(k==='requests'?'<em class="badge" id="b-req" hidden></em>':'')+(k==='leads'?'<em class="badge" id="b-lead" hidden></em>':'')+(k==='feedback'?'<em class="badge" id="b-fb" hidden></em>':'')+'</a>').join('')).join('')+'</nav><div class="rfoot"><div class="mode" id="mode"></div><button type="button" class="btn sm" data-act="toggleTheme">'+ic('moon',15)+' تبديل المظهر</button><p id="syncst" class="sync" role="status"></p></div></aside><div class="scrim" data-act="closeMenu"></div><main class="main"><div class="top"><button type="button" class="ib" data-act="openMenu" aria-label="فتح القائمة">'+ic('menu',22)+'</button><b class="tt" id="ttl"></b>'+(can('finance')?'<button type="button" class="btn sm inc-t" data-act="incomeModal" id="incT" aria-label="دخل اليوم"></button>':'')+(can('checkin')?'<button type="button" class="btn sm pri" data-act="goCheckin">'+ic('checkin',15)+' حضور</button>':'')+'</div><div id="view"></div></main></div><div id="toast" role="status" aria-live="polite"></div>';
 }

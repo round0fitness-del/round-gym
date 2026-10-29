@@ -8,6 +8,7 @@
  *   DATA_DIR        folder for the data file and backups (default ./data). Must be on a persistent disk.
  *   ADMIN_USERNAME  manager login name (default admin)
  *   ADMIN_PASSWORD  manager password (required on first start; changing it later resets the manager password)
+ *   BOT_KEY         shared secret for the WhatsApp agent service (16+ characters); leave empty to turn the agent API off
  */
 const http = require('http');
 const fs = require('fs');
@@ -604,10 +605,139 @@ function serveStatic(req, res) {
   });
 }
 
+/* ---------------- WhatsApp agent API (used by the whatsapp-agent service, key in BOT_KEY) ---------------- */
+const BOT_P = { role: 'reception', ref: '', name: 'وكيل الواتساب', key: 'bot' };
+const phone9 = x => normPhone(x).slice(-9);
+const memberByPhone = ph => { const k = phone9(ph); return k.length === 9 ? (st().members || []).find(m => phone9(m.phone) === k) : null; };
+const addDays = (d, n) => new Date(Date.parse(d + 'T00:00:00Z') + n * 864e5).toISOString().slice(0, 10);
+const fmtHM = n => String(Math.floor(n / 60)).padStart(2, '0') + ':' + String(n % 60).padStart(2, '0');
+function botKeyOk(req) {
+  const want = String(process.env.BOT_KEY || ''), got = String(req.headers['x-bot-key'] || '');
+  if (want.length < 16 || got.length !== want.length) return false;
+  return crypto.timingSafeEqual(Buffer.from(got), Buffer.from(want));
+}
+function packLeftNow(s, k) {
+  const sess = s.ptSess || [];
+  return Math.max(0, packTot(k) - packUse(k, sess) - sess.filter(x => x.packId === k.id && x.status === 'booked').length);
+}
+function trainerFree(s, t, date, dur) {
+  if ((t.leaves || []).some(l => date >= l.from && date <= l.to)) return [];
+  const dow = new Date(date + 'T12:00:00Z').getUTCDay(), out = [];
+  const now = ksaDate() === date ? mins(new Date(Date.now() + 3 * 3600e3).toISOString().slice(11, 16)) + 60 : -1;
+  const busy = (s.ptSess || []).filter(x => x.date === date && x.trainerId === t.id && (x.status === 'booked' || x.status === 'done'));
+  (t.avail || []).filter(a => +a.d === dow).forEach(a => {
+    for (let m = mins(a.from); m + dur <= mins(a.to); m += 30) {
+      if (m < now) continue;
+      if (busy.some(x => mins(x.time) < m + dur && m < mins(x.time) + (+x.dur || 60))) continue;
+      out.push(fmtHM(m));
+    }
+  });
+  return [...new Set(out)].sort();
+}
+function memberSummary(s, m) {
+  const today = ksaDate();
+  const subs = (s.subs || []).filter(x => x.memberId === m.id && x.kind !== 'pt' && !x.cancelled).sort((a, b) => String(b.end).localeCompare(String(a.end)));
+  const cur = subs.find(x => x.start <= today && x.end >= today) || subs.find(x => x.start > today);
+  const last = subs[0];
+  const packs = (s.ptPacks || []).filter(k => k.memberId === m.id && k.status !== 'cancelled' && (!k.expires || k.expires >= today))
+    .map(k => ({ packId: k.id, name: k.name, service: k.service || 'تدريب شخصي', left: packLeftNow(s, k), expires: k.expires || '', dur: +k.dur || 60, trainers: (k.trainerIds || []).map(id => ({ id, name: mTr(id) })) }));
+  const sessions = (s.ptSess || []).filter(x => x.memberId === m.id && x.status === 'booked' && x.date >= today).sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time))
+    .slice(0, 10).map(x => ({ sessId: x.id, date: x.date, time: x.time, trainer: mTr(x.trainerId), kind: x.kind === 'class' ? 'حصة' : (x.service || 'تدريب شخصي') }));
+  const classes = (s.book || []).filter(b => b.memberId === m.id && b.date >= today).slice(0, 10).map(b => { const c = (s.classes || []).find(x => x.id === b.classId) || {}; return { name: c.name || 'حصة', date: b.date, time: c.time || '', waitlist: !!b.wait }; });
+  const frozen = cur && (cur.freezes || []).some(f => f.from <= today && f.to >= today);
+  return {
+    name: m.name, code: m.code,
+    membership: cur ? { plan: cur.planName, start: cur.start, end: cur.end, daysLeft: Math.round((Date.parse(cur.end) - Date.parse(today)) / 864e5), frozen: !!frozen }
+      : last ? { expired: true, plan: last.planName, end: last.end } : null,
+    ptPacks: packs, upcomingSessions: sessions, classBookings: classes
+  };
+}
+async function botApi(req, res, route) {
+  if (!botKeyOk(req)) throw httpErr(401, 'unauthorized');
+  const s = st(), set = s.settings || {}, method = req.method;
+  if (route === 'info' && method === 'GET') {
+    const site = Object.assign({}, set.site || {});
+    return send(res, 200, {
+      gym: set.gym || 'جولة اللياقة', phone: set.phone || '', address: set.address || '', today: ksaDate(),
+      hours: (site.contact || {}).hours || '', map: (site.contact || {}).mapQuery || '', tagline: site.tagline || '',
+      programs: (site.programs || []).map(x => pick(x, ['tag', 'title', 'text'])), offers: (site.offers || []).map(x => pick(x, ['title', 'text', 'sub'])),
+      plans: (s.plans || []).filter(x => !x.archived && !x.hidden).map(x => pick(x, ['name', 'days', 'price', 'freeze'])),
+      ptPlans: (s.ptPlans || []).filter(x => !x.archived).map(x => pick(x, ['name', 'service', 'sessions', 'validDays', 'price', 'fmt', 'dur'])),
+      classes: (s.classes || []).map(x => ({ name: x.name, days: (x.days || []).map(d => DOW_AR[+d] || d), time: x.time, dur: x.dur, trainer: mTr(x.trainerId) })),
+      trainers: (s.trainers || []).filter(x => !x.hidden).map(t => ({ id: t.id, name: t.name, spec: t.spec || '', days: [...new Set((t.avail || []).map(a => DOW_AR[+a.d]))] })),
+      policy: { ptCancelHours: +set.ptCancelHours || 0, classCancelHours: +set.classCancelHours || 0 }
+    });
+  }
+  const b = method === 'POST' ? await readBody(req, 16384) : {};
+  if (route === 'member' && method === 'POST') {
+    const m = memberByPhone(b.phone);
+    return send(res, 200, m ? { found: true, member: memberSummary(s, m) } : { found: false });
+  }
+  if (route === 'lead' && method === 'POST') {
+    const clean = (x, n) => String(x || '').replace(/[<>\u0000-\u001f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, n);
+    const phone = '0' + phone9(b.phone), name = clean(b.name, 60) || 'عميل واتساب', today = ksaDate();
+    if (!/^05\d{8}$/.test(phone)) throw httpErr(400, 'رقم غير سعودي');
+    const txt = ['واتساب: ' + (clean(b.interest, 80) || 'استفسار'), clean(b.note, 300)].filter(Boolean).join(' · ');
+    s.leads = s.leads || [];
+    let l = s.leads.find(x => phone9(x.phone) === phone9(phone) && x.status !== 'won' && x.status !== 'lost');
+    if (l) { l.log = l.log || []; l.log.push({ date: today, note: txt, st: l.status }); l.next = today; }
+    else { l = { id: 'l' + Date.now().toString(36) + crypto.randomBytes(3).toString('hex'), name, phone, source: 'واتساب', planId: '', status: 'new', next: today, notes: txt, created: today, log: [], wa: true }; s.leads.push(l); }
+    db.rev++; changeLog.push({ rev: db.rev, c: 'leads', op: 'put', v: l });
+    if (changeLog.length > LOG_MAX) changeLog = changeLog.slice(-LOG_MAX);
+    persist();
+    notify(managerKeys(), { title: 'عميل مهتم من الواتساب', body: name + ' · ' + (clean(b.interest, 80) || 'استفسار'), url: '/app#leads', tag: 'wa-lead' });
+    return send(res, 200, { ok: true });
+  }
+  if (route === 'slots' && method === 'POST') {
+    const date = String(b.date || '');
+    if (!/^\d{4}-\d\d-\d\d$/.test(date) || date < ksaDate() || date > addDays(ksaDate(), 30)) throw httpErr(400, 'التاريخ يجب أن يكون خلال 30 يوماً من اليوم');
+    let ids = b.trainerId ? [b.trainerId] : null, dur = +b.dur || 60;
+    if (b.packId) { const k = (s.ptPacks || []).find(x => x.id === b.packId); if (k) { dur = +k.dur || 60; if (!ids && (k.trainerIds || []).length) ids = k.trainerIds; } }
+    const list = (s.trainers || []).filter(t => !t.hidden && (!ids || ids.indexOf(t.id) >= 0)).map(t => ({ trainerId: t.id, trainer: t.name, times: trainerFree(s, t, date, dur) })).filter(x => x.times.length);
+    return send(res, 200, { date, day: DOW_AR[new Date(date + 'T12:00:00Z').getUTCDay()], slots: list });
+  }
+  if (route === 'book' && method === 'POST') {
+    const m = memberByPhone(b.phone); if (!m) throw httpErr(404, 'الرقم غير مسجل كعضو');
+    const k = (s.ptPacks || []).find(x => x.id === b.packId && x.memberId === m.id && x.status !== 'cancelled');
+    if (!k) throw httpErr(404, 'لا توجد باقة جلسات فعالة بهذا المعرف لهذا العضو');
+    if (packLeftNow(s, k) < 1) throw httpErr(409, 'لا يوجد رصيد جلسات متاح في الباقة');
+    const t = (s.trainers || []).find(x => x.id === b.trainerId); if (!t) throw httpErr(404, 'المدرب غير موجود');
+    if ((k.trainerIds || []).length && k.trainerIds.indexOf(t.id) < 0) throw httpErr(409, 'هذا المدرب غير مرتبط بباقة العضو');
+    const date = String(b.date || ''), time = String(b.time || ''), dur = +k.dur || 60;
+    if (trainerFree(s, t, date, dur).indexOf(time) < 0) throw httpErr(409, 'هذا الوقت لم يعد متاحاً، اعرض أوقاتاً أخرى');
+    const v = { id: 'ps' + Date.now().toString(36) + crypto.randomBytes(3).toString('hex'), packId: k.id, memberId: m.id, trainerId: t.id, date, time, dur, status: 'booked', charged: false, fmt: k.fmt || 'single', service: k.service || '', cap: +k.cap || 1, via: 'whatsapp' };
+    applySync(BOT_P, [{ c: 'ptSess', op: 'put', v }]);
+    notify(['t:' + t.id].concat(managerKeys()), { title: 'حجز جديد من الواتساب', body: m.name + ' · ' + date + ' · ' + fmtT(time), url: '/app', tag: 'wa-' + v.id });
+    return send(res, 200, { ok: true, sessId: v.id, date, time, trainer: t.name });
+  }
+  if (route === 'cancel' && method === 'POST') {
+    const m = memberByPhone(b.phone); if (!m) throw httpErr(404, 'الرقم غير مسجل كعضو');
+    const x = (s.ptSess || []).find(y => y.id === b.sessId && y.memberId === m.id && y.status === 'booked');
+    if (!x) throw httpErr(404, 'لا توجد جلسة محجوزة بهذا المعرف');
+    applySync({ role: 'trainee', ref: m.id, name: m.name + ' (واتساب)', key: 'm:' + m.id }, [{ c: 'ptSess', op: 'put', v: Object.assign({}, x, { status: 'cancelled' }) }]);
+    const y = (s.ptSess || []).find(z => z.id === x.id);
+    notify(['t:' + x.trainerId], { title: 'أُلغيت جلسة من الواتساب', body: m.name + ' · ' + x.date + ' · ' + fmtT(x.time), url: '/app', tag: 'wa-' + x.id });
+    return send(res, 200, { ok: true, status: y.status, charged: !!y.charged });
+  }
+  if (route === 'expiring' && method === 'GET') {
+    const days = Math.min(30, Math.max(1, +new URL(req.url, 'http://x').searchParams.get('days') || +set.soonDays || 3)), today = ksaDate(), lim = addDays(today, days), out = [];
+    (s.members || []).forEach(m => {
+      const subs = (s.subs || []).filter(x => x.memberId === m.id && x.kind !== 'pt' && !x.cancelled);
+      if (!subs.length || !m.phone) return;
+      const last = subs.sort((a, c) => String(c.end).localeCompare(String(a.end)))[0];
+      if (last.end >= today && last.end <= lim) out.push({ subId: last.id, name: m.name, phone: m.phone, plan: last.planName, end: last.end });
+    });
+    return send(res, 200, { today, days, members: out });
+  }
+  throw httpErr(404, 'غير موجود');
+}
+const DOW_AR = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+
 /* ---------------- routes ---------------- */
 async function api(req, res, route) {
   const method = req.method;
   if (method !== 'GET' && req.headers['x-requested-with'] !== 'gym') throw httpErr(403, 'طلب مرفوض');
+  if (route.startsWith('bot/')) return botApi(req, res, route.slice(4));
   const sess = unsign(cookies(req).gs), p = principal(sess);
   const need = roles => { if (!p) throw httpErr(401, 'سجّل الدخول أولاً'); if (roles && roles.indexOf(p.role) < 0) throw httpErr(403, 'غير مسموح'); };
 

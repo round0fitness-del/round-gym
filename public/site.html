@@ -154,6 +154,14 @@ p{margin:0}
 .days button .today{color:var(--red);margin-inline-start:6px;font-size:12px}
 .days button[aria-pressed="true"] .today{color:#ffb3ae}
 .clist{display:grid;gap:10px}
+.sgw{overflow-x:auto;border-radius:var(--r);border:1px solid var(--line);background:#fff}
+.sgt{width:100%;border-collapse:collapse;min-width:720px;font-size:15px}
+.sgt th{background:#4A4A4A;color:#fff;font:600 15px var(--f-display);padding:12px 8px;text-align:center}.sgt th.now{background:var(--red)}
+.sgt th.tm{background:#2E2E2E;white-space:nowrap;direction:ltr;width:120px}.sgt tbody th.tm{background:#F3F1EE;color:var(--ink)}
+.sgt td{border:1px solid var(--line);padding:6px;text-align:center;vertical-align:middle;height:64px}
+.sgc{display:flex;align-items:center;justify-content:center;gap:6px;text-decoration:none;color:var(--ink);font:600 15px/1.35 var(--f-display);padding:8px;border-radius:10px;min-height:48px}
+.sgc:hover{background:#F6F3F0}.sgc i,.sgl i{width:11px;height:11px;border-radius:50%;flex:none;display:inline-block}.sge{color:var(--soft)}
+.sgl{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center;margin-top:16px;font-size:14px;color:var(--muted)}.sgl b{color:var(--ink);font:600 16px var(--f-display)}.sgl span{display:inline-flex;gap:8px;align-items:center}
 .citem{display:grid;grid-template-columns:110px minmax(0,1fr) auto;gap:16px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 18px}
 .citem .t{font:700 20px var(--f-display);font-variant-numeric:tabular-nums}
 .citem .t small{display:block;font-size:12.5px;color:var(--muted);font-weight:500}
@@ -470,7 +478,7 @@ function render(){
    (c.pricing.note?'<div class="prnote">'+ic('file',20)+'<span>'+esc(c.pricing.note)+'</span></div>':'')+
    (c.pricing.showPT&&D.ptPlans.length?'<div class="ptrow"><h3>باقات الجلسات</h3><div class="ptlist">'+D.ptPlans.map(p=>'<div class="ptitem reveal"><div><b>'+esc(p.name)+'</b><br><span>'+p.sessions+' جلسة · '+(+p.validDays?'تُستخدم خلال '+p.validDays+' يوماً':'بدون مدة انتهاء')+(p.fmt==='pair'?' · ثنائية':p.fmt==='group'?' · مجموعة صغيرة':'')+'</span></div><span class="p">'+num(p.price)+' <small style="font-size:13px;color:var(--muted)">ر.س</small></span></div>').join('')+'</div></div>':'')+'</div></section>');
  }
- if(show.schedule&&D.classes.length)o.push('<section class="sec sand" id="schedule"><div class="wrap"><div class="sec-h"><div><span class="eyebrow">الجدول الأسبوعي</span><h2>اختر يومك ووقتك</h2></div><p>الحصص تتكرر كل أسبوع، والمشتركون يحجزون مقاعدهم من حساباتهم.</p></div><div class="days" role="group" aria-label="أيام الأسبوع" id="days"></div><div class="clist" id="clist"></div></div></section>');
+ if(show.schedule&&D.classes.length)o.push('<section class="sec sand" id="schedule"><div class="wrap"><div class="sec-h"><div><span class="eyebrow">جدول الحصص</span><h2>اختر حصتك ووقتك</h2></div><p>ثلاثة جداول أسبوعية: الكبار، الأطفال، والفنون القتالية. المشتركون يحجزون مقاعدهم من التطبيق.</p></div><div class="days" role="tablist" aria-label="الجداول" id="days"></div><div id="clist"></div></div></section>');
  if(show.trainers&&D.trainers.length)o.push('<section class="sec" id="trainers"><div class="wrap"><div class="sec-h"><div><span class="eyebrow">فريق التدريب</span><h2>مدربون يتابعون تقدّمك</h2></div></div><div class="tgrid">'+D.trainers.map(t=>{const ph=safeUrl((c.trainerPhotos||{})[t.id]);const nm=t.name.replace('كابتن ','');return '<article class="tcard reveal"><div class="tphoto'+(ph?'':' blank')+'">'+(ph?'<img src="'+esc(ph)+'" alt="'+esc(t.name)+'" loading="lazy">':'<span class="mono">'+esc(nm.charAt(0))+'</span>')+'</div><div class="tbody"><b>'+esc(t.name)+'</b><span>'+esc(t.spec||'مدرب')+'</span></div></article>'}).join('')+'</div></div></section>');
  const gal=(c.gallery||[]).map(safeUrl).filter(Boolean);
  if(show.gallery&&gal.length)o.push('<section class="sec sand"><div class="wrap"><div class="sec-h"><div><span class="eyebrow">من داخل النادي</span><h2>مكان تحب أن تعود إليه</h2></div></div><div class="ggrid">'+gal.slice(0,7).map((u,i)=>'<img src="'+esc(u)+'" alt="صورة من داخل النادي '+(i+1)+'" loading="lazy">').join('')+'</div></div></section>');
@@ -507,11 +515,22 @@ function render(){
  if(BLOG){document.querySelectorAll('a[href^="#"]').forEach(a=>a.setAttribute('href','/'+a.getAttribute('href')));loadBlog()}
 }
 const waNum=p=>{let x=String(p||'').replace(/\D/g,'');if(x.charAt(0)==='0')x='966'+x.slice(1);return x};
+const PROGS={adult:'حصص الكبار',kids:'حصص الأطفال',martial:'الفنون القتالية'};
+const LVL={low:['خفيف الشدة','#F5C518'],mid:['متوسط الشدة','#34B655'],high:['عالي الشدة','#E5322D'],fun:['كلاس ترفيهي','#C08BE8'],book:['يتطلب الحجز المسبق','#2E9BD6']};
+let sprog='';
+const t12=t=>{let[h,m]=String(t||'0:0').split(':').map(Number);return (h%12||12)+':'+String(m).padStart(2,'0')};
 function drawDays(){
- const d=$('#days');if(!d)return;const today=new Date().getDay();
- d.innerHTML=DOW.map((n,i)=>'<button type="button" data-day="'+i+'" aria-pressed="'+(i===day)+'">'+n+(i===today?'<span class="today">اليوم</span>':'')+'</button>').join('');
- const L=D.classes.filter(c=>(c.days||[]).indexOf(day)>=0).sort((a,b)=>String(a.time).localeCompare(String(b.time)));
- $('#clist').innerHTML=L.length?L.map(c=>'<div class="citem"><div class="t">'+ft(c.time)+'<small>'+(c.dur||60)+' دقيقة</small></div><div><b>'+esc(c.name)+'</b><br><span>'+esc(c.trainer||'')+'</span></div><a class="btn btn-line seats" href="#join" data-interest="'+esc('حصة '+c.name)+'" style="min-height:40px">احجز زيارة</a></div>').join(''):'<div class="cempty">لا توجد حصص جماعية في هذا اليوم.</div>';
+ const d=$('#days');if(!d)return;const today=new Date().getDay(),CLS=D.classes||[],ps=Object.keys(PROGS).filter(p=>CLS.some(c=>(c.prog||'adult')===p));
+ if(!ps.length)return;if(ps.indexOf(sprog)<0)sprog=ps[0];
+ d.innerHTML=ps.map(p=>'<button type="button" data-day="'+p+'" aria-pressed="'+(p===sprog)+'">'+PROGS[p]+'</button>').join('');
+ const CL=CLS.filter(c=>(c.prog||'adult')===sprog),days=[6,0,1,2,3,4,5].filter(x=>x!==5||CL.some(c=>(c.days||[]).indexOf(5)>=0));
+ const slots=[...new Set(CL.map(c=>c.time+'|'+(c.dur||60)))].sort().map(k=>{const[t,du]=k.split('|');return {t:t,du:+du}});
+ const end=s=>{const m=+s.t.split(':')[0]*60+ +s.t.split(':')[1]+s.du;return t12(Math.floor(m/60)+':'+(m%60))};
+ const nm=(D.lvlNames||{});
+ $('#clist').innerHTML='<div class="sgw"><table class="sgt"><thead><tr><th class="tm">الوقت</th>'+days.map(x=>'<th'+(x===today?' class="now"':'')+'>'+DOW[x]+'</th>').join('')+'</tr></thead><tbody>'+
+  slots.map(s=>'<tr><th class="tm"><span dir="ltr">'+t12(s.t)+' - '+end(s)+'</span></th>'+days.map(x=>{const L=CL.filter(c=>c.time===s.t&&(c.dur||60)===s.du&&(c.days||[]).indexOf(x)>=0);
+   return '<td>'+(L.length?L.map(c=>'<a class="sgc" href="#join" data-interest="'+esc('حصة '+c.name)+'"'+(sprog==='adult'&&c.lvl?' title="'+esc(nm[c.lvl]||LVL[c.lvl][0])+'"':'')+'>'+(sprog==='adult'&&c.lvl&&LVL[c.lvl]?'<i style="background:'+LVL[c.lvl][1]+'"></i>':'')+esc(c.name)+'</a>').join(''):'<span class="sge">—</span>')+'</td>'}).join('')+'</tr>').join('')+
+  '</tbody></table></div>'+(sprog==='adult'?'<div class="sgl"><b>شدة التمرين</b>'+Object.keys(LVL).map(k=>'<span><i style="background:'+LVL[k][1]+'"></i>'+esc(nm[k]||LVL[k][0])+'</span>').join('')+'</div>':'');
 }
 function show(i){
  const s=document.querySelectorAll('.slide'),dts=document.querySelectorAll('.dots button');if(!s.length)return;
@@ -527,7 +546,7 @@ document.addEventListener('click',e=>{
  const t=e.target.closest('[data-go],[data-step],[data-day],[data-interest],#burger,.mnav a');if(!t)return;
  if(t.dataset.go){show(+t.dataset.go);startSlides()}
  else if(t.dataset.step){show(slide+ +t.dataset.step);startSlides()}
- else if(t.dataset.day!=null){day=+t.dataset.day;drawDays()}
+ else if(t.dataset.day!=null){sprog=t.dataset.day;drawDays()}
  else if(t.id==='burger'){const m=$('#mnav'),o=m.hidden;m.hidden=!o;t.setAttribute('aria-expanded',o)}
  else if(t.closest('.mnav')){$('#mnav').hidden=true;$('#burger').setAttribute('aria-expanded','false')}
  if(t.dataset.interest){const s=$('#l-int');if(s){if(![...s.options].some(o=>o.value===t.dataset.interest)){const op=document.createElement('option');op.textContent=t.dataset.interest;s.appendChild(op)}s.value=t.dataset.interest}}

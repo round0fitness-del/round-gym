@@ -273,7 +273,7 @@ function viewFor(p) {
     if (o.ptSess) o.ptSess = o.ptSess.map(stripPt);
     return o;
   }
-  const set = pick(s.settings || {}, ['gym', 'soonDays', 'churnDays', 'portalLink', 'dailyPrice', 'ptCancelHours', 'ptLateCharge', 'ptNoShowCharge', 'classCancelHours', 'phone', 'legalName', 'crNo', 'vatNo', 'address', 'terms', 'termsVer', 'termsDate', 'offers', 'tpl', 'site']);
+  const set = pick(s.settings || {}, ['gym', 'soonDays', 'churnDays', 'portalLink', 'dailyPrice', 'ptCancelHours', 'ptLateCharge', 'ptNoShowCharge', 'classCancelHours', 'phone', 'legalName', 'crNo', 'vatNo', 'address', 'terms', 'termsVer', 'termsDate', 'offers', 'tpl', 'site', 'lvlNames']);
   const trainers = (s.trainers || []).map(t => pick(t, ['id', 'name', 'spec']));
   if (p.role === 'trainer') {
     const me = p.ref, classes = (s.classes || []).filter(c => c.trainerId === me), cids = new Set(classes.map(c => c.id));
@@ -301,7 +301,7 @@ function viewFor(p) {
   // trainee: only their own records
   const me = p.ref, own = a => (a || []).filter(x => x.memberId === me);
   return {
-    settings: set, trainers, plans: s.plans || [], classes: s.classes || [],
+    settings: set, trainers, plans: s.plans || [], classes: (s.classes || []).map(c => { const o = Object.assign({}, c); delete o.trainerId; return o; }),
     members: (s.members || []).filter(m => m.id === me),
     subs: own(s.subs), pay: own(s.pay), att: own(s.att), pt: own(s.pt), freezeReq: own(s.freezeReq),
     ptPacks: own(s.ptPacks), ptSess: own(s.ptSess), ptPlans: s.ptPlans || [], fb: own(s.fb).map(x => { const o = Object.assign({}, x); delete o.note; return o; }),
@@ -673,7 +673,7 @@ async function botApi(req, res, route) {
       programs: (site.programs || []).map(x => pick(x, ['tag', 'title', 'text'])), offers: (site.offers || []).map(x => pick(x, ['title', 'text', 'sub'])),
       plans: (s.plans || []).filter(x => !x.archived && !x.hidden).map(x => pick(x, ['name', 'days', 'price', 'freeze'])),
       ptPlans: (s.ptPlans || []).filter(x => !x.archived).map(x => pick(x, ['name', 'service', 'sessions', 'validDays', 'price', 'fmt', 'dur'])),
-      classes: (s.classes || []).map(x => ({ name: x.name, days: (x.days || []).map(d => DOW_AR[+d] || d), time: x.time, dur: x.dur, trainer: mTr(x.trainerId) })),
+      classes: (s.classes || []).map(x => ({ name: x.name, program: ({ adult: 'الكبار', kids: 'الأطفال', martial: 'الفنون القتالية' })[x.prog || 'adult'], days: (x.days || []).map(d => DOW_AR[+d] || d), time: x.time, dur: x.dur })),
       trainers: (s.trainers || []).filter(x => !x.hidden).map(t => ({ id: t.id, name: t.name, spec: t.spec || '', days: [...new Set((t.avail || []).map(a => DOW_AR[+a.d]))] })),
       policy: { ptCancelHours: +set.ptCancelHours || 0, classCancelHours: +set.classCancelHours || 0 }
     });
@@ -783,7 +783,7 @@ async function api(req, res, route) {
       site: set.site || {},
       plans: (s.plans || []).filter(x => !x.archived && !x.hidden).map(x => pick(x, ['id', 'name', 'days', 'price'])),
       ptPlans: (s.ptPlans || []).filter(x => !x.archived).map(x => pick(x, ['id', 'name', 'sessions', 'validDays', 'price', 'service', 'fmt'])),
-      classes: (s.classes || []).map(x => ({ id: x.id, name: x.name, days: x.days || [], time: x.time, dur: x.dur, trainer: tn(x.trainerId) })),
+      classes: (s.classes || []).map(x => ({ id: x.id, name: x.name, days: x.days || [], time: x.time, dur: x.dur, prog: x.prog || 'adult', lvl: x.lvl || '' })), lvlNames: set.lvlNames || {},
       trainers: (s.trainers || []).filter(x => !x.hidden).map(x => pick(x, ['id', 'name', 'spec'])),
       posts: livePosts(s, 'site').slice(0, 3).map(x => pick(x, POST_PUB)),
       events: livePosts(s, 'site').filter(x => x.ev).sort((a, b) => String(b.ev.date).localeCompare(String(a.ev.date))).slice(0, 6).map(x => pick(x, POST_PUB))
@@ -1097,6 +1097,24 @@ function reminderTick() {
   Object.keys(db.pushSent).forEach(k => { if (now - db.pushSent[k] > 2 * 864e5) { delete db.pushSent[k]; changed = true; } });
   if (changed) persist();
 }
+/* a monthly timetable imported ahead of time replaces the current one on its start date */
+function schedPendingTick() {
+  const s = st(), set = s.settings || {}, P = set.schedPending || {}, t = ksaDate();
+  const due = Object.keys(P).filter(k => P[k] && P[k].from && P[k].from <= t && Array.isArray(P[k].classes));
+  if (!due.length) return;
+  due.forEach(prog => {
+    const pk = P[prog], old = (s.classes || []).filter(c => (c.prog || 'adult') === prog), keep = new Set();
+    const neu = pk.classes.map(c => { const o = old.find(x => !keep.has(x.id) && x.name === c.name && x.time === c.time && (+x.dur || 60) === (+c.dur || 60)); const v = Object.assign({}, c); if (o) { keep.add(o.id); v.id = o.id; v.cap = o.cap || v.cap; } return v; });
+    const gone = new Set(old.filter(c => !keep.has(c.id)).map(c => c.id));
+    s.book = (s.book || []).filter(b => !(gone.has(b.classId) && b.date >= pk.from));
+    s.classes = (s.classes || []).filter(c => (c.prog || 'adult') !== prog).concat(neu);
+    delete P[prog];
+    audit(null, 'تطبيق جدول الشهر', prog + ' · ' + pk.month + ' · ' + neu.length + ' حصة', 'classes');
+  });
+  set.schedPending = P; s.settings = set; db.rev++; changeLog = []; persist();
+}
+try { schedPendingTick(); } catch (e) { console.error('schedule', e.message); }
+setInterval(() => { try { schedPendingTick(); } catch (e) { console.error('schedule', e.message); } }, 10 * 60e3).unref();
 setInterval(() => { try { reminderTick(); } catch (e) { console.error('reminders', e.message); } }, +process.env.REMINDER_MS || 5 * 60e3).unref();
 
 /* one-time import of the club's previous Excel income file (kept in the INCOME_SEED variable, not in the code) */

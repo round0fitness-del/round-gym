@@ -340,6 +340,8 @@ button.sg-c{cursor:pointer}button.sg-c:hover{border-color:var(--accent)}
 .hci-f{padding:4px 16px 16px;display:grid;gap:4px}.hci-q.inq{margin-top:10px;display:flex!important;flex-direction:row;gap:8px;align-items:center;justify-content:flex-start;width:fit-content;color:var(--muted);font-size:13px}.hci-q input{width:auto;margin:0}#dres{margin-top:12px}.hci-log{max-height:260px;overflow:auto}
 @media (max-width:900px){.hsc-g{grid-template-columns:repeat(3,minmax(0,1fr))}}@media (max-width:480px){.hsc-g{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .ev-info{display:flex;gap:8px;align-items:center;background:var(--good-soft);color:var(--good);border-radius:12px;padding:10px 12px;font-weight:600;margin:6px 0 10px}
+html,body{overflow-x:hidden;max-width:100%}@supports (overflow:clip){html,body{overflow-x:clip}}
+.bk-q{display:grid;gap:4px;background:var(--surface-2);border-radius:12px;padding:12px 14px}.bk-q b{font:600 17px var(--f-display)}.bk-q span{color:var(--muted);font-size:13px}
 .inc-in{width:110px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;font:inherit;font-variant-numeric:tabular-nums;background:var(--surface);color:var(--ink);direction:ltr;text-align:right}
 .inq{display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:13.5px;font-weight:500}
 .inq input{width:18px;height:18px;min-height:0;accent-color:var(--accent)}
@@ -783,7 +785,8 @@ body.fs-open{overflow:hidden}
 @media (max-width:900px){
   .shell{grid-template-columns:minmax(0,1fr)}
   .rail{position:fixed;inset-block:0;right:0;height:auto;width:min(280px,86vw);transform:translateX(100%);transition:transform .2s;z-index:80;padding-right:max(12px,env(safe-area-inset-right,0px))}
-  .shell.open .rail{transform:none}
+  .shell.open .rail{transform:none;visibility:visible}
+  .rail{visibility:hidden;transition:transform .2s,visibility .2s}
   .shell.open .scrim{display:block;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:70}
   .main{--gut:16px;padding-top:0}
   .top{display:flex;align-items:center;gap:10px;position:sticky;top:env(safe-area-inset-top,0px);z-index:40;background:var(--bg);padding-block:10px;margin-bottom:10px;border-bottom:1px solid var(--line)}
@@ -6078,6 +6081,14 @@ const _pageNews27=pageNews;
 pageNews=function(){const h=_pageNews27(),x=U.newsId&&postsAll().find(y=>y.id===U.newsId);if(!x||!x.ev||!x.ev.date)return h;
  const i=h.indexOf('<p class="art-meta">');if(i<0)return h;const j=h.indexOf('</p>',i)+4;
  return h.slice(0,j)+'<p class="ev-info">'+ic('cal',16)+' '+fdate(x.ev.date,{weekday:'long',day:'numeric',month:'long'})+(x.ev.time?' · '+ft(x.ev.time):'')+(x.ev.place?' · '+esc(x.ev.place):'')+'</p>'+h.slice(j)};
+
+/* ---------- v28: ask before booking a class ---------- */
+const _hmBook28=ACT.hmBook;
+ACT.hmBook=(d,el)=>{const c=S.classes.find(x=>x.id===d.id);if(!c)return _hmBook28(d,el);
+ const full=bookedCount(c.id,d.k)>=c.cap;
+ openModal(full?'الكلاس مكتمل':'حجز الكلاس','<div class="fm"><div class="full bk-q"><b>'+esc(c.name)+'</b><span>'+dayLabel(d.k)+' · '+ft(c.time)+' · '+(+c.dur||60)+' دقيقة</span></div><p class="full">'+(full?'اكتملت المقاعد. هل ترغبين بالانضمام لقائمة الانتظار؟ تنتقلين تلقائياً عند توفر مقعد.':'هل ترغبين بحجز هذا الكلاس؟')+'</p></div>',
+  ()=>{_hmBook28(d,el)},{ok:full?'انضمام للانتظار':'تأكيد الحجز',noFocus:true});
+};
 
 /* ---------- shell + router ---------- */
 const PAGES={

@@ -6090,6 +6090,9 @@ ACT.hmBook=(d,el)=>{const c=S.classes.find(x=>x.id===d.id);if(!c)return _hmBook2
   ()=>{_hmBook28(d,el)},{ok:full?'انضمام للانتظار':'تأكيد الحجز',noFocus:true});
 };
 
+/* member home without the monthly commitment gauge */
+const _pageHomeApp28=pageHomeApp;
+pageHomeApp=function(){const h=_pageHomeApp28(),i=h.indexOf('<section class="gauge">');if(i<0)return h;const j=h.indexOf('</section>',i);return j<0?h:h.slice(0,i)+h.slice(j+10)};
 /* ---------- shell + router ---------- */
 const PAGES={
  dashboard:{t:'لوحة التحكم',icon:'dash',fn:pageDashboard2},members:{t:'الأعضاء',icon:'members',fn:pageMembers},subs:{t:'الاشتراكات',icon:'subs',fn:pageSubs},checkin:{t:'الحضور',icon:'checkin',fn:pageCheckin},

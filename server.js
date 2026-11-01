@@ -24,7 +24,7 @@ if (NO_DISK) console.warn('\n!!! No persistent volume is attached. Data will be 
 const PUB = path.join(__dirname, 'public');
 const DBF = path.join(DATA, 'db.json');
 const BAK = path.join(DATA, 'backups');
-const COLS = ['members', 'subs', 'pay', 'exp', 'att', 'classes', 'book', 'freezeReq', 'pt', 'campaigns', 'daily', 'leads', 'cash', 'plans', 'trainers', 'shifts', 'ptPlans', 'ptPacks', 'ptSess', 'treq', 'ptTpl', 'comms', 'jrnl', 'periods', 'budget', 'coa', 'fsruns', 'fb', 'posts', 'incomeLog'];
+const COLS = ['members', 'subs', 'pay', 'exp', 'att', 'classes', 'book', 'freezeReq', 'pt', 'campaigns', 'daily', 'leads', 'cash', 'plans', 'trainers', 'shifts', 'ptPlans', 'ptPacks', 'ptSess', 'treq', 'ptTpl', 'comms', 'jrnl', 'periods', 'budget', 'coa', 'fsruns', 'fb', 'posts', 'incomeLog', 'offers'];
 const STAFF = ['manager', 'reception'];
 const OFFICE = ['manager', 'reception', 'accountant'];
 const META_KEYS = ['nextCode', 'nextInv', 'nextCn'];
@@ -306,12 +306,20 @@ function viewFor(p) {
     subs: own(s.subs), pay: own(s.pay), att: own(s.att), pt: own(s.pt), freezeReq: own(s.freezeReq),
     ptPacks: own(s.ptPacks), ptSess: own(s.ptSess), ptPlans: s.ptPlans || [], fb: own(s.fb).map(x => { const o = Object.assign({}, x); delete o.note; return o; }),
     book: (s.book || []).map(b => b.memberId === me ? b : { id: b.id, classId: b.classId, date: b.date }),
-    posts: appPosts(s)
+    posts: appPosts(s),
+    offers: liveOffers(s)
   };
 }
 
 /* ---------------- blog ---------------- */
-const POST_PUB = ['id', 'title', 'cat', 'excerpt', 'cover', 'pubAt', 'author', 'pin', 'read'];
+const POST_PUB = ['id', 'title', 'cat', 'excerpt', 'cover', 'pubAt', 'author', 'pin', 'read', 'ev'];
+const liveOffers = s => { const t = new Date(Date.now() + 3 * 3600e3).toISOString().slice(0, 10); return (s.offers || []).filter(o => o.active !== false && (!o.until || o.until >= t)).map(o => pick(o, ['id', 'partner', 'logo', 'pct', 'title', 'terms', 'until', 'cat', 'phone', 'map'])); };
+function cleanOffer(v) {
+  const t = (x, n) => String(x == null ? '' : x).replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, n);
+  v.partner = t(v.partner, 80); v.title = t(v.title, 120); v.terms = t(v.terms, 400); v.cat = t(v.cat, 40); v.phone = t(v.phone, 20); v.map = /^https:\/\/[^\s"'<>]{1,400}$/.test(String(v.map || '')) ? String(v.map) : '';
+  v.logo = safeImg(v.logo); v.pct = Math.max(0, Math.min(100, Math.round(+v.pct || 0))); v.until = /^\d{4}-\d\d-\d\d$/.test(String(v.until || '')) ? v.until : ''; v.active = v.active !== false;
+  if (!v.partner) throw httpErr(400, 'اكتب اسم الجهة');
+}
 const livePosts = (s, where) => (s.posts || []).filter(x => x.status === 'published' && x[where] !== false && (!x.pubAt || x.pubAt <= new Date().toISOString()))
   .sort((a, b) => (b.pin ? 1 : 0) - (a.pin ? 1 : 0) || String(b.pubAt || '').localeCompare(String(a.pubAt || '')));
 const appPosts = s => livePosts(s, 'app').slice(0, 40).map(x => pick(x, POST_PUB.concat(['blocks', 'status'])));
@@ -321,6 +329,7 @@ function cleanPost(v) {
   v.title = t(v.title, 140).trim(); v.cat = t(v.cat, 40).trim(); v.excerpt = t(v.excerpt, 300).trim(); v.author = t(v.author, 60).trim();
   v.cover = safeImg(v.cover); v.status = v.status === 'published' ? 'published' : 'draft';
   v.site = v.site !== false; v.app = v.app !== false; v.pin = !!v.pin; v.notify = !!v.notify;
+  if (v.ev && typeof v.ev === 'object' && /^\d{4}-\d\d-\d\d$/.test(String(v.ev.date || ''))) v.ev = { date: v.ev.date, time: /^\d\d:\d\d$/.test(String(v.ev.time || '')) ? v.ev.time : '', place: t(v.ev.place, 120).trim() }; else delete v.ev;
   if (v.pubAt && !/^\d{4}-\d\d-\d\dT[\d:.]+Z$/.test(String(v.pubAt))) v.pubAt = '';
   const B = Array.isArray(v.blocks) ? v.blocks.slice(0, 120) : [];
   v.blocks = B.map(b => {
@@ -371,7 +380,7 @@ function canWrite(p, c, oldV, newV) {
   const r = p.role;
   if (r === 'manager') return true;
   if (r === 'reception') {
-    if (['exp', 'cash', 'plans', 'trainers', 'pt', 'ptPlans', 'jrnl', 'periods', 'budget', 'comms', 'ptTpl', 'treq', 'coa', 'fsruns', 'fb', 'posts'].indexOf(c) >= 0) return false;
+    if (['exp', 'cash', 'plans', 'trainers', 'pt', 'ptPlans', 'jrnl', 'periods', 'budget', 'comms', 'ptTpl', 'treq', 'coa', 'fsruns', 'fb', 'posts', 'offers'].indexOf(c) >= 0) return false;
     if (c === 'pay') return !oldV && !!newV && +newV.amount > 0;   // collecting only: no refunds, edits or deletions
     if (c === 'shifts') return !oldV && !!newV;
     return true;
@@ -450,6 +459,7 @@ function applySync(p, ops) {
     if (op.c === 'jrnl' && op.op === 'put') { const L = op.v.lines || []; const d = L.reduce((a, x) => a + (+x.dr || 0), 0), cr = L.reduce((a, x) => a + (+x.cr || 0), 0); if (op.v.status === 'posted' && (Math.abs(d - cr) > 0.005 || d <= 0)) throw httpErr(400, 'القيد غير متوازن: مجموع المدين يجب أن يساوي مجموع الدائن'); }
     if (op.c === 'incomeLog' && op.op === 'put') { const v = op.v; if (!/^\d{4}-\d{2}-\d{2}$/.test(v.date || '') || v.id !== 'il' + v.date) throw httpErr(400, 'تاريخ غير صالح'); if (v.actual === '' || v.actual == null) v.actual = null; else { v.actual = Math.round(+v.actual * 100) / 100; if (!isFinite(v.actual) || v.actual < 0 || v.actual > 10000000) throw httpErr(400, 'مبلغ غير صالح'); } v.note = String(v.note || '').slice(0, 300); if (old && old.leg) v.leg = old.leg; else delete v.leg; }
     lockCheck(s, op, old);
+    if (op.c === 'offers' && op.op === 'put') cleanOffer(op.v);
     if (op.c === 'posts' && op.op === 'put') { cleanPost(op.v); if (op.v.status === 'published' && (!old || old.status !== 'published' || !old.pubAt) && !op.v.pubAt) op.v.pubAt = new Date().toISOString(); }
     if (op.op === 'put' && op.c === 'book' && !old) {
       const v = op.v, cls = (s.classes || []).find(x => x.id === v.classId), taken = (s.book || []).filter(b => b.classId === v.classId && b.date === v.date);
@@ -775,7 +785,8 @@ async function api(req, res, route) {
       ptPlans: (s.ptPlans || []).filter(x => !x.archived).map(x => pick(x, ['id', 'name', 'sessions', 'validDays', 'price', 'service', 'fmt'])),
       classes: (s.classes || []).map(x => ({ id: x.id, name: x.name, days: x.days || [], time: x.time, dur: x.dur, trainer: tn(x.trainerId) })),
       trainers: (s.trainers || []).filter(x => !x.hidden).map(x => pick(x, ['id', 'name', 'spec'])),
-      posts: livePosts(s, 'site').slice(0, 3).map(x => pick(x, POST_PUB))
+      posts: livePosts(s, 'site').slice(0, 3).map(x => pick(x, POST_PUB)),
+      events: livePosts(s, 'site').filter(x => x.ev).sort((a, b) => String(b.ev.date).localeCompare(String(a.ev.date))).slice(0, 6).map(x => pick(x, POST_PUB))
     }, { 'Cache-Control': 'public, max-age=60' });
   }
   if (route === 'posts' && method === 'GET') {
@@ -886,6 +897,53 @@ async function api(req, res, route) {
       audit(p, 'تعديل سجل حضور موظف', x.name + ' · ' + x.date + (x.note ? ' · ' + x.note : ''), 'clock', x.id);
     }
     persist(); return send(res, 200, { ok: true, rec: x });
+  }
+  if (route.startsWith('wa/')) {
+    const r = route.slice(3);
+    need(r === 'send' || r === 'status' ? OFFICE : ['manager']);
+    const key = String(process.env.BOT_KEY || '');
+    if (key.length < 16) throw httpErr(409, 'ربط الواتساب غير مفعّل في الاستضافة (BOT_KEY)');
+    const b = method === 'POST' ? await readBody(req, 400000) : null;
+    if (r === 'send') {
+      const L = (Array.isArray(b && b.messages) ? b.messages : [b || {}]).slice(0, 1000);
+      if (!L.length) throw httpErr(400, 'لا توجد رسائل');
+      audit(p, 'إرسال رسائل واتساب من رقم النادي', L.length + ' رسالة' + (b && b.purpose ? ' · ' + String(b.purpose).slice(0, 60) : ''), 'wa');
+    } else if (['pair', 'toggle', 'logout'].indexOf(r) >= 0) audit(p, { pair: 'طلب رمز ربط واتساب النادي', toggle: 'تشغيل/إيقاف الرد الآلي في الواتساب', logout: 'فصل رقم واتساب النادي' }[r], '', 'wa');
+    else if (['status', 'sent'].indexOf(r) < 0) throw httpErr(404, 'غير موجود');
+    const base = String(process.env.WA_URL || 'http://whatsapp-agent.railway.internal:8080').replace(/\/$/, '');
+    let out, code = 502;
+    try {
+      const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 15000);
+      const rr = await fetch(base + '/bot/' + r, { method: b ? 'POST' : 'GET', headers: { 'x-bot-key': key, 'content-type': 'application/json' }, body: b ? JSON.stringify(b) : undefined, signal: ctl.signal });
+      clearTimeout(tm); code = rr.status; out = await rr.json().catch(() => ({}));
+    } catch (e) { throw httpErr(503, 'خدمة الواتساب لا تستجيب الآن. حاول بعد دقيقة'); }
+    if (code >= 400) throw httpErr(code === 401 ? 502 : code, out.error || 'خطأ من خدمة الواتساب');
+    return send(res, 200, out, { 'Cache-Control': 'no-store' });
+  }
+  if (route === 'golive' && method === 'POST') {
+    need(['manager']);
+    const b = await readBody(req, 4096);
+    if (b.confirm !== 'بدء التشغيل') throw httpErr(400, 'اكتب «بدء التشغيل» للتأكيد');
+    const s = st();
+    fs.mkdirSync(BAK, { recursive: true });
+    const bak = path.join(BAK, 'before-golive-' + new Date().toISOString().replace(/[:.]/g, '-') + '.json');
+    fs.writeFileSync(bak, JSON.stringify({ exportedAt: new Date().toISOString(), rev: db.rev, state: s, creds: db.creds }));
+    const n = {}, clear = c => { n[c] = (s[c] || []).length; s[c] = []; };
+    ['subs', 'pay', 'exp', 'cash', 'daily', 'shifts', 'jrnl', 'comms', 'att', 'book', 'freezeReq', 'campaigns', 'fb', 'treq', 'ptSess', 'ptPacks', 'periods', 'fsruns'].forEach(clear);
+    s.pt = (s.pt || []).filter(x => { const keep = (s.members || []).some(m => m.id === x.memberId && m.legacyCode); return keep; });
+    // test members (added by hand, not from the previous system) are removed with their app logins
+    const test = (s.members || []).filter(m => !m.legacyCode);
+    n.testMembers = test.length;
+    test.forEach(m => delete db.creds['m:' + m.id]);
+    s.members = (s.members || []).filter(m => m.legacyCode);
+    s.pt = (s.pt || []).filter(x => s.members.some(m => m.id === x.memberId));
+    // income ledger: keep the Excel history, drop amounts typed during testing
+    s.incomeLog = (s.incomeLog || []).filter(x => x.leg).map(x => Object.assign(x, { actual: null, byName: '', updated: '' }));
+    s.nextInv = 1; s.nextCn = 1; s.goLive = new Date(Date.now() + 3 * 3600e3).toISOString().slice(0, 10);
+    db.rev++; changeLog = [];
+    audit(p, 'بدء التشغيل الفعلي: حذف البيانات التجريبية', Object.keys(n).filter(k => n[k]).map(k => k + ' ' + n[k]).join('، ') + ' · نسخة احتياطية: ' + path.basename(bak), 'golive');
+    persist();
+    return send(res, 200, { ok: true, removed: n, backup: path.basename(bak), kept: s.members.length });
   }
   if (route === 'logout' && method === 'POST') return send(res, 200, { ok: true }, { 'Set-Cookie': sessCookie(req, '', 0) });
   if (route === 'me') { need(); return send(res, 200, { role: p.role, ref: p.ref, name: p.name, key: p.key, rev: db.rev }); }
@@ -1043,7 +1101,7 @@ setInterval(() => { try { reminderTick(); } catch (e) { console.error('reminders
 
 /* one-time import of the club's previous Excel income file (kept in the INCOME_SEED variable, not in the code) */
 (function seedIncome() {
-  let D; try { D = JSON.parse(process.env.INCOME_SEED || 'null'); } catch (e) { console.log('INCOME_SEED غير صالح'); return; }
+  let D; try { D = Object.assign({}, JSON.parse(process.env.INCOME_SEED || '{}'), JSON.parse(process.env.INCOME_SEED_2 || '{}')); } catch (e) { console.log('INCOME_SEED غير صالح'); return; }
   if (!D || typeof D !== 'object') return;
   const mt = {}; Object.keys(D).forEach(d => { const k = d.slice(0, 7); mt[k] = (mt[k] || 0) + (D[d] || []).slice(1, 6).reduce((a, x) => a + (+x || 0), 0); });
   console.log('INCOME_SEED: ' + Object.keys(D).length + ' يوم · ' + Object.keys(mt).sort().map(k => k + '=' + Math.round(mt[k])).join(' '));

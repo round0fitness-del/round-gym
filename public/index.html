@@ -292,6 +292,28 @@ button.cls:hover{border-color:var(--accent)}
 .inctbl tfoot td{font-weight:700;border-top:2px solid var(--line);background:var(--surface-2)}
 .inctbl .inc-tot{background:var(--surface-2)}
 .inc-note{width:120px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:12.5px;background:var(--surface);color:var(--ink)}
+.wa-st{display:flex;gap:12px;align-items:center;padding:16px}.wa-st .grow{display:grid;gap:2px}
+.wa-dot{width:12px;height:12px;border-radius:50%;flex:none;background:var(--muted)}.wa-dot.good{background:var(--good);box-shadow:0 0 0 4px var(--good-soft)}.wa-dot.warn{background:#d97706}.wa-dot.bad{background:var(--bad)}
+.wa-link{display:flex;gap:20px;flex-wrap:wrap;padding:0 16px 16px;align-items:flex-start}.wa-qr{background:#fff;padding:12px;border-radius:12px;min-width:264px;min-height:264px;display:grid;place-items:center}
+.wa-pair{flex:1;min-width:240px;display:grid;gap:10px}.wa-code{font:800 30px/1.2 var(--f-display);letter-spacing:6px;text-align:center;padding:12px;border:1px dashed var(--line);border-radius:12px}
+.of-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.of-card{display:flex;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--edge,var(--line));border-radius:16px;padding:14px;text-align:start;font:inherit;color:inherit;min-width:0}
+.of-card.off{opacity:.55}.of-card.btnlike{cursor:pointer;width:100%}.of-card.btnlike:disabled{cursor:not-allowed;opacity:.6}.of-card .acts{margin-inline-start:auto;flex-direction:column}
+.of-logo{width:60px;height:60px;border-radius:14px;background:var(--surface-2);display:grid;place-items:center;overflow:hidden;flex:none}.of-logo img{width:100%;height:100%;object-fit:contain;background:#fff}.of-logo b{font-size:22px}
+.of-logo.lg{width:96px;height:96px;border-radius:22px;margin:0 auto;justify-self:center}.pk-full .of-logo img,.of-logo img{max-height:100%;max-width:100%}.pk-full>*{min-height:0}
+.of-tx{display:grid;gap:2px;min-width:0}.of-tx b{font-size:15px}.of-pct{color:var(--accent);font:700 17px/1.3 var(--f-display)}
+.pk-card{background:linear-gradient(135deg,#161312,#3a2a26);color:#fff;border-radius:22px;padding:20px;margin:0 0 14px;display:grid;gap:12px;box-shadow:0 12px 30px rgba(0,0,0,.18)}
+.pk-top{display:flex;justify-content:space-between;align-items:center;gap:10px}.pk-logo{height:34px;width:auto}.pk-tag{font-size:12px;opacity:.75}
+.pk-name{font:700 22px/1.3 var(--f-display)}.pk-row{display:flex;justify-content:space-between;gap:10px;font-size:12px;opacity:.9}.pk-row span{display:grid;gap:2px}.pk-row b{font-size:16px}.pk-bad{color:#fca5a5}
+.pk-full{display:grid;gap:10px;text-align:center;padding:16px 4px}.pk-partner{font-size:18px}.pk-pct{font:800 54px/1 var(--f-display);color:var(--accent);display:flex;gap:6px;justify-content:center;align-items:baseline}.pk-pct small{font-size:18px}
+.pk-who{display:flex;gap:10px;align-items:center;background:var(--surface-2);border-radius:14px;padding:10px 12px;text-align:start}.pk-who img{width:36px;height:36px}.pk-who div{display:grid}.pk-who small{color:var(--muted)}
+.pk-live{font-size:12px;color:var(--good);font-variant-numeric:tabular-nums}
+.pk-strip{display:flex;gap:12px;align-items:center;width:100%;margin:14px 0;padding:14px 16px;border-radius:18px;border:0;background:linear-gradient(135deg,#161312,#3a2a26);color:#fff;font:inherit;text-align:start;cursor:pointer}.pk-strip span{flex:1;display:grid}.pk-strip small{opacity:.8}
+.ev-strip{display:flex;gap:12px;overflow-x:auto;padding-bottom:6px;scroll-snap-type:x mandatory}
+.ev-card{flex:0 0 230px;scroll-snap-align:start;border:1px solid var(--line);background:var(--surface);border-radius:16px;overflow:hidden;padding:0;text-align:start;font:inherit;color:inherit;cursor:pointer;display:grid}
+.ev-img{position:relative;height:120px;background:var(--surface-2);display:grid;place-items:center}.ev-img img{width:100%;height:100%;object-fit:cover}
+.ev-date{position:absolute;top:8px;inset-inline-start:8px;background:var(--surface);border-radius:10px;padding:4px 8px;text-align:center;font-size:11px;line-height:1.1;display:grid}.ev-date b{font-size:18px}
+.ev-tx{display:grid;gap:3px;padding:10px 12px 12px}.ev-tx em{font-style:normal;font-size:11px;color:var(--muted)}.ev-tx em.up{color:var(--good);font-weight:700}.ev-tx small{color:var(--muted);font-size:12px}
 .inc-in{width:110px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;font:inherit;font-variant-numeric:tabular-nums;background:var(--surface);color:var(--ink);direction:ltr;text-align:right}
 .inq{display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:13.5px;font-weight:500}
 .inq input{width:18px;height:18px;min-height:0;accent-color:var(--accent)}
@@ -1669,7 +1691,7 @@ const can=k=>{if(!SESS)return false;const r=ROLES[SESS.role];return !r.pages||r.
 const isManager=()=>!!SESS&&SESS.role==='manager';
 const isStaff=()=>!!SESS&&(SESS.role==='manager'||SESS.role==='reception');
 const landing=()=>SESS.role==='trainer'?'coach':SESS.role==='trainee'?'home':SESS.role==='accountant'?'acchub':'dashboard';
-const SYNC_COLS=['members','subs','pay','exp','att','classes','book','freezeReq','pt','campaigns','daily','leads','cash','plans','trainers','shifts','ptPlans','ptPacks','ptSess','treq','ptTpl','comms','jrnl','periods','budget','coa','fsruns','fb','posts','incomeLog'];
+const SYNC_COLS=['members','subs','pay','exp','att','classes','book','freezeReq','pt','campaigns','daily','leads','cash','plans','trainers','shifts','ptPlans','ptPacks','ptSess','treq','ptTpl','comms','jrnl','periods','budget','coa','fsruns','fb','posts','incomeLog','offers'];
 const STAMP_COLS=['pay','exp','cash','daily','shifts','subs','ptPacks','ptSess','treq','jrnl','comms','fb'];
 
 async function api(path,opt){
@@ -5570,16 +5592,200 @@ document.addEventListener('change',e=>{const t=e.target;if(!t.dataset)return;
  if(t.dataset.incy){U.incY=t.value;render()}
 });
 
+/* ---------- v24: club WhatsApp link, member discount card, events, go-live ---------- */
+ROLES.trainee.pages.push('perks');
+
+/* ===== WhatsApp of the club (through the whatsapp-agent service) ===== */
+const WA_ST={connected:['متصل','good'],waiting:['بانتظار الربط','warn'],reconnecting:['يعيد الاتصال','warn'],starting:['يبدأ التشغيل','warn'],error:['خطأ','bad']};
+let waTimer=null;
+async function waPoll(){
+ try{const r=await api('wa/status');const prev=U.wa||{};U.wa=r;U.waErr='';
+  if(U.page!=='wa')return;
+  if(prev.status!==r.status||prev.enabled!==r.enabled||prev.pairCode!==r.pairCode||!!prev.qr!==!!r.qr||prev.queue!==r.queue)render();else if(prev.qr!==r.qr)waDrawQr();
+ }catch(e){const was=U.waErr;U.waErr=e.message||'تعذّر الوصول لخدمة الواتساب';U.wa=U.wa&&U.wa.status?U.wa:null;if(U.page==='wa'&&was!==U.waErr)render()}
+}
+function waStartPoll(){if(waTimer)return;waPoll();waTimer=setInterval(()=>{if(U.page!=='wa'||document.hidden){clearInterval(waTimer);waTimer=null;return}waPoll()},4000)}
+function waDrawQr(){const el=$('#waqr');if(!el||!U.wa||!U.wa.qr||!window.QRCode)return;el.innerHTML='';try{new QRCode(el,{text:U.wa.qr,width:240,height:240,colorDark:'#000000',colorLight:'#ffffff'})}catch(e){}}
+function pageWa(){
+ setTimeout(()=>{waStartPoll();waDrawQr()},0);
+ const w=U.wa,stt=w?(WA_ST[w.status]||[w.status,'']):null;
+ let h=head('واتساب النادي','اربط رقم واتساب النادي بالنظام ليرد على العملاء ويرسل رسائل النظام من رقم النادي.');
+ if(!w)return h+'<section class="card empty-big"><span class="eic">'+ic('msg',30)+'</span><h2>'+(U.waErr?'تعذّر الوصول لخدمة الواتساب':'جارٍ الاتصال بخدمة الواتساب…')+'</h2>'+(U.waErr?'<p class="note">'+esc(U.waErr)+'</p>'+btn('waRetry','إعادة المحاولة','pri'):'')+'</section>';
+ h+='<section class="card"><div class="wa-st"><span class="wa-dot '+stt[1]+'"></span><div class="grow"><b>'+stt[0]+(w.me?' · <span class="ltr num">+'+esc(w.me)+'</span>':'')+'</b><small class="note">'+(w.status==='connected'?(w.enabled?'الرد الآلي يعمل':'الرد الآلي متوقف')+(w.paused?' · متوقف مؤقتاً في '+w.paused+' محادثة لأن موظفاً رد بنفسه':''):'لم يُربط رقم النادي بعد')+'</small></div>'+
+  (w.status==='connected'?btn('waToggle',w.enabled?'إيقاف الرد الآلي':'تشغيل الرد الآلي','sm'+(w.enabled?'':' pri'),'data-k="'+(w.enabled?'0':'1')+'"'):'')+'</div></section>';
+ if(w.status==='waiting')h+='<section class="card"><header class="card-h"><div><h2>اربط رقم النادي</h2><p class="note">من جوال النادي: افتح واتساب ← الإعدادات ← الأجهزة المرتبطة ← ربط جهاز، ثم امسح هذا الرمز.</p></div></header>'+
+  '<div class="wa-link"><div id="waqr" class="wa-qr" aria-label="رمز الربط">'+(w.qr?'':'<p class="note">جارٍ تجهيز الرمز…</p>')+'</div>'+
+  '<div class="wa-pair"><p class="note">أو اربط برقم الجوال بدون مسح: اكتب رقم النادي واضغط «أنشئ رمز الربط»، ثم في واتساب اختر «الربط برقم الهاتف بدلاً من ذلك» وأدخل الرمز.</p>'+
+  (w.pairCode?'<div class="wa-code ltr">'+esc(w.pairCode)+'</div>':'')+
+  '<form id="wapf" class="fm" style="padding:0"><label class="fld full"><span>رقم واتساب النادي</span><input name="phone" inputmode="tel" dir="ltr" placeholder="05XXXXXXXX" value="'+esc(U.waPh||S.settings.phone||'')+'" required></label><div class="full acts"><button type="submit" class="btn">'+(w.pairCode?'رمز جديد':'أنشئ رمز الربط')+'</button></div></form></div></div></section>';
+ if(w.status==='connected'){
+  const st=w.stats||{};
+  h+='<div class="strip s4" style="margin:0 0 14px"><div class="kpi"><span>رسائل واردة</span><b>'+(st.in||0)+'</b></div><div class="kpi"><span>ردود</span><b>'+(st.out||0)+'</b></div><div class="kpi"><span>عملاء مهتمون</span><b>'+(st.leads||0)+'</b></div><div class="kpi"><span>أُرسل اليوم من النظام</span><b>'+(w.sentToday||0)+' <small>/ '+(w.dayMax||300)+'</small></b></div></div>';
+  if(w.queue)h+='<p class="ptalert">'+ic('msg',16)+' '+w.queue+' رسالة في الانتظار. تُرسل واحدة كل 7 إلى 15 ثانية حتى لا يُحظر الرقم.</p>';
+ }
+ if(!w.ai)h+='<section class="card"><div class="pb" style="display:grid;gap:6px"><b>الرد الذكي على العملاء غير مفعّل بعد</b><p class="note">الرقم يعمل الآن لإرسال رسائل النظام (بيانات دخول التطبيق وتذكيرات التجديد). ليرد الوكيل على أسئلة العملاء ويحجز لهم، يلزم مفتاح Claude API يُضاف في إعدادات خدمة الواتساب في الاستضافة.</p></div></section>';
+ h+='<section class="card"><header class="card-h"><h2>آخر الأحداث</h2>'+(w.status==='connected'?btn('waTest','رسالة تجربة','sm'):'')+'</header><div class="tw"><table><tbody>'+((w.log||[]).map(x=>'<tr><td class="num" style="width:120px">'+esc(new Date(Date.parse(x.t)).toLocaleString(LOC,{day:'numeric',month:'short',hour:'numeric',minute:'2-digit'}))+'</td><td>'+esc(x.txt)+'</td></tr>').join('')||'<tr><td class="empty">لا توجد أحداث بعد.</td></tr>')+'</tbody></table></div></section>';
+ if(w.status==='connected')h+='<div class="acts" style="margin-top:6px">'+btn('waLogout','فصل رقم النادي عن النظام','sm bad')+'</div>';
+ return h;
+}
+async function waSend(messages,purpose){
+ const r=await api('wa/send',{method:'POST',body:{messages:messages,purpose:purpose||''}});
+ toast(r.connected?'أُضيفت '+r.queued+' رسالة لقائمة الإرسال من واتساب النادي':'أُضيفت '+r.queued+' رسالة، وستُرسل فور ربط رقم النادي');return r;
+}
+document.addEventListener('submit',e=>{if(e.target.id!=='wapf')return;e.preventDefault();const ph=e.target.phone.value.trim();U.waPh=ph;
+ api('wa/pair',{method:'POST',body:{phone:ph}}).then(r=>{U.wa=Object.assign({},U.wa,{pairCode:r.pairCode});render()}).catch(er=>toast(er.message))});
+
+/* bulk app activation: send everything from the club number */
+const _pageBulkApp=pageBulkApp;
+pageBulkApp=function(){const h=_pageBulkApp();const B=U.bulk;if(!B||!B.finished||!B.rows.length)return h;
+ const n=B.rows.filter(r=>{const m=memberById(r.id);return m&&/^05\d{8}$/.test(m.phone||'')}).length;
+ return h.replace('<p class="ptalert">','<section class="card"><div class="wa-st"><span class="wa-dot good"></span><div class="grow"><b>إرسال تلقائي من واتساب النادي</b><small class="note">يرسل النظام بيانات الدخول لـ '+n+' مشترك من رقم النادي المربوط، رسالة كل 7 إلى 15 ثانية.</small></div>'+btn('bulkWa',ic('msg',15)+' إرسال الكل','sm pri')+'</div></section><p class="ptalert">')};
+
+/* ===== discounts for members (partner offers) ===== */
+const offersAll=()=>S.offers||[];
+const offerLive=o=>o.active!==false&&(!o.until||o.until>=TODAY());
+function offerLogo(o,cls){return '<span class="of-logo'+(cls?' '+cls:'')+'">'+(o.logo?'<img src="'+esc(o.logo)+'" alt="'+esc(o.partner)+'">':'<b>'+esc(initial(o.partner||'؟'))+'</b>')+'</span>'}
+function pagePerksAdm(){
+ const L=offersAll().slice().sort((a,b)=>(offerLive(b)?1:0)-(offerLive(a)?1:0)||String(a.partner).localeCompare(String(b.partner),'ar'));
+ return head('عروض وخصومات المشتركين','جهات تمنح مشتركي النادي خصماً. تظهر في تطبيق المشترك ضمن «بطاقة الخصومات» مع اسمه ورقم اشتراكه.',btn('offerNew',ic('plus',15)+' عرض جديد','pri'))+
+ (L.length?'<div class="of-grid">'+L.map(o=>'<article class="of-card'+(offerLive(o)?'':' off')+'">'+offerLogo(o)+'<div class="of-tx"><b>'+esc(o.partner)+'</b><span class="of-pct">'+(o.pct?'خصم '+o.pct+'%':'عرض خاص')+'</span><small>'+esc(o.title||'')+'</small><small class="note">'+(o.until?'حتى '+fdate(o.until):'بدون تاريخ انتهاء')+(offerLive(o)?'':' · <b>غير ظاهر</b>')+'</small></div><div class="acts">'+btn('offerEdit','تعديل','sm','data-id="'+o.id+'"')+btn('offerDel',ic('trash',14),'sm','data-id="'+o.id+'" aria-label="حذف العرض"')+'</div></article>').join('')+'</div>'
+ :'<section class="card empty-big"><span class="eic">'+ic('gift',30)+'</span><h2>لا توجد عروض بعد</h2><p class="note">أضف أول جهة شريكة: مطعم صحي، متجر مكملات، عيادة علاج طبيعي…</p>'+btn('offerNew','إضافة عرض','pri')+'</section>');
+}
+function offerModal(id){
+ const o=offersAll().find(x=>x.id===id)||{id:uid('of'),partner:'',title:'',pct:10,until:'',terms:'',logo:'',cat:'',phone:'',map:'',active:true},isNew=!offersAll().some(x=>x.id===o.id);
+ openModal(isNew?'عرض جديد':'تعديل العرض','<div class="fm">'+
+  '<div class="fld full of-up"><span>شعار الجهة</span><div class="row" style="gap:12px;align-items:center"><span id="of-prev">'+offerLogo(o)+'</span><label class="btn sm">'+ic('plus',14)+' رفع الشعار<input type="file" accept="image/png,image/jpeg,image/webp" data-oflogo="1" hidden></label></div><input type="hidden" name="logo" value="'+esc(o.logo||'')+'"></div>'+
+  fld('اسم الجهة',inp('partner',o.partner,'required maxlength="80" placeholder="مثال: مطعم صحتين"'))+fld('نسبة الخصم %',inp('pct',o.pct,'type="number" min="0" max="100" required'))+
+  fld('وصف العرض',inp('title',o.title,'maxlength="120" placeholder="مثال: على جميع الوجبات الصحية"'),'full')+
+  fld('التصنيف',inp('cat',o.cat,'maxlength="40" list="of-cats" placeholder="مطاعم، مكملات، علاج طبيعي…"')+'<datalist id="of-cats"><option value="مطاعم صحية"><option value="مكملات غذائية"><option value="ملابس رياضية"><option value="علاج طبيعي"><option value="تجميل وعناية"></datalist>')+
+  fld('ساري حتى',inp('until',o.until,'type="date"'))+fld('جوال الجهة',inp('phone',o.phone,'dir="ltr" maxlength="20"'))+fld('رابط الموقع على الخريطة',inp('map',o.map,'dir="ltr" placeholder="https://maps.app.goo.gl/…"'))+
+  fld('الشروط',inp('terms',o.terms,'maxlength="400" placeholder="مثال: يُشترط إبراز البطاقة من التطبيق، لا يُجمع مع عروض أخرى"'),'full')+
+  '<label class="chk full"><input type="checkbox" name="active"'+(o.active!==false?' checked':'')+'> يظهر للمشتركين</label></div>',
+  d=>{const v=Object.assign({},o,{partner:d.partner.trim(),title:d.title.trim(),pct:Math.max(0,Math.min(100,Math.round(+d.pct||0))),until:d.until,terms:d.terms.trim(),logo:d.logo,cat:d.cat.trim(),phone:d.phone.trim(),map:/^https:\/\//.test(d.map.trim())?d.map.trim():'',active:!!d.active});
+   if(!v.partner){toast('اكتب اسم الجهة');return false}S.offers=offersAll().filter(x=>x.id!==v.id).concat([v]);save();render();toast(isNew?'أُضيف العرض':'حُفظ العرض')},{ok:isNew?'إضافة':'حفظ'});
+}
+document.addEventListener('change',async e=>{const t=e.target;if(!t.dataset||!t.dataset.oflogo)return;const f=t.files&&t.files[0];if(!f)return;
+ try{toast('جارٍ رفع الشعار…');const r=await api('upload',{method:'POST',body:{data:await resizeImage(f,500)}}),fm=t.closest('form'),h=fm&&fm.querySelector('[name=logo]');if(h)h.value=r.url;const p=$('#of-prev');if(p)p.innerHTML=offerLogo({logo:r.url,partner:''});toast('تم رفع الشعار')}catch(er){toast(er.message||'تعذّر رفع الصورة')}});
+function memberCardNo(m){return m.legacyCode?String(m.legacyCode).replace(/^0+/,''):m.code}
+function pagePerks(){
+ const m=memberById(SESS.uid);if(!m)return head('بطاقة الخصومات','');
+ const i=mInfo(m),ok=i.st==='active'||i.st==='expiring'||i.st==='frozen',L=offersAll().filter(offerLive).sort((a,b)=>(b.pct||0)-(a.pct||0));
+ return head('بطاقة الخصومات','خصومات حصرية لمشتركي '+esc(S.settings.gym||'النادي')+'. أظهر البطاقة عند الدفع.')+
+ '<div class="pk-card"><div class="pk-top"><img src="/brand/logo-dark.png" alt="'+esc(S.settings.gym||'')+'" class="pk-logo"><span class="pk-tag">بطاقة خصومات المشتركين</span></div><b class="pk-name">'+esc(m.name)+'</b><div class="pk-row"><span>رقم الاشتراك<b class="ltr num">'+esc(memberCardNo(m))+'</b></span><span>'+(ok?'سارية حتى<b class="num">'+fdate(i.end,{day:'numeric',month:'short',year:'numeric'})+'</b>':'<b class="pk-bad">الاشتراك غير ساري</b>')+'</span></div></div>'+
+ (ok?'':'<p class="ptalert">'+ic('warn',16)+' الخصومات متاحة للمشتركين باشتراك ساري. جدّد اشتراكك من الاستقبال لتفعيلها.</p>')+
+ (L.length?'<div class="of-grid">'+L.map(o=>'<button type="button" class="of-card btnlike" data-act="perkOpen" data-id="'+o.id+'"'+(ok?'':' disabled')+'>'+offerLogo(o)+'<span class="of-tx"><b>'+esc(o.partner)+'</b><span class="of-pct">'+(o.pct?'خصم '+o.pct+'%':'عرض خاص')+'</span><small>'+esc(o.title||o.cat||'')+'</small>'+(o.until?'<small class="note">حتى '+fdate(o.until,{day:'numeric',month:'short'})+'</small>':'')+'</span></button>').join('')+'</div>'
+ :'<section class="card empty-big"><span class="eic">'+ic('gift',30)+'</span><h2>لا توجد عروض حالياً</h2><p class="note">تابعنا، ستُضاف خصومات جديدة قريباً.</p></section>');
+}
+function perkModal(id){
+ const o=offersAll().find(x=>x.id===id),m=memberById(SESS.uid);if(!o||!m)return;const i=mInfo(m);
+ openModal('بطاقة الخصم','<div class="pk-full">'+offerLogo(o,'lg')+'<b class="pk-partner">'+esc(o.partner)+'</b><span class="pk-pct">'+(o.pct?o.pct+'%':'عرض خاص')+'<small>'+(o.pct?'خصم':'')+'</small></span>'+(o.title?'<p>'+esc(o.title)+'</p>':'')+
+  '<div class="pk-who"><img src="/brand/mark.png" alt=""><div><b>'+esc(m.name)+'</b><small>رقم الاشتراك <span class="ltr num">'+esc(memberCardNo(m))+'</span> · ساري حتى '+fdate(i.end,{day:'numeric',month:'short'})+'</small></div></div>'+
+  '<p class="pk-live" id="pk-clock"></p>'+(o.terms?'<p class="note">'+esc(o.terms)+'</p>':'')+
+  '<div class="acts" style="justify-content:center">'+(o.phone?'<a class="btn sm" href="tel:'+esc(o.phone)+'">'+ic('msg',14)+' اتصال</a>':'')+(o.map?'<a class="btn sm" target="_blank" rel="noopener" href="'+esc(o.map)+'">'+ic('pinpt',14)+' الموقع</a>':'')+'</div></div>',null,{noForm:true,noFocus:true});
+ const tick=()=>{const el=$('#pk-clock');if(!el){clearInterval(tm);return}el.textContent='البطاقة صالحة الآن · '+new Date().toLocaleString(LOC,{weekday:'long',hour:'numeric',minute:'2-digit',second:'2-digit'})};const tm=setInterval(tick,1000);tick();
+}
+function perksHomeSec(){if(SESS.role!=='trainee')return '';const n=offersAll().filter(offerLive).length;if(!n)return '';
+ return '<button type="button" class="pk-strip" data-act="goPerks">'+ic('gift',20)+'<span><b>بطاقة الخصومات</b><small>'+n+' '+(n>2&&n<11?'عروض':'عرض')+' حصرية لمشتركي النادي</small></span>'+ic('chev',16)+'</button>'}
+
+/* ===== events (posts marked as an event) ===== */
+const evPosts=()=>postsAll().filter(x=>x.ev&&x.ev.date&&postLive(x)&&x.app!==false);
+function evSorted(){const t=TODAY(),L=evPosts(),up=L.filter(x=>x.ev.date>=t).sort((a,b)=>a.ev.date.localeCompare(b.ev.date)),past=L.filter(x=>x.ev.date<t).sort((a,b)=>b.ev.date.localeCompare(a.ev.date));return up.concat(past)}
+function evCard(x){const t=TODAY(),d=x.ev.date,up=d>=t;
+ return '<button type="button" class="ev-card" data-act="newsOpen" data-id="'+x.id+'"><span class="ev-img">'+(x.cover?'<img src="'+esc(x.cover)+'" alt="" loading="lazy">':ic('cal',28))+'<span class="ev-date"><b>'+(+d.slice(8))+'</b>'+parse(d).toLocaleDateString(LOC,{month:'short'})+'</span></span><span class="ev-tx"><em class="'+(up?'up':'')+'">'+(d===t?'اليوم':up?'قادمة':'أُقيمت')+'</em><b>'+esc(x.title)+'</b><small>'+esc([x.ev.time?ft(x.ev.time):'',x.ev.place].filter(Boolean).join(' · '))+'</small></span></button>'}
+function eventsHomeSec(){const L=evSorted().slice(0,6);if(!L.length)return '';return '<section class="acts-sec ev-home"><div class="as-h"><h2>فعالياتنا</h2><a href="#news">الكل</a></div><div class="ev-strip">'+L.map(evCard).join('')+'</div></section>'}
+const _pageHomeApp=pageHomeApp;
+pageHomeApp=function(){const h=_pageHomeApp();const add=perksHomeSec()+eventsHomeSec();if(!add)return h;const i=h.indexOf('<div class="qa">');return i<0?h+add:h.slice(0,i)+add+h.slice(i)};
+const _pageHome=pageHome;
+pageHome=function(){const h=_pageHome();if(!SESS||SESS.role!=='trainee')return h;const add=perksHomeSec()+eventsHomeSec();return add?h+'<div style="margin-top:16px">'+add+'</div>':h};
+const _pageBlogEdit=pageBlogEdit;
+pageBlogEdit=function(){const h=_pageBlogEdit(),x=postDraft(),ev=x.ev||null;
+ const sec='<section class="card"><header class="card-h"><div><h2>فعالية</h2><p class="note">فعّلها إذا كان المقال عن فعالية (بطولة، يوم مفتوح، ورشة…) ليظهر في «فعالياتنا» في التطبيق والموقع.</p></div></header><div class="fm">'+
+  '<label class="chk fld full"><input type="checkbox" data-pev="on"'+(ev?' checked':'')+'> هذا المقال فعالية</label>'+
+  (ev?'<label class="fld"><span>تاريخ الفعالية</span><input type="date" data-pev="date" value="'+esc(ev.date||'')+'" required></label><label class="fld"><span>الوقت</span><input type="time" data-pev="time" value="'+esc(ev.time||'')+'"></label><label class="fld full"><span>المكان</span><input data-pev="place" value="'+esc(ev.place||'')+'" maxlength="120" placeholder="مثال: صالة النادي"></label>':'')+'</div></section>';
+ const k='<section class="card"><header class="card-h"><h2>النشر</h2>';const i=h.indexOf(k);return i<0?h:h.slice(0,i)+sec+h.slice(i)};
+document.addEventListener('change',e=>{const t=e.target;if(!t.dataset||!t.dataset.pev||!U.postDraft)return;const x=U.postDraft,k=t.dataset.pev;
+ if(k==='on'){x.ev=t.checked?{date:TODAY(),time:'',place:''}:undefined;if(!t.checked)delete x.ev;postTouch(true);return}
+ x.ev=x.ev||{date:TODAY(),time:'',place:''};x.ev[k]=t.value;postTouch(false)});
+
+/* ===== go-live: remove test data, then re-import ===== */
+function pageGoLive(){
+ const t=TODAY(),c=a=>(a||[]).length,test=S.members.filter(m=>!m.legacyCode),todayPay=S.pay.filter(p=>p.date===t&&p.amount>0);
+ const rows=[['الاشتراكات والفواتير',c(S.subs)],['المدفوعات والاستردادات',c(S.pay)],['المصروفات وحركات الصندوق',c(S.exp)+c(S.cash)],['العملاء اليوميون',c(S.daily)],['الحضور',c(S.att)],['باقات وجلسات التدريب الشخصي',c(S.ptPacks)+c(S.ptSess)],['حجوزات الحصص',c(S.book)],['إغلاق الورديات',c(S.shifts)],['القيود المحاسبية',c(S.jrnl)],['أعضاء أُضيفوا يدوياً (تجريبيون)',test.length]];
+ if(S.goLive)return head('بدء التشغيل الفعلي','')+'<section class="card empty-big"><span class="eic">'+ic('ok',30)+'</span><h2>بدأ التشغيل الفعلي في '+fdate(S.goLive)+'</h2><p class="note">حُذفت البيانات التجريبية. الخطوة التالية: استيراد المشتركين الحاليين وسجل الحضور.</p>'+btn('goImp',ic('file',15)+' استيراد المشتركين','pri')+'</section>';
+ return head('بدء التشغيل الفعلي','يحذف كل البيانات التجريبية حتى تبدأ المالية والاشتراكات من الصفر، ثم تستورد المشتركين الحاليين.')+
+ '<section class="card"><header class="card-h"><div><h2>1. سيُحذف</h2><p class="note">يأخذ النظام نسخة احتياطية كاملة على الخادم قبل الحذف، ويمكنك تنزيل نسخة أيضاً.</p></div><a class="btn sm" href="/api/backup">'+ic('dl',14)+' تنزيل نسخة احتياطية</a></header><div class="tw"><table><tbody>'+rows.map(r=>'<tr><td>'+r[0]+'</td><td class="num"><b>'+r[1]+'</b></td></tr>').join('')+'</tbody></table></div>'+
+ (todayPay.length?'<p class="ptalert" style="margin:0 16px 12px">'+ic('warn',16)+' يوجد '+todayPay.length+' عملية تحصيل مسجلة اليوم بإجمالي '+money(todayPay.reduce((a,p)=>a+p.amount,0))+'. ستُحذف أيضاً، فأعد تسجيلها بعد الاستيراد إن كانت حقيقية.</p>':'')+'</section>'+
+ '<section class="card"><header class="card-h"><div><h2>2. يبقى كما هو</h2></div></header><p class="note" style="padding:0 16px 14px">الإعدادات، الباقات والأسعار، المدربون والحصص، حسابات الموظفين، الموقع والمدونة، العروض، العملاء المحتملون، ملف الدخل السابق من Excel، والمشتركون المنقولون من النظام السابق مع حسابات دخولهم للتطبيق (تُحدَّث بياناتهم واشتراكاتهم من الملف الجديد).</p></section>'+
+ '<section class="card"><header class="card-h"><div><h2>3. التأكيد</h2><p class="note">لا يمكن التراجع إلا باسترجاع النسخة الاحتياطية. اكتب «بدء التشغيل» ثم اضغط الزر.</p></div></header><form id="glf" class="fm"><label class="fld"><span>اكتب: بدء التشغيل</span><input name="confirm" autocomplete="off" required></label><div class="full acts"><button type="submit" class="btn bad">'+ic('trash',15)+' حذف البيانات التجريبية</button></div></form></section>';
+}
+document.addEventListener('submit',async e=>{if(e.target.id!=='glf')return;e.preventDefault();const v=e.target.confirm.value.trim();if(v!=='بدء التشغيل'){toast('اكتب «بدء التشغيل» كما هي');return}
+ const b=e.target.querySelector('button');b.disabled=true;
+ try{await Sync.flush();const r=await api('golive',{method:'POST',body:{confirm:v}});toast('حُذفت البيانات التجريبية · نسخة احتياطية: '+r.backup);setTimeout(()=>{location.hash='#imp';location.reload()},1200)}catch(er){b.disabled=false;toast(er.message)}});
+
+/* importer: existing members from the previous system are updated (not skipped), and check-ins can be imported */
+impBuild=function(){
+ const I=U.imp,seenBc=new Set(),byLeg=new Map(S.members.filter(m=>m.legacyCode).map(m=>[m.legacyCode,m])),byPN=new Set(S.members.filter(m=>!m.legacyCode).map(m=>impPhone(m.phone).phone+'|'+impTxt(m.name)));
+ I.rows.forEach(r=>{r.skip='';r.upd=null;
+  if(!r.name)r.skip='بدون اسم';else if(r.bc&&seenBc.has(r.bc))r.skip='مكرر في الملف';else if(r.bc&&byLeg.has(r.bc))r.upd=byLeg.get(r.bc).id;else if(byPN.has(r.phone+'|'+r.name))r.skip='موجود في النظام';
+  if(r.bc)seenBc.add(r.bc)});
+};
+const _impRun=impRun;
+impRun=function(){
+ const I=U.imp,old=new Map();
+ // members already in the system: taken out for the run, then refreshed and put back with their old id (their app login keeps working)
+ I.rows.filter(r=>r.upd&&!r.skip&&(I.inclExpired||r.active)).forEach(r=>{const m=memberById(r.upd);if(m){old.set(m.legacyCode,m);S.members=S.members.filter(x=>x.id!==m.id)}});
+ const sub0=S.subs.length,pk0=(S.ptPacks||[]).length,pt0=(S.pt||[]).length;
+ try{_impRun()}finally{
+  S.members.filter(n=>n.legacyCode&&old.has(n.legacyCode)&&!false).forEach(n=>{const o=old.get(n.legacyCode);
+   S.subs.slice(sub0).forEach(x=>{if(x.memberId===n.id)x.memberId=o.id});(S.ptPacks||[]).slice(pk0).forEach(k=>{if(k.memberId===n.id)k.memberId=o.id});
+   (S.pt||[]).slice(pt0).forEach(x=>{if(x.memberId===n.id){if((S.pt||[]).some(y=>y!==x&&y.memberId===o.id))x.memberId='__drop';else x.memberId=o.id}});
+   Object.assign(o,{name:n.name,phone:n.phone||o.phone,nid:n.nid||o.nid||'',birth:n.birth||o.birth||'',notes:n.notes,imported:true});
+   S.members=S.members.filter(x=>x.id!==n.id)});
+  S.pt=(S.pt||[]).filter(x=>x.memberId!=='__drop');
+  old.forEach(m=>S.members.push(m));
+ }
+ if(I.done)I.done.updated=old.size;
+ if(I.att&&I.att.length){let a=0;const byL=new Map(S.members.filter(m=>m.legacyCode).map(m=>[m.legacyCode,m.id])),seen=new Set(S.att.map(x=>x.memberId+'|'+x.date+'|'+x.time));
+  I.att.forEach(x=>{const id=byL.get(x.bc);if(!id)return;const k=id+'|'+x.date+'|'+x.time;if(seen.has(k))return;seen.add(k);S.att.push({id:uid('a'),memberId:id,date:x.date,time:x.time,legacy:true});a++});
+  if(I.done)I.done.att=a}
+ save();render();
+};
+const _impDoneHtml=impDoneHtml;
+impDoneHtml=function(){const r=U.imp.done,h=_impDoneHtml();return h.replace('(موقوفة عن البيع إلا ما اخترته)</p>','(موقوفة عن البيع إلا ما اخترته)'+(r.updated?' · '+r.updated+' مشترك موجود سابقاً حُدّثت بياناته':'')+(r.att?' · '+r.att+' زيارة من سجل الحضور':'')+'</p>')};
+const _pageImport=pageImport;
+pageImport=function(){const h=_pageImport(),I=U.imp;
+ const f='<div class="fld"><span>ملف سجل الحضور (اختياري)</span><label class="btn">'+ic('file',15)+' '+(I&&I.aName?esc(I.aName):'اختر ملف الحضور')+'<input type="file" accept=".xlsx" data-impatt="1" hidden></label>'+(I&&I.att?'<small class="note">'+I.att.length+' زيارة في الملف</small>':'')+'</div>';
+ let o=I&&I.done?h:h.replace('</div></section>',f+'</div></section>');
+ if(I&&I.rows&&!I.done){const u=I.rows.filter(r=>r.upd).length;if(u)o=o.replace('<div class="kpi"><span>سيُنقل</span>','<div class="kpi"><span>موجودون وستُحدّث بياناتهم</span><b>'+u+'</b></div><div class="kpi"><span>سيُنقل</span>')}
+ return o};
+document.addEventListener('change',async e=>{const t=e.target;if(!t.dataset||!t.dataset.impatt)return;const f=t.files&&t.files[0];if(!f)return;
+ try{toast('جارٍ قراءة ملف الحضور…');const rows=await readXlsx(f),T=impTable(rows,{at:['تاريخ الإنشاء','التاريخ','وقت الحضور'],bc:['الباركود','رقم العضوية','الكود'],name:['الاسم']},['at','bc']);if(!T)throw new Error('لم أجد عمودي «تاريخ الإنشاء» و«الباركود» في ملف الحضور');
+  const out=[];T.forEach(o=>{let s=o.at;if(typeof s==='number'){const d=new Date(Date.UTC(1899,11,30)+s*864e5);s=d.toISOString().replace('T',' ')}s=impTxt(s);const m=/^(\d{4}-\d\d-\d\d)[ T](\d\d):(\d\d)/.exec(s);if(m&&impTxt(o.bc))out.push({bc:impTxt(o.bc),date:m[1],time:m[2]+':'+m[3]})});
+  U.imp=U.imp||{cat:{},inclExpired:true};U.imp.att=out;U.imp.aName=f.name;render();toast('تمت قراءة '+out.length+' زيارة')}catch(er){toast(er.message||'تعذّرت قراءة الملف')}});
+
+Object.assign(ACT,{
+ waRetry:()=>{U.waErr='';U.wa=null;render();waPoll()},
+ waToggle:d=>api('wa/toggle',{method:'POST',body:{on:d.k==='1'}}).then(()=>waPoll()).catch(e=>toast(e.message)),
+ waLogout:()=>confirmModal('فصل رقم النادي','سيتوقف الرد الآلي وإرسال رسائل النظام حتى تربط الرقم من جديد.','فصل',()=>api('wa/logout',{method:'POST',body:{}}).then(()=>{toast('فُصل الرقم');setTimeout(waPoll,2500)}).catch(e=>toast(e.message)),true),
+ waTest:()=>openModal('رسالة تجربة','<div class="fm">'+fld('أرسل إلى الجوال',inp('phone','','required dir="ltr" inputmode="tel" placeholder="05XXXXXXXX"'),'full')+'</div>',d=>{waSend([{phone:d.phone,text:'رسالة تجربة من نظام '+(S.settings.gym||'النادي')+' ✅',ref:'test'}],'تجربة').then(()=>setTimeout(waPoll,3000)).catch(e=>toast(e.message))},{ok:'إرسال'}),
+ bulkWa:()=>{const B=U.bulk;if(!B)return;const L=B.rows.map(r=>{const m=memberById(r.id);return m&&/^05\d{8}$/.test(m.phone||'')?{phone:m.phone,text:appMsg(m,r.pin),ref:r.id}:null}).filter(Boolean);
+  if(!L.length){toast('لا توجد أرقام صحيحة للإرسال');return}
+  confirmModal('إرسال بيانات الدخول','سيُرسل النظام '+L.length+' رسالة من رقم واتساب النادي، رسالة كل 7 إلى 15 ثانية (قرابة '+Math.ceil(L.length*11/60)+' دقيقة).','إرسال',()=>waSend(L,'بيانات دخول التطبيق').then(()=>{U.bulkSent=U.bulkSent||{};L.forEach(x=>U.bulkSent[x.ref]=true);render()}).catch(e=>toast(e.message)))},
+ offerNew:()=>offerModal(''),offerEdit:d=>offerModal(d.id),
+ offerDel:d=>{const o=offersAll().find(x=>x.id===d.id);if(!o)return;confirmModal('حذف العرض','سيُحذف عرض «'+esc(o.partner)+'» من تطبيق المشتركين.','حذف',()=>{S.offers=offersAll().filter(x=>x.id!==o.id);save();render();toast('حُذف العرض')},true)},
+ perkOpen:d=>perkModal(d.id),goPerks:()=>{location.hash='#perks'},goImp:()=>{location.hash='#imp'}
+});
+
 /* ---------- shell + router ---------- */
 const PAGES={
  dashboard:{t:'لوحة التحكم',icon:'dash',fn:pageDashboard2},members:{t:'الأعضاء',icon:'members',fn:pageMembers},subs:{t:'الاشتراكات',icon:'subs',fn:pageSubs},checkin:{t:'الحضور',icon:'checkin',fn:pageCheckin},
  finance:{t:'المالية',icon:'finance',fn:pageFinance2},shift:{t:'إغلاق الوردية',icon:'shift',fn:pageShift},pt:{t:'التدريب الشخصي',icon:'dumbbell',fn:pagePT},home:{t:'الرئيسية',icon:'home',fn:()=>isPhone()&&SESS&&SESS.role==='trainee'?pageHomeApp():pageHome()},audit:{t:'سجل العمليات',icon:'shield',fn:pageAudit},classes:{t:'جدول الحصص',icon:'classes',fn:()=>{const h=pageClasses2(),i=h.indexOf('</div></div>',h.indexOf('<div class="acts">'))+12;return h.slice(0,i)+unlinkedPanel()+h.slice(i)}},trainers:{t:'المدربون',icon:'trainers',fn:pageTrainers},reports:{t:'التقارير',icon:'reports',fn:pageReports},settings:{t:'الإعدادات',icon:'settings',fn:pageSettings},
- newmember:{t:'عضو جديد',icon:'plus',fn:pageNewMember},schedule:{t:'الجدول الشهري',icon:'classes',fn:pageSchedule},portal:{t:'بطاقة المتدرب',icon:'subs',fn:pagePortal},gate:{t:'بوابة QR',icon:'qr',fn:pageGate},requests:{t:'طلبات التجميد',icon:'warn',fn:pageRequests},trainer:{t:'لوحة المدرب',icon:'trainers',fn:pageTrainer},marketing:{t:'التسويق',icon:'msg',fn:pageMarketing},coach:{t:'لوحة المدربة',icon:'trainers',fn:pageCoach},feedback:{t:'الشكاوى والاقتراحات',icon:'msg',fn:pageFeedback},acct:{t:'المحاسبة والقوائم',icon:'book',fn:pageAcct},site:{t:'الموقع الإلكتروني',icon:'globe',fn:pageSite},blog:{t:'المدونة',icon:'news',fn:pageBlog},imp:{t:'استيراد من النظام السابق',icon:'file',fn:pageImport},clock:{t:'حضور الموظفين',icon:'pinpt',fn:pageClock},bulkapp:{t:'تفعيل دخول المشتركين',icon:'lock',fn:pageBulkApp},acchub:{t:'مركز المحاسب',icon:'calc',fn:pageAccHub},income:{t:'ملف الدخل',icon:'finance',fn:pageIncome},news:{t:'المدونة',icon:'news',fn:pageNews},
+ newmember:{t:'عضو جديد',icon:'plus',fn:pageNewMember},schedule:{t:'الجدول الشهري',icon:'classes',fn:pageSchedule},portal:{t:'بطاقة المتدرب',icon:'subs',fn:pagePortal},gate:{t:'بوابة QR',icon:'qr',fn:pageGate},requests:{t:'طلبات التجميد',icon:'warn',fn:pageRequests},trainer:{t:'لوحة المدرب',icon:'trainers',fn:pageTrainer},marketing:{t:'التسويق',icon:'msg',fn:pageMarketing},coach:{t:'لوحة المدربة',icon:'trainers',fn:pageCoach},feedback:{t:'الشكاوى والاقتراحات',icon:'msg',fn:pageFeedback},acct:{t:'المحاسبة والقوائم',icon:'book',fn:pageAcct},site:{t:'الموقع الإلكتروني',icon:'globe',fn:pageSite},blog:{t:'المدونة',icon:'news',fn:pageBlog},imp:{t:'استيراد من النظام السابق',icon:'file',fn:pageImport},clock:{t:'حضور الموظفين',icon:'pinpt',fn:pageClock},bulkapp:{t:'تفعيل دخول المشتركين',icon:'lock',fn:pageBulkApp},acchub:{t:'مركز المحاسب',icon:'calc',fn:pageAccHub},income:{t:'ملف الدخل',icon:'finance',fn:pageIncome},wa:{t:'واتساب النادي',icon:'msg',fn:pageWa},perksAdm:{t:'عروض المشتركين',icon:'gift',fn:pagePerksAdm},perks:{t:'بطاقة الخصومات',icon:'gift',fn:pagePerks},golive:{t:'بدء التشغيل الفعلي',icon:'flag',fn:pageGoLive},news:{t:'المدونة',icon:'news',fn:pageNews},
  daily:{t:'العملاء اليوميون',icon:'day',fn:pageDaily},leads:{t:'العملاء المحتملون',icon:'lead',fn:pageLeads},cashbox:{t:'صندوق المال',icon:'box',fn:pageCashbox}
 };
-const NAV=[['الرئيسية',['dashboard','home','news','income']],['الأعضاء',['members','newmember','leads','subs','requests','feedback','schedule','portal']],['الدخول والحضور',['gate','checkin','daily','clock']],['المالية',['acchub','cashbox','finance','acct','shift']],['التشغيل',['coach','pt','classes','trainers']],['التسويق',['marketing','site','blog']],['التحليل',['reports','audit','settings']]];
+const NAV=[['الرئيسية',['dashboard','home','news','perks','income']],['الأعضاء',['members','newmember','leads','subs','requests','feedback','schedule','portal']],['الدخول والحضور',['gate','checkin','daily','clock']],['المالية',['acchub','cashbox','finance','acct','shift']],['التشغيل',['coach','pt','classes','trainers']],['التسويق',['wa','marketing','perksAdm','site','blog']],['التحليل',['reports','audit','settings','golive']]];
 function shell(){
- $('#app').innerHTML='<div class="shell"><aside class="rail" aria-label="القائمة الرئيسية"><div class="brand"><span class="brandlogo" role="img" aria-label="جولة اللياقة"><i class="t"></i><i class="m"></i></span><small id="gymname"></small></div>'+(can('finance')?'<button type="button" class="inc" data-act="incomeModal" id="incR" aria-label="دخل اليوم، اعرض التفاصيل"></button>':'')+'<nav class="nav">'+NAV.map(g=>[g[0],g[1].filter(k=>can(k)&&(k!=='home'||SESS.role==='trainee')&&(k!=='news'||SESS.role==='trainee'||SESS.role==='trainer'))]).filter(g=>g[1].length).map(g=>'<p class="grp">'+g[0]+'</p>'+g[1].map(k=>'<a href="#'+k+'" data-p="'+k+'">'+ic(PAGES[k].icon)+'<span>'+PAGES[k].t+'</span>'+(k==='requests'?'<em class="badge" id="b-req" hidden></em>':'')+(k==='leads'?'<em class="badge" id="b-lead" hidden></em>':'')+(k==='feedback'?'<em class="badge" id="b-fb" hidden></em>':'')+'</a>').join('')).join('')+'</nav><div class="rfoot"><div class="mode" id="mode"></div><button type="button" class="btn sm" data-act="toggleTheme">'+ic('moon',15)+' تبديل المظهر</button><p id="syncst" class="sync" role="status"></p></div></aside><div class="scrim" data-act="closeMenu"></div><main class="main"><div class="top"><button type="button" class="ib" data-act="openMenu" aria-label="فتح القائمة">'+ic('menu',22)+'</button><b class="tt" id="ttl"></b>'+(can('finance')?'<button type="button" class="btn sm inc-t" data-act="incomeModal" id="incT" aria-label="دخل اليوم"></button>':'')+(can('checkin')?'<button type="button" class="btn sm pri" data-act="goCheckin">'+ic('checkin',15)+' حضور</button>':'')+'</div><div id="view"></div></main></div><div id="toast" role="status" aria-live="polite"></div>';
+ $('#app').innerHTML='<div class="shell"><aside class="rail" aria-label="القائمة الرئيسية"><div class="brand"><span class="brandlogo" role="img" aria-label="جولة اللياقة"><i class="t"></i><i class="m"></i></span><small id="gymname"></small></div>'+(can('finance')?'<button type="button" class="inc" data-act="incomeModal" id="incR" aria-label="دخل اليوم، اعرض التفاصيل"></button>':'')+'<nav class="nav">'+NAV.map(g=>[g[0],g[1].filter(k=>can(k)&&(k!=='home'||SESS.role==='trainee')&&(k!=='news'||SESS.role==='trainee'||SESS.role==='trainer')&&(k!=='perks'||SESS.role==='trainee'))]).filter(g=>g[1].length).map(g=>'<p class="grp">'+g[0]+'</p>'+g[1].map(k=>'<a href="#'+k+'" data-p="'+k+'">'+ic(PAGES[k].icon)+'<span>'+PAGES[k].t+'</span>'+(k==='requests'?'<em class="badge" id="b-req" hidden></em>':'')+(k==='leads'?'<em class="badge" id="b-lead" hidden></em>':'')+(k==='feedback'?'<em class="badge" id="b-fb" hidden></em>':'')+'</a>').join('')).join('')+'</nav><div class="rfoot"><div class="mode" id="mode"></div><button type="button" class="btn sm" data-act="toggleTheme">'+ic('moon',15)+' تبديل المظهر</button><p id="syncst" class="sync" role="status"></p></div></aside><div class="scrim" data-act="closeMenu"></div><main class="main"><div class="top"><button type="button" class="ib" data-act="openMenu" aria-label="فتح القائمة">'+ic('menu',22)+'</button><b class="tt" id="ttl"></b>'+(can('finance')?'<button type="button" class="btn sm inc-t" data-act="incomeModal" id="incT" aria-label="دخل اليوم"></button>':'')+(can('checkin')?'<button type="button" class="btn sm pri" data-act="goCheckin">'+ic('checkin',15)+' حضور</button>':'')+'</div><div id="view"></div></main></div><div id="toast" role="status" aria-live="polite"></div>';
 }
 function render(){
  if(!PAGES[U.page])U.page='dashboard';

@@ -257,6 +257,15 @@ p{margin:0}
 .wa-float{position:fixed;left:max(20px,env(safe-area-inset-left,0px));bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:60;width:58px;height:58px;border-radius:50%;background:#1FAF55;color:#fff;display:grid;place-items:center;box-shadow:0 14px 30px -10px rgba(0,0,0,.5)}
 .reveal{transition:opacity .6s,transform .6s}
 .reveal.pre{opacity:.001;transform:translateY(18px)}
+/* events */
+.egrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
+.ecard{display:grid;grid-template-rows:auto 1fr;background:#fff;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;text-decoration:none;transition:transform .2s,box-shadow .2s}
+.ecard:hover{transform:translateY(-4px);box-shadow:0 18px 40px rgba(18,16,16,.1)}
+.eimg{aspect-ratio:16/10;background:var(--ink);display:grid;place-items:center;overflow:hidden;position:relative}.eimg img{width:100%;height:100%;object-fit:cover}.eimg .mk{width:60px;object-fit:contain}
+.edate{position:absolute;top:14px;inset-inline-start:14px;background:#fff;color:var(--ink);border-radius:12px;padding:6px 12px;text-align:center;font:600 13px/1.1 var(--f-display);display:grid}.edate b{font-size:24px;color:var(--red)}
+.etx{display:grid;gap:8px;padding:20px 22px 22px;align-content:start}.etx em{font-style:normal;font:600 13px var(--f-display);color:var(--muted)}.etx em.up{color:#1FAF55}
+.etx b{font:600 20px/1.45 var(--f-display);color:var(--ink)}.etx small{color:var(--muted);font-size:15px}
+@media (max-width:900px){.egrid{grid-template-columns:1fr 1fr}}@media (max-width:620px){.egrid{grid-template-columns:1fr}}
 /* blog */
 .bgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
 .bcard{display:grid;grid-template-rows:auto 1fr;background:#fff;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;text-decoration:none;transition:transform .2s,box-shadow .2s}
@@ -397,6 +406,13 @@ function bodyHtml(B){
  }).join('');
 }
 function bcard(x,feat){const img=safeUrl(x.cover);return '<a class="bcard'+(feat?' bfeat':'')+' reveal" href="/blog/'+esc(x.id)+'"><span class="bimg">'+(img?'<img src="'+esc(img)+'" alt="" loading="lazy">':'<img class="mk" src="/brand/mark.png" alt="">')+'</span><span class="btx">'+(x.cat?'<em>'+esc(x.cat)+'</em>':'')+'<b>'+esc(x.title)+'</b>'+(x.excerpt?'<small>'+esc(x.excerpt)+'</small>':'')+'<i>'+fdl(x.pubAt)+' · '+rdT(x.read)+'</i></span></a>'}
+function eventsHome(){
+ const L=(D.events||[]);if(D.site.show.events===false||!L.length)return '';
+ const t=new Date(Date.now()+3*3600e3).toISOString().slice(0,10),up=L.filter(x=>x.ev.date>=t).sort((a,b)=>a.ev.date.localeCompare(b.ev.date)),past=L.filter(x=>x.ev.date<t),E=up.concat(past).slice(0,3);
+ const md=d=>new Date(d+'T12:00:00').toLocaleDateString('ar-SA-u-ca-gregory-nu-latn',{month:'short'});
+ return '<section class="sec sand" id="events"><div class="wrap"><div class="sec-h"><div><span class="eyebrow">فعالياتنا</span><h2>'+(up.length?'فعاليات قادمة في النادي':'آخر فعاليات النادي')+'</h2><p>بطولات وأيام مفتوحة وورش تدريبية للكبار والأطفال.</p></div></div><div class="egrid">'+
+ E.map(x=>{const img=safeUrl(x.cover),d=x.ev.date,u=d>=t;return '<a class="ecard reveal" href="/blog/'+esc(x.id)+'"><span class="eimg">'+(img?'<img src="'+esc(img)+'" alt="" loading="lazy">':'<img class="mk" src="/brand/mark.png" alt="">')+'<span class="edate"><b>'+(+d.slice(8))+'</b>'+md(d)+'</span></span><span class="etx"><em class="'+(u?'up':'')+'">'+(d===t?'اليوم':u?'فعالية قادمة':'أُقيمت')+'</em><b>'+esc(x.title)+'</b><small>'+esc([x.ev.time||'',x.ev.place||''].filter(Boolean).join(' · '))+'</small></span></a>'}).join('')+'</div></div></section>';
+}
 function blogHome(){
  const L=(D.posts||[]);if(D.site.show.blog===false||!L.length)return '';
  return '<section class="sec" id="blog"><div class="wrap"><div class="sec-h"><div><span class="eyebrow">المدونة</span><h2>نصائح من فريق التدريب</h2><p>مقالات قصيرة في التمرين والتغذية والفنون القتالية، تساعدك تتمرن بذكاء.</p></div><a class="btn btn-line" href="/blog">كل المقالات</a></div><div class="bgrid">'+L.map(x=>bcard(x)).join('')+'</div></div></section>';
@@ -411,7 +427,7 @@ async function loadBlog(){
    const x=j.post,img=safeUrl(x.cover),url=location.origin+'/blog/'+x.id;
    document.title=x.title+' | '+(D.gym||'جولة اللياقة');
    root.innerHTML='<article class="sec"><div class="wrap"><div class="post">'+(x.status!=='published'?'<p style="background:var(--red-soft);color:var(--red-2);padding:10px 16px;border-radius:12px;margin-bottom:18px;font-weight:600">معاينة: هذا المقال مسودة ولا يراه الزوار.</p>':'')+
-    '<a class="crumb" href="/blog">'+ic('chevR',18)+' المدونة</a>'+(x.cat?'<div><span class="eyebrow">'+esc(x.cat)+'</span></div>':'')+'<h1>'+esc(x.title)+'</h1><div class="meta">'+(x.author?'<span>'+esc(x.author)+'</span>':'')+(x.pubAt?'<span>'+fdl(x.pubAt)+'</span>':'')+'<span>'+rdT(x.read)+'</span></div>'+
+    '<a class="crumb" href="/blog">'+ic('chevR',18)+' المدونة</a>'+(x.cat?'<div><span class="eyebrow">'+esc(x.cat)+'</span></div>':'')+'<h1>'+esc(x.title)+'</h1><div class="meta">'+(x.ev?'<span>الفعالية: '+fdl(x.ev.date+'T09:00:00Z')+(x.ev.time?' · '+esc(x.ev.time):'')+(x.ev.place?' · '+esc(x.ev.place):'')+'</span>':'')+(x.author?'<span>'+esc(x.author)+'</span>':'')+(x.pubAt?'<span>'+fdl(x.pubAt)+'</span>':'')+'<span>'+rdT(x.read)+'</span></div>'+
     (img?'<img class="cover" src="'+esc(img)+'" alt="">':'')+'<div class="abody">'+bodyHtml(x.blocks)+'</div>'+
     '<div class="pshare"><span>شارك المقال:</span><a class="btn btn-line" target="_blank" rel="noopener" href="https://wa.me/?text='+encodeURIComponent(x.title+'\n'+url)+'">واتساب</a><a class="btn btn-line" target="_blank" rel="noopener" href="https://x.com/intent/post?text='+encodeURIComponent(x.title)+'&url='+encodeURIComponent(url)+'">إكس</a><button type="button" class="btn btn-line" data-copy="'+esc(url)+'">نسخ الرابط</button></div>'+
     '<div class="pcta"><div><h3>جاهز تبدأ؟</h3><p>احجز زيارتك التجريبية في '+esc(D.gym||'النادي')+' وجرّب بنفسك.</p></div><a class="btn btn-red" href="/#join">احجز زيارة تجريبية</a></div></div></div></article>'+
@@ -433,7 +449,7 @@ function merge(def,v){if(!v||typeof v!=='object'||Array.isArray(def))return v===
 function render(){
  const c=D.site,show=c.show,o=[];
  const offers=(c.offers||[]).filter(x=>x&&x.title&&(!x.until||x.until>=new Date().toISOString().slice(0,10)));
- const navItems=[['programs','البرامج',show.programs],['pricing','الباقات',show.pricing],['schedule','الجدول',show.schedule],['trainers','المدربون',show.trainers&&D.trainers.length],['offers','العروض',show.offers&&offers.length],['blog','المدونة',show.blog!==false&&(D.posts||[]).length,'/blog'],['contact','تواصل معنا',show.contact]].filter(x=>x[2]);
+ const navItems=[['programs','البرامج',show.programs],['pricing','الباقات',show.pricing],['schedule','الجدول',show.schedule],['trainers','المدربون',show.trainers&&D.trainers.length],['offers','العروض',show.offers&&offers.length],['events','فعالياتنا',show.events!==false&&(D.events||[]).length],['blog','المدونة',show.blog!==false&&(D.posts||[]).length,'/blog'],['contact','تواصل معنا',show.contact]].filter(x=>x[2]);
  $('#nav').innerHTML=navItems.map(x=>'<a href="'+(x[3]||'#'+x[0])+'">'+x[1]+'</a>').join('');
  $('#mnavIn').innerHTML=navItems.map(x=>'<a href="'+(x[3]||'#'+x[0])+'">'+x[1]+'</a>').join('')+'<a href="/app">تسجيل الدخول</a>';
  if(BLOG){o.push(blogShell())}else{
@@ -460,6 +476,7 @@ function render(){
  if(show.gallery&&gal.length)o.push('<section class="sec sand"><div class="wrap"><div class="sec-h"><div><span class="eyebrow">من داخل النادي</span><h2>مكان تحب أن تعود إليه</h2></div></div><div class="ggrid">'+gal.slice(0,7).map((u,i)=>'<img src="'+esc(u)+'" alt="صورة من داخل النادي '+(i+1)+'" loading="lazy">').join('')+'</div></div></section>');
  const rev=(c.reviews||[]).filter(r=>r&&r.text&&r.name);
  if(show.reviews&&rev.length)o.push('<section class="sec"><div class="wrap"><div class="sec-h"><div><span class="eyebrow">آراء المشتركين</span><h2>ماذا يقولون عنا</h2></div></div><div class="rgrid">'+rev.map(r=>'<figure class="rcard reveal" style="margin:0"><span class="st" aria-label="'+(+r.stars||5)+' من 5">'+'★'.repeat(Math.max(1,Math.min(5,+r.stars||5)))+'</span><blockquote style="margin:0"><p>'+esc(r.text)+'</p></blockquote><figcaption><b>'+esc(r.name)+'</b></figcaption></figure>').join('')+'</div></div></section>');
+ o.push(eventsHome());
  o.push(blogHome());
  if(show.app)o.push('<section class="sec app"><div class="wrap"><div><span class="eyebrow" style="color:#ff8f88">للمشتركين</span><h2>'+esc(c.app.title)+'</h2><p>'+esc(c.app.text)+'</p><ul><li><i>'+ic('qr',16)+'</i>بطاقة دخول برمز QR</li><li><i>'+ic('cal',16)+'</i>حجز الحصص وإلغاؤها</li><li><i>'+ic('dumbbell',16)+'</i>رصيد جلسات التدريب وخطتك</li><li><i>'+ic('file',16)+'</i>فواتيرك بصيغة PDF</li></ul><a class="btn btn-red" href="/app">ادخل إلى حسابك</a></div><div class="phone" aria-hidden="true"><div class="screen"><div class="hi">أهلاً بك 👋</div><div class="mcard"><img src="/brand/logo-light.png" alt=""><div><small>المشترك</small><br><b>عضو جولة اللياقة</b><br><small>ربع سنوي · نشط</small></div><span class="qr"><i></i></span></div><div class="mini"><span>يوم متبقٍ</span><b>64</b></div><div class="mini"><span>رصيد التدريب</span><b>6</b></div><div class="mini"><span>حجزك القادم</span><b style="font-size:14px;color:var(--ink)">الخميس 7:00 م</b></div></div></div></div></section>');
  if(show.join){

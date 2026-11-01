@@ -348,9 +348,66 @@ ${status === 'connected' ? `<div class="c"><form method="post" action="/logout?k
 </main>${qr && status === 'waiting' ? `<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script><script>new QRCode(document.getElementById('qr'),{text:${JSON.stringify(qr)},width:240,height:240});</script>` : ''}
 ${status !== 'connected' ? '<script>setTimeout(()=>location.reload(),15000)</script>' : ''}</body></html>`;
 }
+/* ---------------- outgoing messages requested by the gym system (throttled queue) ---------------- */
+S.queue = S.queue || []; S.sentDay = S.sentDay || { d: '', n: 0 };
+const DAY_MAX = +process.env.SEND_DAY_MAX || 300;
+let sending = false;
+async function sendTick() {
+  if (sending || status !== 'connected' || !S.queue.length) return;
+  sending = true;
+  try {
+    while (S.queue.length && status === 'connected') {
+      const d = new Date(Date.now() + 3 * 3600e3).toISOString().slice(0, 10);
+      if (S.sentDay.d !== d) S.sentDay = { d, n: 0 };
+      if (S.sentDay.n >= DAY_MAX) break;
+      const q = S.queue[0];
+      try {
+        const [ok] = await sock.onWhatsApp(q.to);
+        if (ok && ok.exists) { await reply(ok.jid || (q.to + '@s.whatsapp.net'), q.text); q.st = 'sent'; S.sentDay.n++; }
+        else q.st = 'nowa';
+      } catch (e) { q.st = 'fail'; q.err = String(e.message || e).slice(0, 120); }
+      q.at = Date.now(); S.queue.shift(); S.done = (S.done || []).concat([q]).slice(-500); save();
+      await sleep(7000 + Math.random() * 8000);
+    }
+  } finally { sending = false; }
+}
+setInterval(() => sendTick(), 20e3).unref();
+function botOk(req) {
+  const want = String(process.env.BOT_KEY || ''), got = String(req.headers['x-bot-key'] || '');
+  return want.length >= 16 && got.length === want.length && crypto.timingSafeEqual(Buffer.from(got), Buffer.from(want));
+}
+const jsonOut = (res, code, o) => { res.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' }); res.end(JSON.stringify(o)); };
+function intlOf(ph) { const d = String(ph || '').replace(/\D/g, ''); return /^05\d{8}$/.test(d) ? '966' + d.slice(1) : /^9665\d{8}$/.test(d) ? d : /^5\d{8}$/.test(d) ? '966' + d : ''; }
+async function botRoute(req, res, u) {
+  if (!botOk(req)) return jsonOut(res, 401, { error: 'unauthorized' });
+  let b = {};
+  if (req.method === 'POST') { let body = ''; for await (const c of req) { body += c; if (body.length > 400000) break; } try { b = JSON.parse(body || '{}'); } catch (e) { return jsonOut(res, 400, { error: 'bad json' }); } }
+  const r = u.pathname.slice(5);
+  if (r === 'status') {
+    return jsonOut(res, 200, { status, qr: status === 'waiting' ? qr : '', pairCode, me, enabled: S.enabled, ai: !!process.env.ANTHROPIC_API_KEY, stats: S.stats,
+      queue: S.queue.length, sentToday: S.sentDay.d === new Date(Date.now() + 3 * 3600e3).toISOString().slice(0, 10) ? S.sentDay.n : 0, dayMax: DAY_MAX,
+      paused: Object.keys(S.paused).filter(j => S.paused[j] > Date.now()).length, log: S.log.slice(-12).reverse() });
+  }
+  if (r === 'pair' && req.method === 'POST') {
+    if (!sock || status !== 'waiting') return jsonOut(res, 409, { error: 'الرقم مربوط أو الخدمة تعيد الاتصال، انتظر قليلاً' });
+    const ph = intlOf(b.phone); if (!ph) return jsonOut(res, 400, { error: 'اكتب رقم جوال سعودي صحيح' });
+    try { pairCode = await sock.requestPairingCode(ph); return jsonOut(res, 200, { pairCode }); } catch (e) { return jsonOut(res, 500, { error: 'تعذّر إنشاء رمز الربط: ' + e.message }); }
+  }
+  if (r === 'toggle' && req.method === 'POST') { S.enabled = !!b.on; save(); logEv(S.enabled ? 'تشغيل الرد الآلي' : 'إيقاف الرد الآلي'); return jsonOut(res, 200, { enabled: S.enabled }); }
+  if (r === 'logout' && req.method === 'POST') { try { if (sock) await sock.logout(); } catch (e) { } logEv('فصل الرقم من لوحة النظام'); return jsonOut(res, 200, { ok: true }); }
+  if (r === 'send' && req.method === 'POST') {
+    const list = (Array.isArray(b.messages) ? b.messages : [b]).slice(0, 1000), added = [];
+    list.forEach(m => { const to = intlOf(m.phone), text = String(m.text || '').trim().slice(0, 3500); if (to && text) { const q = { id: crypto.randomBytes(5).toString('hex'), to, text, ref: String(m.ref || '').slice(0, 60), t: Date.now() }; S.queue.push(q); added.push(q.id); } });
+    save(); setTimeout(() => sendTick(), 500);
+    return jsonOut(res, 200, { queued: added.length, skipped: list.length - added.length, queue: S.queue.length, connected: status === 'connected' });
+  }
+  if (r === 'sent') return jsonOut(res, 200, { done: (S.done || []).slice(-300).map(q => ({ ref: q.ref, st: q.st, at: q.at })), pending: S.queue.map(q => q.ref) });
+  return jsonOut(res, 404, { error: 'not found' });
+}
 http.createServer(async (req, res) => {
   const u = new URL(req.url, 'http://x'), k = u.searchParams.get('key') || '';
   if (u.pathname === '/healthz') { res.writeHead(200); return res.end('ok'); }
+  if (u.pathname.startsWith('/bot/')) { try { return await botRoute(req, res, u); } catch (e) { return jsonOut(res, 500, { error: String(e.message || e) }); } }
   if (!keyOk(k)) { res.writeHead(401, { 'Content-Type': 'text/plain; charset=utf-8' }); return res.end('أضف ?key= وكلمة مرور لوحة الوكيل إلى الرابط'); }
   const back = () => { res.writeHead(303, { Location: '/?key=' + encodeURIComponent(k) }); res.end(); };
   if (req.method === 'POST') {

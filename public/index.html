@@ -1907,11 +1907,12 @@ Object.assign(ACT,{
 });
 
 /* staff accounts (manager) */
+document.addEventListener('change',e=>{const t=e.target;if(!t.dataset||!t.dataset.accrole)return;api('users',{method:'POST',body:{action:'role',id:t.dataset.accrole,role:t.value}}).then(()=>{toast('تم تغيير الصلاحية. يحدّث الموظف الصفحة لتظهر له');loadAccounts()}).catch(er=>{toast(er.message);loadAccounts()})});
 async function loadAccounts(){
  const box=$('#accts');if(!box)return;
  try{
   const r=await api('users');
-  box.innerHTML=r.users.map(u=>'<div class="row"><span class="av">'+esc(initial(u.name||u.username))+'</span><div class="grow"><b>'+esc(u.name||u.username)+'</b><small><span class="ltr">'+esc(u.username)+'</span> · '+(ROLE_AR[u.role]||u.role)+(u.main?' · الحساب الرئيسي':'')+'</small></div>'+(u.main?'':'<div class="cell-acts">'+btn('accPw','كلمة مرور','sm','data-id="'+u.id+'"')+btn('accDel','حذف','sm bad','data-id="'+u.id+'"')+'</div>')+'</div>').join('');
+  box.innerHTML=r.users.map(u=>'<div class="row"><span class="av">'+esc(initial(u.name||u.username))+'</span><div class="grow"><b>'+esc(u.name||u.username)+'</b><small><span class="ltr">'+esc(u.username)+'</span> · '+(ROLE_AR[u.role]||u.role)+(u.main?' · الحساب الرئيسي':'')+'</small></div>'+(u.main?'':'<div class="cell-acts"><select data-accrole="'+u.id+'" aria-label="صلاحية '+esc(u.name||u.username)+'">'+[['reception','استقبال'],['accountant','محاسبة'],['manager','مدير (كل الصلاحيات)']].map(o=>'<option value="'+o[0]+'"'+(o[0]===u.role?' selected':'')+'>'+o[1]+'</option>').join('')+'</select>'+btn('accPw','كلمة مرور','sm','data-id="'+u.id+'"')+btn('accDel','حذف','sm bad','data-id="'+u.id+'"')+'</div>')+'</div>').join('');
  }catch(e){box.innerHTML='<p class="empty">'+esc(e.message)+'</p>'}
 }
 function accountsPanel(){

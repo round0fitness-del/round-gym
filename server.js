@@ -1021,6 +1021,13 @@ async function api(req, res, route) {
       const gone = db.users.find(u => u.id === b.id);
       db.users = db.users.filter(u => u.id !== b.id);
       if (gone) audit(p, 'حذف حساب موظف', gone.name + ' · ' + gone.username, 'users');
+    } else if (b.action === 'role') {
+      const u = db.users.find(x => x.id === b.id), role = ['manager', 'accountant', 'reception'].indexOf(b.role) >= 0 ? b.role : '';
+      if (!u || !role) throw httpErr(400, 'طلب غير صالح');
+      if (u.id === 'admin') throw httpErr(400, 'لا يمكن تغيير صلاحية المدير الرئيسي');
+      const R = { manager: 'مدير', accountant: 'محاسبة', reception: 'استقبال' };
+      audit(p, 'تغيير صلاحية موظف', (u.name || u.username) + ' · ' + R[u.role] + ' ← ' + R[role], 'users');
+      u.role = role;
     } else if (b.action === 'password') {
       const u = db.users.find(x => x.id === b.id), pw = String(b.password || '');
       if (!u) throw httpErr(404, 'الحساب غير موجود');
@@ -1117,6 +1124,15 @@ try { schedPendingTick(); } catch (e) { console.error('schedule', e.message); }
 setInterval(() => { try { schedPendingTick(); } catch (e) { console.error('schedule', e.message); } }, 10 * 60e3).unref();
 setInterval(() => { try { reminderTick(); } catch (e) { console.error('reminders', e.message); } }, +process.env.REMINDER_MS || 5 * 60e3).unref();
 
+/* GRANT_MANAGER: give full manager rights to the staff account(s) whose name or username is listed (comma separated), once */
+(function grantManager() {
+  const want = String(process.env.GRANT_MANAGER || '').split(',').map(x => x.trim().toLowerCase()).filter(Boolean);
+  if (!want.length) return;
+  const hit = db.users.filter(u => u.id !== 'admin' && (want.indexOf(String(u.username || '').toLowerCase()) >= 0 || want.indexOf(String(u.name || '').trim().toLowerCase()) >= 0 || want.some(w => String(u.name || '').toLowerCase().split(/\s+/).indexOf(w) >= 0)));
+  console.log('GRANT_MANAGER: ' + (hit.length ? hit.map(u => (u.name || u.username) + ' (' + u.username + ') ' + u.role + ' → manager').join('، ') : 'لم يُعثر على حساب مطابق · الحسابات: ' + db.users.map(u => (u.name || '') + '/' + u.username + '/' + u.role).join('، ')));
+  hit.filter(u => u.role !== 'manager').forEach(u => { audit(null, 'تغيير صلاحية موظف', (u.name || u.username) + ' · ← مدير (كل الصلاحيات)', 'users'); u.role = 'manager'; });
+  if (hit.length) persist();
+})();
 /* one-time import of the club's previous Excel income file (kept in the INCOME_SEED variable, not in the code) */
 (function seedIncome() {
   let D; try { D = Object.assign({}, JSON.parse(process.env.INCOME_SEED || '{}'), JSON.parse(process.env.INCOME_SEED_2 || '{}')); } catch (e) { console.log('INCOME_SEED غير صالح'); return; }

@@ -5794,7 +5794,7 @@ Object.assign(ACT,{
 /* ---------- v25: three club timetables (adults / kids / martial arts), monthly import, intensity colours, social image ---------- */
 const PROGS={adult:'حصص الكبار',kids:'حصص الأطفال',martial:'الفنون القتالية'};
 const PROG_EN={adult:'GYM CLASS',kids:'KIDS CLASS',martial:'MARTIAL ARTS CLASS'};
-const LVL_DEF={low:['خفيف الشدة','#F5C518'],mid:['متوسط الشدة','#34B655'],high:['عالي الشدة','#E5322D'],fun:['كلاس ترفيهي','#C08BE8'],book:['يتطلب الحجز المسبق','#2E9BD6']};
+const LVL_DEF={low:['خفيف الشدة','#22B04B'],mid:['متوسط الشدة','#F7D84A'],high:['عالي الشدة','#EE1C25'],book:['كلاس يتطلب الحجز المسبق','#1D93B8'],fun:['كلاس ترفيهي','#C08BE8']};
 const lvlName=k=>((S.settings.lvlNames||{})[k])||(LVL_DEF[k]||['',''])[0];
 const lvlCol=k=>(LVL_DEF[k]||['','#B8B2AD'])[1];
 const WEEK=[6,0,1,2,3,4,5];
@@ -5862,8 +5862,8 @@ async function docxSched(buf){
 }
 function hexHue(h){h=String(h||'').replace('#','');if(!/^[0-9A-F]{6}$/i.test(h))return null;const r=parseInt(h.slice(0,2),16)/255,g=parseInt(h.slice(2,4),16)/255,b=parseInt(h.slice(4,6),16)/255,mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn;
  if(d<.12)return null;let hu=mx===r?((g-b)/d)%6:mx===g?(b-r)/d+2:(r-g)/d+4;hu*=60;if(hu<0)hu+=360;return hu}
-function lvlOfColor(hex,hl){if(hl==='yellow')return 'low';const h=hexHue(hex);if(h==null)return '';
- if(h<20||h>=345)return 'high';if(h<70)return 'low';if(h<165)return 'mid';if(h<255)return 'book';return 'fun'}
+function lvlOfColor(hex,hl){if(hl==='yellow')return 'mid';const h=hexHue(hex);if(h==null)return '';
+ if(h<20||h>=345)return 'high';if(h<70)return 'mid';if(h<165)return 'low';if(h<255)return 'book';return 'fun'}
 function schedTime(s){s=AR_DIG(s).replace(/\s+/g,' ');const m=[...s.matchAll(/(\d{1,2})[:.](\d{2})/g)].map(x=>[+x[1],+x[2]]);if(!m.length)return null;
  const pm=([h,mi])=>[h<12&&!/ص|am/i.test(s)?h+12:h,mi],a=pm(m[0]),b=m[1]?pm(m[1]):null;
  const st=a[0]*60+a[1],en=b?b[0]*60+b[1]:st+60;return {time:String(a[0]).padStart(2,'0')+':'+String(a[1]).padStart(2,'0'),dur:Math.max(15,en-st)}}
@@ -5934,59 +5934,59 @@ function schedApply(R,month,from){
  toast('اعتُمد جدول '+monthLabel(month)+' · '+R.reduce((a,r)=>a+r.days.length,0)+' حصة أسبوعياً');
 }
 function lvlNamesModal(){
- openModal('دلالات الألوان','<div class="fm"><p class="note full">اسم كل لون كما يظهر في دليل الألوان بالتطبيق والموقع والتصميم.</p>'+Object.keys(LVL_DEF).map(k=>'<label class="fld"><span><i class="sg-sw" style="background:'+lvlCol(k)+'"></i> '+({low:'الأصفر',mid:'الأخضر',high:'الأحمر',fun:'البنفسجي/الوردي',book:'الأزرق'})[k]+'</span><input name="'+k+'" value="'+esc(lvlName(k))+'" maxlength="30"></label>').join('')+'</div>',
+ openModal('دلالات الألوان','<div class="fm"><p class="note full">اسم كل لون كما يظهر في دليل الألوان بالتطبيق والموقع والتصميم.</p>'+Object.keys(LVL_DEF).map(k=>'<label class="fld"><span><i class="sg-sw" style="background:'+lvlCol(k)+'"></i> '+({low:'الأخضر',mid:'الأصفر',high:'الأحمر',fun:'البنفسجي/الوردي',book:'الأزرق'})[k]+'</span><input name="'+k+'" value="'+esc(lvlName(k))+'" maxlength="30"></label>').join('')+'</div>',
   d=>{S.settings.lvlNames={};Object.keys(LVL_DEF).forEach(k=>{if(d[k].trim()&&d[k].trim()!==LVL_DEF[k][0])S.settings.lvlNames[k]=d[k].trim()});save();render();toast('حُفظت دلالات الألوان')},{ok:'حفظ'});
 }
 
 /* ===== social media image (story 1080x1920, in the club's poster style) ===== */
+/* the club's own poster for each timetable; the old table area is painted white and the new one drawn in its place */
+const POSTER={
+ adult:{src:'/brand/sched-adult.jpg',clear:[[0,448,1080,700],[560,1200,520,345]],mon:[197,234,197,46],area:[455,1135],legend:[1215,1540]},
+ kids:{src:'/brand/sched-kids.jpg',clear:[[0,282,1080,1220]],mon:[196,177,192,47],area:[295,1500]},
+ martial:{src:'/brand/sched-martial.jpg',clear:[[0,425,1080,715]],mon:[195,202,187,46],area:[440,1130]}
+};
 async function schedPoster(prog){
  try{await document.fonts.ready}catch(e){}
- const FD='"Readex Pro","IBM Plex Sans Arabic",Tahoma,sans-serif',FL='"Montserrat","Readex Pro",Arial,sans-serif',W=1080,H=1920,RED='#EE1C25',INK='#3F3F3F';
+ const FD='"Readex Pro","IBM Plex Sans Arabic",Tahoma,sans-serif',FL='"Montserrat","Readex Pro",Arial,sans-serif',W=1080,H=1920,RED='#EE1C25',INK='#3F3F3F',CFG=POSTER[prog];
  const G=schedData(prog),ym=(G.CL.find(c=>c.month)||{}).month||TODAY().slice(0,7),mon=EN_MON[+ym.slice(5)-1];
  const cv=document.createElement('canvas');cv.width=W;cv.height=H;const x=cv.getContext('2d');x.textBaseline='middle';
- const bg=await loadImg((S.settings.schedTpl||{})[prog]||'');
+ const own=(S.settings.schedTpl||{})[prog],bg=await loadImg(own||CFG.src);
  x.fillStyle='#FFFFFF';x.fillRect(0,0,W,H);
- if(bg)x.drawImage(bg,0,0,W,H);
- else{
-  const lg=await loadImg('/brand/logo-dark.png');if(lg){const lw=230,lh=lw*lg.height/lg.width;x.drawImage(lg,W-60-lw,92,lw,lh)}
-  x.direction='ltr';x.textAlign='left';x.fillStyle=INK;x.font='800 40px '+FL;x.fillText(PROG_EN[prog],40,150);
-  x.font='400 38px '+FL;x.fillStyle='#555';x.fillText('SCHEDULE',40,206);const sw=x.measureText('SCHEDULE').width;
-  x.font='500 38px '+FL;const mw=x.measureText(mon).width;x.fillStyle=RED;x.fillRect(40+sw+16,178,mw+20,56);x.fillStyle='#fff';x.fillText(mon,40+sw+26,207);
-  x.fillStyle=RED;x.fillRect(20,262,W-60,3);
-  x.direction='ltr';x.textAlign='left';x.fillStyle=RED;let pf=92;x.font='italic 900 '+pf+'px '+FL;while(x.measureText('POWER IN EVERY ROUND').width>W-80&&pf>40){pf-=2;x.font='italic 900 '+pf+'px '+FL}x.fillText('POWER IN EVERY ROUND',40,H-200);
-  x.direction='rtl';x.textAlign='right';x.fillStyle=INK;x.font='600 34px '+FD;if(S.settings.phone)x.fillText(S.settings.phone+'  ☎',W-40,H-110);
-  x.font='500 28px '+FD;x.fillStyle='#555';x.fillText(fitT(x,S.settings.address||'',W-120),W-40,H-60);
- }
+ if(bg){x.drawImage(bg,0,0,W,H);if(!own){x.fillStyle='#FFFFFF';CFG.clear.forEach(r=>x.fillRect(r[0],r[1],r[2],r[3]));
+   const m=CFG.mon;x.fillRect(m[0]-2,m[1]-2,330,m[3]+4);x.direction='ltr';x.textAlign='left';x.font='400 37px '+FL;const mw=x.measureText(mon).width;x.fillStyle=RED;x.fillRect(m[0],m[1],mw+22,m[3]);x.fillStyle='#fff';x.fillText(mon,m[0]+11,m[1]+m[3]/2+2)}}
+ const top=CFG.area[0],bot=CFG.area[1];
  x.direction='rtl';
  if(prog==='adult'){
-  const top=330,cols=G.days.length,tw=150,gap=10,cw=(W-80-tw-gap*cols)/cols,rh=Math.min(108,(H-top-560)/Math.max(1,G.slots.length)-12);
-  G.days.forEach((d,i)=>{const X=W-40-tw-gap-(i+1)*(cw+gap)+gap;rr(x,X,top,cw,58,22);x.fillStyle='#555';x.fill();x.fillStyle='#fff';x.textAlign='center';x.font='600 28px '+FD;x.fillText(DOW[d].replace('الإثنين','الاثنين'),X+cw/2,top+30)});
-  G.slots.forEach((s,j)=>{const Y=top+78+j*(rh+12);rr(x,W-40-tw,Y+rh/2-26,tw,52,26);x.fillStyle='#555';x.fill();x.fillStyle='#fff';x.textAlign='center';x.font='600 24px '+FL;x.direction='ltr';x.fillText(s.label,W-40-tw/2,Y+rh/2+1);x.direction='rtl';
-   G.days.forEach((d,i)=>{const X=W-40-tw-gap-(i+1)*(cw+gap)+gap,c=G.CL.find(c=>c.time===s.time&&(+c.dur||60)===s.dur&&c.days.indexOf(d)>=0);
-    rr(x,X,Y,cw,rh,14);x.fillStyle='#fff';x.fill();x.strokeStyle='#C9C9C9';x.lineWidth=2;x.stroke();
-    if(!c){x.fillStyle='#777';x.textAlign='center';x.font='500 26px '+FD;x.fillText('--------',X+cw/2,Y+rh/2);return}
-    if(c.lvl){x.beginPath();x.arc(X+cw-18,Y+18,11,0,7);x.fillStyle=lvlCol(c.lvl);x.fill()}
-    x.fillStyle='#222';x.textAlign='center';const nm=c.name;let fs=28;x.font='600 '+fs+'px '+FD;while(x.measureText(nm).width>cw-14&&fs>17){fs--;x.font='600 '+fs+'px '+FD}
-    if(x.measureText(nm).width>cw-14&&nm.indexOf(' ')>0){const p=nm.split(' '),h=Math.ceil(p.length/2);x.fillText(p.slice(0,h).join(' '),X+cw/2,Y+rh/2-15);x.fillText(p.slice(h).join(' '),X+cw/2,Y+rh/2+17)}else x.fillText(nm,X+cw/2,Y+rh/2+4)})});
-  const ly=top+78+G.slots.length*(rh+12)+40;x.textAlign='right';x.fillStyle=INK;x.font='600 40px '+FD;x.fillText('شدة التمرين',W-50,ly);
-  Object.keys(LVL_DEF).forEach((k,i)=>{const Y=ly+60+i*46;x.beginPath();x.arc(W-62,Y,13,0,7);x.fillStyle=lvlCol(k);x.fill();x.fillStyle='#444';x.font='500 28px '+FD;x.fillText(lvlName(k),W-90,Y+2)});
+  const cols=G.days.length,tw=150,gap=12,cw=(W-60-tw-gap*cols)/cols,rows=Math.max(1,G.slots.length),hh=50,rh=Math.min(96,(bot-top-hh-18)/rows-12);
+  const colX=i=>W-28-tw-gap-(i+1)*(cw+gap)+gap;
+  G.days.forEach((d,i)=>{const X=colX(i);rr(x,X,top,cw,hh,24);x.fillStyle='#555';x.fill();x.fillStyle='#fff';x.textAlign='center';x.font='500 25px '+FD;x.fillText(DOW[d].replace('الإثنين','الاثنين').replace('الأحد','الاحد').replace('الأربعاء','الاربعاء'),X+cw/2,top+hh/2+2)});
+  G.slots.forEach((s,j)=>{const Y=top+hh+18+j*(rh+12);rr(x,W-28-tw,Y+rh/2-23,tw,46,23);x.fillStyle='#555';x.fill();x.fillStyle='#fff';x.textAlign='center';x.font='600 21px '+FL;x.direction='ltr';x.fillText(s.label,W-28-tw/2,Y+rh/2+1);x.direction='rtl';
+   G.days.forEach((d,i)=>{const X=colX(i),c=G.CL.find(c=>c.time===s.time&&(+c.dur||60)===s.dur&&c.days.indexOf(d)>=0);
+    rr(x,X,Y,cw,rh,12);x.fillStyle='#fff';x.fill();x.strokeStyle='#BDBDBD';x.lineWidth=1.5;x.stroke();
+    if(!c){x.fillStyle='#555';x.textAlign='center';x.font='500 22px '+FL;x.fillText('--------',X+cw/2,Y+rh/2);return}
+    if(c.lvl){x.beginPath();x.arc(X+cw-16,Y+15,10,0,7);x.fillStyle=lvlCol(c.lvl);x.fill()}
+    x.fillStyle='#222';x.textAlign='center';const nm=c.name;let fs=24;x.direction=/[\u0600-\u06FF]/.test(nm)?'rtl':'ltr';x.font='500 '+fs+'px '+FD;
+    if(x.measureText(nm).width>cw-12&&nm.indexOf(' ')>0){const p=nm.split(' '),h=Math.ceil(p.length/2),l1=p.slice(0,h).join(' '),l2=p.slice(h).join(' ');while(Math.max(x.measureText(l1).width,x.measureText(l2).width)>cw-14&&fs>15){fs--;x.font='500 '+fs+'px '+FD}x.fillText(l1,X+cw/2,Y+rh/2-fs*.62);x.fillText(l2,X+cw/2,Y+rh/2+fs*.62)}
+    else{while(x.measureText(nm).width>cw-14&&fs>15){fs--;x.font='500 '+fs+'px '+FD}x.fillText(nm,X+cw/2,Y+rh/2+2)}x.direction='rtl'})});
+  const L=CFG.legend||[bot+60,bot+400];let ly=L[0]+30;x.textAlign='right';x.fillStyle='#444';x.font='500 44px '+FD;x.fillText('شدة التمرين',W-55,ly);
+  Object.keys(LVL_DEF).forEach((k,i)=>{const Y=ly+62+i*45;x.beginPath();x.arc(W-60,Y,13,0,7);x.fillStyle=lvlCol(k);x.fill();x.fillStyle='#555';x.font='500 25px '+FD;x.fillText(lvlName(k),W-86,Y+2)});
  }else{
   const per=G.days.map(d=>({d:d,L:G.slots.map(s=>({s:s,c:G.CL.find(c=>c.time===s.time&&(+c.dur||60)===s.dur&&c.days.indexOf(d)>=0)}))}));
-  const rows=G.slots.length,bh=rows*62,gapB=prog==='martial'?34:48,total=per.length*(bh+gapB),top=prog==='martial'?520:330,sc=Math.min(1,(H-top-430)/total),rH=62*sc;
-  if(prog==='martial'){x.textAlign='center';x.fillStyle=INK;x.font='700 46px '+FD;x.fillText('جدول كلاسات الفنون القتالية',W/2,430)}
-  const tblW=560,timeW=210,X0=(W-tblW-190)/2;
-  per.forEach((p,i)=>{const Y=top+i*(rows*rH+gapB*sc);
-   x.fillStyle=RED;x.fillRect(X0+tblW,Y,190,rH);x.fillStyle='#fff';x.textAlign='center';x.font='500 '+Math.round(34*sc)+'px '+FD;x.fillText(DOW[p.d].replace('الإثنين','الاثنين'),X0+tblW+95,Y+rH/2+2);
-   p.L.forEach((r,j)=>{const y=Y+j*rH;x.strokeStyle='#555';x.lineWidth=2;x.strokeRect(X0,y,tblW,rH);x.beginPath();x.moveTo(X0+tblW-timeW,y);x.lineTo(X0+tblW-timeW,y+rH);x.stroke();
-    x.direction='ltr';x.fillStyle='#444';x.font='500 '+Math.round(28*sc)+'px '+FL;x.fillText(r.s.label,X0+tblW-timeW/2,y+rH/2+1);x.direction='rtl';
-    x.fillStyle=r.c&&r.c.clr&&prog==='kids'?'#333':'#333';x.font='500 '+Math.round(32*sc)+'px '+FD;x.fillText(r.c?fitT(x,r.c.name,tblW-timeW-20):'-------',X0+(tblW-timeW)/2,y+rH/2+2)})});
+  let t0=top;if(prog==='martial'){x.textAlign='center';x.fillStyle=INK;x.font='600 40px '+FD;x.fillText('جدول كلاسات الفنون القتالية',W/2,top+30);t0=top+130}
+  const rows=G.slots.length,gapB=prog==='martial'?34:42,rH=Math.min(prog==='martial'?62:50,(bot-t0-gapB*(per.length-1))/Math.max(1,per.length*rows));
+  const tblW=prog==='martial'?490:400,timeW=prog==='martial'?210:170,dayW=prog==='martial'?205:165,X0=prog==='martial'?205:330;
+  per.forEach((p,i)=>{const Y=t0+i*(rows*rH+gapB);
+   x.fillStyle=RED;x.fillRect(X0+tblW,Y,dayW,prog==='martial'?rows*rH:rH);x.fillStyle='#fff';x.textAlign='center';x.font='400 '+Math.round(rH*.56)+'px '+FD;x.fillText(DOW[p.d].replace('الإثنين','الاثنين').replace('الأحد','الاحد').replace('الأربعاء','الاربعاء'),X0+tblW+dayW/2,Y+rH/2+2);
+   p.L.forEach((r,j)=>{const y=Y+j*rH;x.strokeStyle='#666';x.lineWidth=2;x.strokeRect(X0,y,tblW,rH);x.beginPath();x.moveTo(X0+tblW-timeW,y);x.lineTo(X0+tblW-timeW,y+rH);x.stroke();
+    x.direction='ltr';x.fillStyle='#444';x.font='400 '+Math.round(rH*.48)+'px '+FL;x.fillText(r.s.label,X0+tblW-timeW/2,y+rH/2+1);x.direction='rtl';
+    x.fillStyle='#333';x.font='400 '+Math.round(rH*.6)+'px '+FD;x.fillText(r.c?fitT(x,r.c.name,tblW-timeW-20):'-------',X0+(tblW-timeW)/2,y+rH/2+2)})});
  }
  return cv;
 }
 async function schedImg(prog,el){
  if(el)el.disabled=true;
  try{const cv=await schedPoster(prog),url=cv.toDataURL('image/png'),name='جدول-'+PROGS[prog].replace(/\s+/g,'-')+'.png';
-  openModal('تصميم '+PROGS[prog],'<div class="mcm" style="display:grid;gap:12px"><img src="'+url+'" alt="تصميم جدول '+PROGS[prog]+'" style="width:100%;max-width:360px;margin:0 auto;border-radius:12px;border:1px solid var(--line)"><div class="acts" style="justify-content:center"><a class="btn pri" href="'+url+'" download="'+esc(name)+'">'+ic('dl',15)+' تنزيل الصورة</a>'+(isManager()?'<label class="btn">'+ic('image',15)+' '+((S.settings.schedTpl||{})[prog]?'تغيير القالب':'رفع قالب التصميم')+'<input type="file" accept="image/png,image/jpeg" data-schtpl="'+prog+'" hidden></label>'+((S.settings.schedTpl||{})[prog]?btn('schedTplX','إزالة القالب','sm','data-k="'+prog+'"'):''):'')+'</div><p class="note">مقاس ستوري 1080×1920. القالب صورة فارغة بنفس المقاس (الشعار والعنوان والتذييل)، ويُرسم الجدول في وسطها.</p></div>',null,{noForm:true,noFocus:true});
+  openModal('تصميم '+PROGS[prog],'<div class="mcm" style="display:grid;gap:12px"><img src="'+url+'" alt="تصميم جدول '+PROGS[prog]+'" style="width:100%;max-width:360px;margin:0 auto;border-radius:12px;border:1px solid var(--line)"><div class="acts" style="justify-content:center"><a class="btn pri" href="'+url+'" download="'+esc(name)+'">'+ic('dl',15)+' تنزيل الصورة</a>'+(isManager()?'<label class="btn">'+ic('image',15)+' '+((S.settings.schedTpl||{})[prog]?'تغيير القالب':'رفع قالب التصميم')+'<input type="file" accept="image/png,image/jpeg" data-schtpl="'+prog+'" hidden></label>'+((S.settings.schedTpl||{})[prog]?btn('schedTplX','إزالة القالب','sm','data-k="'+prog+'"'):''):'')+'</div><p class="note">مقاس ستوري 1080×1920. التصميم مبني على قوالب النادي (الشعار والصورة والتذييل) ويتغير اسم الشهر تلقائياً. يمكنك رفع قالب جديد بنفس المقاس.</p></div>',null,{noForm:true,noFocus:true});
  }catch(e){toast('تعذّر إنشاء التصميم')}finally{if(el)el.disabled=false}
 }
 document.addEventListener('change',async e=>{const t=e.target;if(!t.dataset||!t.dataset.schtpl)return;const f=t.files&&t.files[0];if(!f)return;

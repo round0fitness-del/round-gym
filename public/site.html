@@ -516,7 +516,7 @@ function render(){
 }
 const waNum=p=>{let x=String(p||'').replace(/\D/g,'');if(x.charAt(0)==='0')x='966'+x.slice(1);return x};
 const PROGS={adult:'حصص الكبار',kids:'حصص الأطفال',martial:'الفنون القتالية'};
-const LVL={low:['خفيف الشدة','#F5C518'],mid:['متوسط الشدة','#34B655'],high:['عالي الشدة','#E5322D'],fun:['كلاس ترفيهي','#C08BE8'],book:['يتطلب الحجز المسبق','#2E9BD6']};
+const LVL={low:['خفيف الشدة','#22B04B'],mid:['متوسط الشدة','#F7D84A'],high:['عالي الشدة','#EE1C25'],book:['كلاس يتطلب الحجز المسبق','#1D93B8'],fun:['كلاس ترفيهي','#C08BE8']};
 let sprog='';
 const t12=t=>{let[h,m]=String(t||'0:0').split(':').map(Number);return (h%12||12)+':'+String(m).padStart(2,'0')};
 function drawDays(){

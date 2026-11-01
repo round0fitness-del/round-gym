@@ -928,14 +928,14 @@ async function api(req, res, route) {
     fs.mkdirSync(BAK, { recursive: true });
     const bak = path.join(BAK, 'before-golive-' + new Date().toISOString().replace(/[:.]/g, '-') + '.json');
     fs.writeFileSync(bak, JSON.stringify({ exportedAt: new Date().toISOString(), rev: db.rev, state: s, creds: db.creds }));
-    const n = {}, clear = c => { n[c] = (s[c] || []).length; s[c] = []; };
+    const n = {}, clear = c => { n[c] = (s[c] || []).length; s[c] = c === 'subs' ? (s.subs || []).filter(x => x.test) : []; };
     ['subs', 'pay', 'exp', 'cash', 'daily', 'shifts', 'jrnl', 'comms', 'att', 'book', 'freezeReq', 'campaigns', 'fb', 'treq', 'ptSess', 'ptPacks', 'periods', 'fsruns'].forEach(clear);
     s.pt = (s.pt || []).filter(x => { const keep = (s.members || []).some(m => m.id === x.memberId && m.legacyCode); return keep; });
     // test members (added by hand, not from the previous system) are removed with their app logins
-    const test = (s.members || []).filter(m => !m.legacyCode);
+    const test = (s.members || []).filter(m => !m.legacyCode && !m.test);
     n.testMembers = test.length;
     test.forEach(m => delete db.creds['m:' + m.id]);
-    s.members = (s.members || []).filter(m => m.legacyCode);
+    s.members = (s.members || []).filter(m => m.legacyCode || m.test);
     s.pt = (s.pt || []).filter(x => s.members.some(m => m.id === x.memberId));
     // income ledger: keep the Excel history, drop amounts typed during testing
     s.incomeLog = (s.incomeLog || []).filter(x => x.leg).map(x => Object.assign(x, { actual: null, byName: '', updated: '' }));
@@ -1124,6 +1124,18 @@ try { schedPendingTick(); } catch (e) { console.error('schedule', e.message); }
 setInterval(() => { try { schedPendingTick(); } catch (e) { console.error('schedule', e.message); } }, 10 * 60e3).unref();
 setInterval(() => { try { reminderTick(); } catch (e) { console.error('reminders', e.message); } }, +process.env.REMINDER_MS || 5 * 60e3).unref();
 
+/* TEST_MEMBER_PW: a demo member account (username test1) for trying the member app; never counted as real income */
+(function testMember() {
+  const pw = String(process.env.TEST_MEMBER_PW || '');
+  if (pw.length < 6) return;
+  const s = st(); s.members = s.members || []; s.subs = s.subs || [];
+  let m = s.members.find(x => x.test);
+  const t = new Date(Date.now() + 3 * 3600e3).toISOString().slice(0, 10), end = new Date(Date.now() + (3 * 3600e3) + 90 * 864e5).toISOString().slice(0, 10);
+  if (!m) { m = { id: 'mtest01', code: 'M-TEST', name: 'عميلة تجريبية', phone: '0500000001', uname: 'test1', gender: 'f', joined: t, notes: 'حساب تجريبي لتجربة تطبيق المشتركات', test: true }; s.members.push(m); }
+  if (!s.subs.some(x => x.memberId === m.id && x.end >= t)) { const pl = (s.plans || []).find(p => !p.archived) || {}; s.subs.push({ id: 'stest' + Date.now().toString(36), inv: 'TEST', memberId: m.id, planId: pl.id || '', planName: 'اشتراك تجريبي', start: t, end, total: 0, disc: 0, legacy: true, test: true, freezeMax: 0, freezes: [] }); }
+  if (!db.creds['m:' + m.id]) db.creds['m:' + m.id] = { hash: hashPw(pw), pv: 1 };
+  db.rev++; persist(); console.log('TEST_MEMBER: test1 جاهز حتى ' + end);
+})();
 /* GRANT_MANAGER: give full manager rights to the staff account(s) whose name or username is listed (comma separated), once */
 (function grantManager() {
   const want = String(process.env.GRANT_MANAGER || '').split(',').map(x => x.trim().toLowerCase()).filter(Boolean);

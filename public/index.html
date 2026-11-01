@@ -5736,7 +5736,7 @@ document.addEventListener('change',e=>{const t=e.target;if(!t.dataset||!t.datase
 
 /* ===== go-live: remove test data, then re-import ===== */
 function pageGoLive(){
- const t=TODAY(),c=a=>(a||[]).length,test=S.members.filter(m=>!m.legacyCode),todayPay=S.pay.filter(p=>p.date===t&&p.amount>0);
+ const t=TODAY(),c=a=>(a||[]).length,test=S.members.filter(m=>!m.legacyCode&&!m.test),todayPay=S.pay.filter(p=>p.date===t&&p.amount>0);
  const rows=[['الاشتراكات والفواتير',c(S.subs)],['المدفوعات والاستردادات',c(S.pay)],['المصروفات وحركات الصندوق',c(S.exp)+c(S.cash)],['العملاء اليوميون',c(S.daily)],['الحضور',c(S.att)],['باقات وجلسات التدريب الشخصي',c(S.ptPacks)+c(S.ptSess)],['حجوزات الحصص',c(S.book)],['إغلاق الورديات',c(S.shifts)],['القيود المحاسبية',c(S.jrnl)],['أعضاء أُضيفوا يدوياً (تجريبيون)',test.length]];
  if(S.goLive)return head('بدء التشغيل الفعلي','')+'<section class="card empty-big"><span class="eic">'+ic('ok',30)+'</span><h2>بدأ التشغيل الفعلي في '+fdate(S.goLive)+'</h2><p class="note">حُذفت البيانات التجريبية. الخطوة التالية: استيراد المشتركين الحاليين وسجل الحضور.</p>'+btn('goImp',ic('file',15)+' استيراد المشتركين','pri')+'</section>';
  return head('بدء التشغيل الفعلي','يحذف كل البيانات التجريبية حتى تبدأ المالية والاشتراكات من الصفر، ثم تستورد المشتركين الحاليين.')+

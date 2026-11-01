@@ -339,6 +339,7 @@ button.sg-c{cursor:pointer}button.sg-c:hover{border-color:var(--accent)}
 .hci-b{width:68px;display:grid;place-items:center;border:0;color:#fff;cursor:pointer;position:relative;flex:none}.hci-b.blue{background:#1877F2}.hci-b.green{background:#0DCB55}
 .hci-f{padding:4px 16px 16px;display:grid;gap:4px}.hci-q.inq{margin-top:10px;display:flex!important;flex-direction:row;gap:8px;align-items:center;justify-content:flex-start;width:fit-content;color:var(--muted);font-size:13px}.hci-q input{width:auto;margin:0}#dres{margin-top:12px}.hci-log{max-height:260px;overflow:auto}
 @media (max-width:900px){.hsc-g{grid-template-columns:repeat(3,minmax(0,1fr))}}@media (max-width:480px){.hsc-g{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.ev-info{display:flex;gap:8px;align-items:center;background:var(--good-soft);color:var(--good);border-radius:12px;padding:10px 12px;font-weight:600;margin:6px 0 10px}
 .inc-in{width:110px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;font:inherit;font-variant-numeric:tabular-nums;background:var(--surface);color:var(--ink);direction:ltr;text-align:right}
 .inq{display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:13.5px;font-weight:500}
 .inq input{width:18px;height:18px;min-height:0;accent-color:var(--accent)}
@@ -1592,7 +1593,7 @@ function scheduleTable(m,ym,editable){
   const ins=inSub(d),fz=frz(d),can=editable&&ins&&!fz&&d>=t;
   const chips=cls.map(c=>{
    const on=S.book.some(b=>b.classId===c.id&&b.date===d&&b.memberId===m.id),full=!on&&bookedCount(c.id,d)>=c.cap,tr=trainerById(c.trainerId);
-   const inner='<span><b>'+ft(c.time)+'</b> '+esc(c.name)+(on?' ✓':'')+'</span><small>'+esc(tr?tr.name:'بدون مدرب')+' · '+c.dur+' دقيقة'+(full?' · مكتملة':'')+'</small>';
+   const inner='<span><b>'+ft(c.time)+'</b> '+esc(c.name)+(on?' ✓':'')+'</span><small>'+(SESS.role==='trainee'?'':esc(tr?tr.name:'بدون مدرب')+' · ')+c.dur+' دقيقة'+(full?' · مكتملة':'')+'</small>';
    return can?'<button type="button" class="cls'+(on?' on':'')+(full?' full':'')+'" data-act="togBook" data-cid="'+c.id+'" data-d="'+d+'" data-mid="'+m.id+'" aria-pressed="'+on+'">'+inner+'</button>':'<span class="cls'+(on?' on':'')+'">'+inner+'</span>';
   }).join('')||'<span class="mut">لا توجد حصص</span>';
   const state=fz?'<span class="pill info">تجميد</span>':!ins?'<span class="note">خارج الاشتراك</span>':att.has(d)?'<span class="pill good">حضر</span>':d===t?'<span class="pill warn">اليوم</span>':'';
@@ -5674,7 +5675,7 @@ function offerLogo(o,cls){return '<span class="of-logo'+(cls?' '+cls:'')+'">'+(o
 function pagePerksAdm(){
  const L=offersAll().slice().sort((a,b)=>(offerLive(b)?1:0)-(offerLive(a)?1:0)||String(a.partner).localeCompare(String(b.partner),'ar'));
  return head('عروض وخصومات المشتركين','جهات تمنح مشتركي النادي خصماً. تظهر في تطبيق المشترك ضمن «بطاقة الخصومات» مع اسمه ورقم اشتراكه.',btn('offerNew',ic('plus',15)+' عرض جديد','pri'))+
- (L.length?'<div class="of-grid">'+L.map(o=>'<article class="of-card'+(offerLive(o)?'':' off')+'">'+offerLogo(o)+'<div class="of-tx"><b>'+esc(o.partner)+'</b><span class="of-pct">'+(o.pct?'خصم '+o.pct+'%':'عرض خاص')+'</span><small>'+esc(o.title||'')+'</small><small class="note">'+(o.until?'حتى '+fdate(o.until):'بدون تاريخ انتهاء')+(offerLive(o)?'':' · <b>غير ظاهر</b>')+'</small></div><div class="acts">'+btn('offerEdit','تعديل','sm','data-id="'+o.id+'"')+btn('offerDel',ic('trash',14),'sm','data-id="'+o.id+'" aria-label="حذف العرض"')+'</div></article>').join('')+'</div>'
+ (L.length?'<div class="of-grid">'+L.map(o=>'<article class="of-card'+(offerLive(o)?'':' off')+'">'+offerLogo(o)+'<div class="of-tx"><b>'+esc(o.partner)+'</b><span class="of-pct">'+(o.pct?'خصم <span dir="ltr">'+o.pct+'%</span>':'عرض خاص')+'</span><small>'+esc(o.title||'')+'</small><small class="note">'+(o.until?'حتى '+fdate(o.until):'بدون تاريخ انتهاء')+(offerLive(o)?'':' · <b>غير ظاهر</b>')+'</small></div><div class="acts">'+btn('offerEdit','تعديل','sm','data-id="'+o.id+'"')+btn('offerDel',ic('trash',14),'sm','data-id="'+o.id+'" aria-label="حذف العرض"')+'</div></article>').join('')+'</div>'
  :'<section class="card empty-big"><span class="eic">'+ic('gift',30)+'</span><h2>لا توجد عروض بعد</h2><p class="note">أضف أول جهة شريكة: مطعم صحي، متجر مكملات، عيادة علاج طبيعي…</p>'+btn('offerNew','إضافة عرض','pri')+'</section>');
 }
 function offerModal(id){
@@ -5699,7 +5700,7 @@ function pagePerks(){
  return head('بطاقة الخصومات','خصومات حصرية لمشتركي '+esc(S.settings.gym||'النادي')+'. أظهر البطاقة عند الدفع.')+
  '<div class="pk-card"><div class="pk-top"><img src="/brand/logo-dark.png" alt="'+esc(S.settings.gym||'')+'" class="pk-logo"><span class="pk-tag">بطاقة خصومات المشتركين</span></div><b class="pk-name">'+esc(m.name)+'</b><div class="pk-row"><span>رقم الاشتراك<b class="ltr num">'+esc(memberCardNo(m))+'</b></span><span>'+(ok?'سارية حتى<b class="num">'+fdate(i.end,{day:'numeric',month:'short',year:'numeric'})+'</b>':'<b class="pk-bad">الاشتراك غير ساري</b>')+'</span></div></div>'+
  (ok?'':'<p class="ptalert">'+ic('warn',16)+' الخصومات متاحة للمشتركين باشتراك ساري. جدّد اشتراكك من الاستقبال لتفعيلها.</p>')+
- (L.length?'<div class="of-grid">'+L.map(o=>'<button type="button" class="of-card btnlike" data-act="perkOpen" data-id="'+o.id+'"'+(ok?'':' disabled')+'>'+offerLogo(o)+'<span class="of-tx"><b>'+esc(o.partner)+'</b><span class="of-pct">'+(o.pct?'خصم '+o.pct+'%':'عرض خاص')+'</span><small>'+esc(o.title||o.cat||'')+'</small>'+(o.until?'<small class="note">حتى '+fdate(o.until,{day:'numeric',month:'short'})+'</small>':'')+'</span></button>').join('')+'</div>'
+ (L.length?'<div class="of-grid">'+L.map(o=>'<button type="button" class="of-card btnlike" data-act="perkOpen" data-id="'+o.id+'"'+(ok?'':' disabled')+'>'+offerLogo(o)+'<span class="of-tx"><b>'+esc(o.partner)+'</b><span class="of-pct">'+(o.pct?'خصم <span dir="ltr">'+o.pct+'%</span>':'عرض خاص')+'</span><small>'+esc(o.title||o.cat||'')+'</small>'+(o.until?'<small class="note">حتى '+fdate(o.until,{day:'numeric',month:'short'})+'</small>':'')+'</span></button>').join('')+'</div>'
  :'<section class="card empty-big"><span class="eic">'+ic('gift',30)+'</span><h2>لا توجد عروض حالياً</h2><p class="note">تابعنا، ستُضاف خصومات جديدة قريباً.</p></section>');
 }
 function perkModal(id){
@@ -6047,6 +6048,36 @@ Object.assign(ACT,{
   if(k==='#money'){goPage(can('finance')?'finance':'income');return}
   goPage(k)}
 });
+
+/* ---------- v27: members see the timetable that fits their membership ---------- */
+function memberProgs(m){
+ const t=TODAY(),names=S.subs.filter(s=>s.memberId===m.id&&!s.cancelled&&s.end>=t).map(s=>s.planName||'').concat((S.ptPacks||[]).filter(k=>k.memberId===m.id&&packOpen(k)).map(k=>k.name||''));
+ if(!names.length)return ['adult','martial','kids'];
+ const kids=names.some(n=>/طفال|أطفال|طفل|kids/i.test(n)),adult=names.some(n=>!/طفال|أطفال|طفل|kids/i.test(n));
+ return kids&&!adult?['kids']:kids?['adult','martial','kids']:['adult','martial'];
+}
+const _dayActs27=dayActs;
+dayActs=function(m,d){const P=memberProgs(m);return _dayActs27(m,d).filter(a=>{if(a.k!=='av')return true;const c=S.classes.find(x=>x.id===a.id);return !c||P.indexOf(progOf(c))>=0})};
+const _pageTimetable27=pageTimetable;
+pageTimetable=function(){if(!U.sgP&&SESS.role==='trainee'){const m=memberById(SESS.uid);if(m)U.sgP=memberProgs(m)[0]}return _pageTimetable27()};
+/* member card page: their own bookings instead of the whole month of classes */
+const _pagePortal27=pagePortal;
+pagePortal=function(){const h=_pagePortal27();if(SESS.role!=='trainee')return h;
+ const k='<section class="panel" style="margin-top:16px"><header><h2>جدولي الشهري</h2>',i=h.indexOf(k);if(i<0)return h;
+ const m=memberById(SESS.uid),t=TODAY(),L=m?S.book.filter(b=>b.memberId===m.id&&b.date>=t).map(b=>({b:b,c:S.classes.find(c=>c.id===b.classId)})).filter(x=>x.c).sort((a,b)=>(a.b.date+a.c.time).localeCompare(b.b.date+b.c.time)):[];
+ return h.slice(0,i)+'<section class="panel" style="margin-top:16px"><header><h2>حجوزاتي القادمة</h2>'+btn('goTT',ic('classes',15)+' جدول الحصص','sm pri')+'</header>'+
+  (L.length?L.slice(0,20).map(x=>'<div class="row"><b class="num" style="min-width:86px">'+ft(x.c.time)+'</b><div class="grow"><b>'+esc(x.c.name)+'</b><small>'+dayLabel(x.b.date)+(x.b.wait?' · في قائمة الانتظار':'')+'</small></div>'+btn('hmUnbook','إلغاء','sm','data-id="'+x.b.id+'"')+'</div>').join(''):'<p class="empty">لا توجد حجوزات قادمة. احجزي حصتك من جدول الحصص.</p>')+'</section>';
+};
+/* small fixes found while testing the member app */
+const _pagePortal27b=pagePortal;
+pagePortal=function(){let h=_pagePortal27b();if(SESS.role!=='trainee')return h;
+ h=h.replace('رمز دخولك واشتراكك وجدولك الشهري','رمز دخولك واشتراكك وحجوزاتك');
+ const m=memberById(SESS.uid),s=m&&mInfo(m).sub;if(!s||!(+s.freezeMax>0)||freezeLeft(s)<=0)h=h.replace(/<button[^>]*data-act="freezeReq"[^>]*>[^<]*<\/button>/,'');
+ return h};
+const _pageNews27=pageNews;
+pageNews=function(){const h=_pageNews27(),x=U.newsId&&postsAll().find(y=>y.id===U.newsId);if(!x||!x.ev||!x.ev.date)return h;
+ const i=h.indexOf('<p class="art-meta">');if(i<0)return h;const j=h.indexOf('</p>',i)+4;
+ return h.slice(0,j)+'<p class="ev-info">'+ic('cal',16)+' '+fdate(x.ev.date,{weekday:'long',day:'numeric',month:'long'})+(x.ev.time?' · '+ft(x.ev.time):'')+(x.ev.place?' · '+esc(x.ev.place):'')+'</p>'+h.slice(j)};
 
 /* ---------- shell + router ---------- */
 const PAGES={

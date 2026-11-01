@@ -329,6 +329,16 @@ button.sg-c{cursor:pointer}button.sg-c:hover{border-color:var(--accent)}
 .sg-lg{display:flex;flex-wrap:wrap;gap:8px 18px;padding:12px 4px 0;font-size:12.5px;color:var(--muted)}.sg-lg span{display:inline-flex;align-items:center;gap:6px}.sg-lg i,.sg-sw{width:11px;height:11px;border-radius:50%;display:inline-block}
 .si-h{font:600 15px var(--f-display);margin:14px 0 6px}.si-t input{width:100%;min-width:120px}.si-t td{white-space:nowrap}
 .tt-strip{background:linear-gradient(135deg,#BE2F28,#7E1E1A)}
+.hsc{padding:14px;margin-bottom:16px}.hsc-g{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+.hsc-i{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:88px;border:0;border-radius:4px;font:inherit;cursor:pointer;padding:12px 6px;transition:filter .15s,transform .15s}
+.hsc-i b{font:700 13.5px/1.3 var(--f-display)}.hsc-i:hover{filter:brightness(.97);transform:translateY(-1px)}.hsc-i:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.hsc-i.b{background:#E8F2FE;color:#1877F2}.hsc-i.p{background:#F6EEFE;color:#9B27D8}.hsc-i.r{background:#FDE8EE;color:#E0174F}.hsc-i.g{background:#DDFBEA;color:#0DB84E}.hsc-i.y{background:#FEF8D6;color:#E5B000}.hsc-i.n{background:#F4F4F6;color:#2B2B30}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .hsc-i{filter:brightness(.92)}}
+.hci-row{margin:0 0 16px}.hci-in{display:flex;border:1px solid var(--line);border-radius:4px;overflow:hidden;background:var(--surface)}
+.hci-in input{flex:1;min-width:0;border:0;padding:12px 14px;font:inherit;font-size:18px;background:transparent;color:var(--ink)}
+.hci-b{width:68px;display:grid;place-items:center;border:0;color:#fff;cursor:pointer;position:relative;flex:none}.hci-b.blue{background:#1877F2}.hci-b.green{background:#0DCB55}
+.hci-f{padding:4px 16px 16px;display:grid;gap:4px}.hci-q.inq{margin-top:10px;display:flex!important;flex-direction:row;gap:8px;align-items:center;justify-content:flex-start;width:fit-content;color:var(--muted);font-size:13px}.hci-q input{width:auto;margin:0}#dres{margin-top:12px}.hci-log{max-height:260px;overflow:auto}
+@media (max-width:900px){.hsc-g{grid-template-columns:repeat(3,minmax(0,1fr))}}@media (max-width:480px){.hsc-g{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .inc-in{width:110px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;font:inherit;font-variant-numeric:tabular-nums;background:var(--surface);color:var(--ink);direction:ltr;text-align:right}
 .inq{display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:13.5px;font-weight:500}
 .inq input{width:18px;height:18px;min-height:0;accent-color:var(--accent)}
@@ -6003,6 +6013,39 @@ Object.assign(ACT,{
  goTT:()=>{location.hash='#timetable'}
 });
 ROLES.trainee.pages.push('timetable');
+
+/* ---------- v26: home shortcuts + quick member check-in on the dashboard ---------- */
+const HOME_SC=[
+ ['subs','العضويات','subs','b'],['classes','الأنشطة','classes','p'],['members','العملاء المشتركين','members','r'],['newmember','اضافة عميل مشترك','plus','g'],['daily','العملاء اليوميين','day','y'],['#dailyNew','اضافة عميل يومي','plus','n'],
+ ['leads','العملاء المحتملين','lead','b'],['reports','التقارير','reports','p'],['#money','تقرير المال','finance','g'],['settings','الاعدادات','settings','n'],['checkin','تسجيل دخول الاعضاء','checkin','y']
+];
+function homeShortcuts(){
+ const L=HOME_SC.filter(s=>s[0]==='#dailyNew'?can('daily'):s[0]==='#money'?(can('finance')||can('income')):can(s[0]));if(!L.length)return '';
+ return '<section class="card hsc"><div class="hsc-g">'+L.map(s=>'<button type="button" class="hsc-i '+s[3]+'" data-act="hsc" data-k="'+s[0]+'">'+ic(s[2],20)+'<b>'+s[1]+'</b></button>').join('')+'</div></section>';
+}
+function homeCheckin(){
+ if(!can('checkin'))return '';
+ return '<div class="grid g2b hci-row"><section class="card hci"><header class="card-h"><h2>تسجيل دخول الاعضاء</h2></header><form id="dcif" class="hci-f" autocomplete="off"><label class="fld"><span>سجل الدخول بالرقم</span><div class="hci-in">'+
+  '<input id="dci" placeholder="سجل الدخول بالرقم" inputmode="search" aria-label="كود العضو أو جواله أو اسمه">'+
+  '<button type="submit" class="hci-b blue" aria-label="'+(U.inq?'استعلام':'تسجيل الدخول')+'" title="تسجيل بالرقم أو قارئ الباركود">'+'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M7 9v6M10 9v6M13 9v6M16 9v6"/></svg>'+'</button>'+
+  '<label class="hci-b green" title="مسح رمز QR من صورة" aria-label="مسح رمز QR">'+ic('qr',22)+'<input type="file" accept="image/*" capture="environment" class="vh" data-qr="checkin"></label></div></label>'+
+  '<label class="inq hci-q"><input type="checkbox" id="inq"'+(U.inq?' checked':'')+'> استعلام فقط</label><div id="dres"></div></form></section>'+
+  '<section class="card"><header class="card-h"><h2>حضور اليوم</h2><span class="pill good">'+S.att.filter(a=>a.date===TODAY()).length+' حضور</span></header><div class="hci-log">'+checkinLog()+'</div></section></div>';
+}
+const _pageDashboard26=pageDashboard2;
+pageDashboard2=function(){const h=_pageDashboard26(),k='<div class="db">',i=h.indexOf(k),add=homeShortcuts()+homeCheckin();return i<0?add+h:h.slice(0,i)+add+h.slice(i)};
+document.addEventListener('submit',e=>{if(e.target.id!=='dcif')return;e.preventDefault();const q=$('#dci').value.trim();if(!q){$('#dci').focus();return}
+ const r=findMembers(q);if(!r.length){toast('لم يُعثر على عضو مطابق');return}
+ const res=U.inq?inquire(r[0]):tryCheckin(r[0]);
+ if(!U.inq&&res.k==='ok'){render();setTimeout(()=>{const d=$('#dres');if(d)d.innerHTML=resultCard(res);const i=$('#dci');if(i)i.focus()},0);return}
+ $('#dres').innerHTML=resultCard(res);$('#dci').value='';$('#dci').focus();
+});
+Object.assign(ACT,{
+ hsc:d=>{const k=d.k;
+  if(k==='#dailyNew'){goPage('daily');setTimeout(()=>{const f=$('#dlf input');if(f)f.focus()},150);return}
+  if(k==='#money'){goPage(can('finance')?'finance':'income');return}
+  goPage(k)}
+});
 
 /* ---------- shell + router ---------- */
 const PAGES={

@@ -278,11 +278,11 @@ const PRIZES = [
   { text: "2 كلاس فنون قتالية",   short:["2 كلاس","فنون قتالية"], icon:"🥊", weight: 15, win: true },
   { text: "أسبوع مجاني",          short:["أسبوع","مجاني"], icon:"🎁",        weight: 3,  win: true },
   { text: "2 كلاس رقص شرقي",      short:["2 كلاس","رقص شرقي"], icon:"💃",    weight: 15, win: true },
-  { text: "حظ أوفر",              short:["حظ","أوفر"], icon:"🍀",            weight: 20, win: false },
+  { text: "حظ أوفر",              short:["حظ","أوفر"], icon:"🍀",            weight: 20, win: false, retry: true },
   { text: "كلاس زومبا",           short:["كلاس","زومبا"], icon:"🎶",         weight: 20, win: true },
   { text: "دخول شامل يوم مجاني",  short:["يوم شامل","مجاني"], icon:"🏋️",     weight: 12, win: true },
   { text: "اشتراك شهر بـ 280 ريال", short:["شهر","بـ 280"], icon:"⭐",       weight: 10, win: true },
-  { text: "حاولي مرة أخرى",       short:["حاولي","مرة أخرى"], icon:"🔁",     weight: 5,  win: false, retry: true }
+  { text: "حاولي مرة أخرى",       short:["حاولي","مرة أخرى"], icon:"🔁",     weight: 5,  win: false, retry: true, noFinal: true }
 ];
 /* ==================================== */
 
@@ -385,7 +385,7 @@ function drawRim(){
 function blink(speed){ clearInterval(bulbTimer); bulbTimer = setInterval(()=>{ bulbPhase++; drawRim(); }, speed); }
 
 function pick(){
-  const list = PRIZES.map((p,i)=>({p,i})).filter(x => !(retried && x.p.retry));
+  const list = PRIZES.map((p,i)=>({p,i})).filter(x => !(retried && x.p.noFinal));
   let r = Math.random() * list.reduce((s,x)=>s + x.p.weight, 0);
   for (const x of list){ if ((r -= x.p.weight) < 0) return x.i; }
   return list[0].i;
@@ -540,7 +540,7 @@ $("spinBtn").onclick = () => {
     const p = PRIZES[i];
     if (p.retry && !retried){
       retried = true; buzz([60,40,60]);
-      $("hello").textContent = "عندك فرصة ثانية! لفّي مرة أخرى 🎡";
+      $("hello").textContent = (p.noFinal ? "" : "حظ أوفر! 🍀 ") + "عندك فرصة ثانية، لفّي مرة أخرى 🎡";
       $("spinBtn").disabled = false; $("spinBtn").textContent = "لفّي مرة ثانية 🎡";
       return;
     }
